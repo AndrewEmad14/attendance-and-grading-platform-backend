@@ -2,31 +2,77 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use App\Models\Track;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $table = 'users';
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password_hash',
+        'role',
+        'expires_at',
+        'track_id',
+    ];
+
+    protected $hidden = [
+        'password_hash',
+        'remember_token',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'expires_at' => 'datetime',
+        'role' => 'string', // enum
+    ];
+
+    // Mutator for password hashing
+    public function setPasswordAttribute($value)
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        $this->attributes['password_hash'] = bcrypt($value);
+    }
+
+    // Relationships
+    public function track()
+    {
+        return $this->belongsTo(Track::class);
+    }
+
+    public function labGroups()
+    {
+        return $this->belongsToMany(LabGroup::class, 'lab_group_users');
+    }
+
+    public function taughtEngagements()
+    {
+        return $this->hasMany(Engagement::class, 'instructor_id');
+    }
+
+    public function attendanceRecords()
+    {
+        return $this->hasMany(AttendanceRecord::class, 'student_id');
+    }
+
+    public function staffProfile()
+    {
+        return $this->hasOne(StaffProfile::class, 'staff_id');
+    }
+
+    public function attendanceLedger()
+    {
+        return $this->hasOne(AttendanceLedger::class, 'student_id');
+    }
+
+    public function submissions()
+    {
+        return $this->hasMany(Submission::class, 'student_id');
     }
 }
