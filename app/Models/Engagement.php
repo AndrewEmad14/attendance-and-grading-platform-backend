@@ -10,8 +10,9 @@ class Engagement extends Model
   use HasFactory;
 
   protected $fillable = [
-    'cohort_id',
-    'instructor_id',
+    'engageable_type',
+    'engageable_id',
+    'staff_id',
     'type',
     'starts_at',
     'ends_at',
@@ -19,20 +20,20 @@ class Engagement extends Model
   ];
 
   protected $casts = [
-    'starts_at' => 'datetime',
-    'ends_at' => 'datetime',
+    'starts_at'       => 'datetime',
+    'ends_at'         => 'datetime',
     'scheduled_hours' => 'decimal:2',
-    'type' => 'string', // enum
   ];
 
-  public function cohort()
+  // Polymorphic relation
+  public function engageable()
   {
-    return $this->belongsTo(Cohort::class);
+    return $this->morphTo();
   }
 
-  public function instructor()
+  public function staff()
   {
-    return $this->belongsTo(User::class, 'instructor_id');
+    return $this->belongsTo(StaffProfile::class, 'staff_id');
   }
 
   public function attendanceRecords()

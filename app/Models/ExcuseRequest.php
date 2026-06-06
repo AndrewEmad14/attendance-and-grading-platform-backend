@@ -17,7 +17,7 @@ class ExcuseRequest extends Model
   ];
 
   protected $casts = [
-    'status' => 'string', // enum
+    'status' => 'string',
   ];
 
   public function attendanceRecord()

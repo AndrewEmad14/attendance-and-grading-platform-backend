@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('staff_profiles', function (Blueprint $table) {
+        Schema::create('business_sessions_cohorts', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('staff_id')->constrained('users')->onDelete('cascade');
-            $table->enum('compensation_type', ['internal', 'external']);
-            $table->decimal('hourly_rate');
+            $table->foreignId('business_session_id')->constrained('business_sessions')->onDelete('cascade');
+            $table->foreignId('cohort_id')->constrained('cohorts')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('staff_profiles');
+        Schema::dropIfExists('business_sessions_cohorts');
     }
 };

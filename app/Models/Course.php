@@ -18,6 +18,16 @@ class Course extends Model
 
   public function deliverables()
   {
-    return $this->hasMany(CourseDeliverable::class, 'course_id');
+    return $this->hasMany(CourseDeliverable::class);
+  }
+
+  public function labs()
+  {
+    return $this->hasMany(Lab::class);
+  }
+
+  public function engagements()
+  {
+    return $this->morphMany(Engagement::class, 'engageable');
   }
 }

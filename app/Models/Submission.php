@@ -12,24 +12,25 @@ class Submission extends Model
   protected $fillable = [
     'deliverable_id',
     'student_id',
-    'submission_url',
+    'submission_type',
+    'submission_path',
     'raw_score',
     'override_score',
     'override_note',
   ];
 
   protected $casts = [
-    'raw_score' => 'decimal:2',
+    'raw_score'      => 'decimal:2',
     'override_score' => 'decimal:2',
   ];
 
   public function deliverable()
   {
-    return $this->belongsTo(CourseDeliverable::class, 'deliverable_id');
+    return $this->belongsTo(CourseDeliverable::class);
   }
 
   public function student()
   {
-    return $this->belongsTo(User::class, 'student_id');
+    return $this->belongsTo(StudentProfile::class, 'student_id');
   }
 }

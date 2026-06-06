@@ -15,17 +15,20 @@ class CourseDeliverable extends Model
     'course_id',
     'type',
     'name',
-    'weight',
+    'max_score',
+    'course_weight',
+    'due_date',
   ];
 
   protected $casts = [
-    'type' => 'string',
-    'weight' => 'integer',
+    'due_date'  => 'datetime',
+    'max_score' => 'integer',
+    'course_weight' => 'integer',
   ];
 
   public function course()
   {
-    return $this->belongsTo(Course::class, 'course_id');
+    return $this->belongsTo(Course::class);
   }
 
   public function submissions()

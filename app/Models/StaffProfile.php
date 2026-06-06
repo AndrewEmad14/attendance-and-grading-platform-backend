@@ -10,18 +10,22 @@ class StaffProfile extends Model
   use HasFactory;
 
   protected $fillable = [
-    'staff_id',
+    'user_id',
     'compensation_type',
     'hourly_rate',
   ];
 
   protected $casts = [
-    'compensation_type' => 'string',
     'hourly_rate' => 'decimal:2',
   ];
 
-  public function staff()
+  public function user()
   {
-    return $this->belongsTo(User::class, 'staff_id');
+    return $this->belongsTo(User::class);
+  }
+
+  public function engagements()
+  {
+    return $this->hasMany(Engagement::class, 'staff_id');
   }
 }

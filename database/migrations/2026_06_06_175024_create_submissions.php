@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('submissions', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('deliverable_id')->constrained('courses_deliverables')->onDelete('cascade');
-            // $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
-            $table->string('submission_url');
+            $table->foreignId('deliverable_id')->constrained('courses_deliverables')->onDelete('cascade');
+            $table->foreignId('student_id')->constrained('student_profiles')->onDelete('cascade');
+            $table->enum('submission_type', ['file', 'link']);
+            $table->string('submission_path');
             $table->decimal('raw_score');
             $table->decimal('override_score');
             $table->text('override_note');

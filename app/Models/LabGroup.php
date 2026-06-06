@@ -16,8 +16,13 @@ class LabGroup extends Model
     return $this->belongsTo(Cohort::class);
   }
 
-  public function users()
+  public function students()
   {
-    return $this->belongsToMany(User::class, 'lab_group_users');
+    return $this->belongsToMany(StudentProfile::class, 'lab_group_users', 'lab_group_id', 'student_id');
+  }
+
+  public function labs()
+  {
+    return $this->hasMany(Lab::class);
   }
 }

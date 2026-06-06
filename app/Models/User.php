@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use App\Models\Track;
 
 class User extends Authenticatable
 {
@@ -20,7 +19,6 @@ class User extends Authenticatable
         'password_hash',
         'role',
         'expires_at',
-        'track_id',
     ];
 
     protected $hidden = [
@@ -30,49 +28,33 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'expires_at' => 'datetime',
-        'role' => 'string', // enum
+        'expires_at'        => 'datetime',
+        'role'              => 'string',
     ];
 
-    // Mutator for password hashing
     public function setPasswordAttribute($value)
     {
         $this->attributes['password_hash'] = bcrypt($value);
     }
 
     // Relationships
-    public function track()
+    public function studentProfile()
     {
-        return $this->belongsTo(Track::class);
-    }
-
-    public function labGroups()
-    {
-        return $this->belongsToMany(LabGroup::class, 'lab_group_users');
-    }
-
-    public function taughtEngagements()
-    {
-        return $this->hasMany(Engagement::class, 'instructor_id');
-    }
-
-    public function attendanceRecords()
-    {
-        return $this->hasMany(AttendanceRecord::class, 'student_id');
+        return $this->hasOne(StudentProfile::class);
     }
 
     public function staffProfile()
     {
-        return $this->hasOne(StaffProfile::class, 'staff_id');
+        return $this->hasOne(StaffProfile::class);
     }
 
-    public function attendanceLedger()
+    public function labGroups()
     {
-        return $this->hasOne(AttendanceLedger::class, 'student_id');
+        return $this->belongsToMany(LabGroup::class, 'lab_group_users', 'student_id', 'lab_group_id');
     }
 
-    public function submissions()
+    public function taughtEngagements()
     {
-        return $this->hasMany(Submission::class, 'student_id');
+        return $this->hasMany(Engagement::class, 'staff_id');
     }
 }

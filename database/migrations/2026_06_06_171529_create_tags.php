@@ -11,10 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('attendance_ledgers', function (Blueprint $table) {
+        Schema::create('tags', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
-            $table->integer('balance')->default(250);
+            $table->string('tag');
             $table->timestamps();
         });
     }
@@ -24,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('attendance_ledgers');
+        Schema::dropIfExists('tags');
     }
 };

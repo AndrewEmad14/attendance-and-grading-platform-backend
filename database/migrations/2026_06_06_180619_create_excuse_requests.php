@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('lab_group_users', function (Blueprint $table) {
+        Schema::create('excuse_requests', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('lab_group_id')->constrained('lab_groups')->onDelete('cascade');
-            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('attendance_id')->constrained('attendance_records')->onDelete('cascade');
+            $table->text('reason');
+            $table->string('attachment_path');
+            $table->enum('status', ['pending', 'approved', 'rejected']);
             $table->timestamps();
         });
     }
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('lab_group_users');
+        Schema::dropIfExists('excuse_requests');
     }
 };

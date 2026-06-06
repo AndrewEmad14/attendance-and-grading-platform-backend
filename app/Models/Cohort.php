@@ -9,11 +9,20 @@ class Cohort extends Model
 {
   use HasFactory;
 
-  protected $fillable = ['number', 'track_id'];
+  protected $fillable = ['number', 'track_id', 'is_active'];
+
+  protected $casts = [
+    'is_active' => 'boolean',
+  ];
 
   public function track()
   {
     return $this->belongsTo(Track::class);
+  }
+
+  public function courses()
+  {
+    return $this->hasMany(Course::class);
   }
 
   public function labGroups()
@@ -21,13 +30,13 @@ class Cohort extends Model
     return $this->hasMany(LabGroup::class);
   }
 
-  public function engagements()
+  public function studentProfiles()
   {
-    return $this->hasMany(Engagement::class);
+    return $this->hasMany(StudentProfile::class);
   }
 
-  public function courses()
+  public function businessSessions()
   {
-    return $this->hasMany(Course::class);
+    return $this->belongsToMany(BusinessSession::class, 'business_sessions_cohorts');
   }
 }
