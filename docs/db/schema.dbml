@@ -1,0 +1,229 @@
+Table migrations {
+  id int pk
+  migration varchar 
+  batch int 
+}
+
+
+Table password_reset_tokens {
+  email varchar pk
+  token varchar 
+  created_at datetime
+}
+
+
+Table sessions {
+  id varchar pk
+  user_id int
+  ip_address varchar
+  user_agent text
+  payload text 
+  last_activity int 
+}
+
+
+Table cache {
+  key varchar pk
+  value text 
+  expiration int 
+}
+
+
+Table cache_locks {
+  key varchar pk
+  owner varchar 
+  expiration int 
+}
+
+
+Table jobs {
+  id int pk
+  queue varchar 
+  payload text 
+  attempts int 
+  reserved_at int
+  available_at int 
+  created_at int 
+}
+
+
+Table job_batches {
+  id varchar pk
+  name varchar 
+  total_jobs int 
+  pending_jobs int 
+  failed_jobs int 
+  failed_job_ids text 
+  options text
+  cancelled_at int
+  created_at int 
+  finished_at int
+}
+
+
+Table failed_jobs {
+  id int pk
+  uuid varchar 
+  connection varchar 
+  queue varchar 
+  payload text 
+  exception text 
+  failed_at datetime 
+}
+
+
+Table personal_access_tokens {
+  id int pk
+  tokenable_type varchar 
+  tokenable_id int 
+  name text 
+  token varchar 
+  abilities text
+  last_used_at datetime
+  expires_at datetime
+  created_at datetime
+  updated_at datetime
+}
+
+
+Table tracks {
+  id int pk
+  name varchar 
+  created_at datetime
+  updated_at datetime
+}
+
+
+Table users {
+  id int pk
+  name varchar 
+  email varchar 
+  email_verified_at datetime
+  password_hash varchar 
+  role varchar 
+  expires_at datetime
+  remember_token varchar
+  created_at datetime
+  updated_at datetime
+  track_id int
+}
+Ref: users.track_id > tracks.id
+
+Table cohorts {
+  id int pk
+  number int 
+  created_at datetime
+  updated_at datetime
+  track_id int
+}
+Ref: cohorts.track_id > tracks.id
+
+Table lab_groups {
+  id int pk
+  name varchar 
+  created_at datetime
+  updated_at datetime
+  cohort_id int
+}
+Ref: lab_groups.cohort_id > cohorts.id
+
+Table lab_group_users {
+  id int pk
+  created_at datetime
+  updated_at datetime
+  lab_group_id int
+  user_id int
+}
+Ref: lab_group_users.user_id > users.id
+Ref: lab_group_users.lab_group_id > lab_groups.id
+
+Table engagements {
+  id int pk
+  type varchar 
+  starts_at datetime
+  ends_at datetime
+  scheduled_hours numeric 
+  created_at datetime
+  updated_at datetime
+  cohort_id int
+  instructor_id int
+}
+Ref: engagements.instructor_id > users.id
+Ref: engagements.cohort_id > cohorts.id
+
+Table attendance_records {
+  id int pk
+  arrived_at datetime
+  left_at datetime
+  created_at datetime
+  updated_at datetime
+  engagement_id int
+  student_id int
+}
+Ref: attendance_records.student_id > users.id
+Ref: attendance_records.engagement_id > engagements.id
+
+Table excuse_requests {
+  id int pk
+  reason text 
+  attachment_path varchar 
+  status varchar 
+  created_at datetime
+  updated_at datetime
+  attendance_id int
+}
+Ref: excuse_requests.attendance_id > attendance_records.id
+
+Table staff_profiles {
+  id int pk
+  compensation_type varchar 
+  hourly_rate numeric 
+  created_at datetime
+  updated_at datetime
+  staff_id int
+}
+Ref: staff_profiles.staff_id > users.id
+
+Table attendance_ledgers {
+  id int pk
+  balance int 
+  created_at datetime
+  updated_at datetime
+  student_id int
+}
+Ref: attendance_ledgers.student_id > users.id
+
+Table courses {
+  id int pk
+  name varchar 
+  created_at datetime
+  updated_at datetime
+  cohort_id int
+}
+Ref: courses.cohort_id > cohorts.id
+
+Table courses_deliverables {
+  id int pk
+  type varchar 
+  name varchar 
+  weight int 
+  created_at datetime
+  updated_at datetime
+  course_id int
+}
+Ref: courses_deliverables.course_id > courses.id
+
+Table submissions {
+  id int pk
+  submission_url varchar 
+  raw_score numeric 
+  override_score numeric 
+  override_note text 
+  created_at datetime
+  updated_at datetime
+  deliverable_id int
+  student_id int
+}
+Ref: submissions.student_id > users.id
+Ref: submissions.deliverable_id > courses_deliverables.id
+
