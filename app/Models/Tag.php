@@ -13,6 +13,6 @@ class Tag extends Model
 
   public function studentProfiles()
   {
-    return $this->belongsToMany(StudentProfile::class, 'students_tags');
+    return $this->belongsToMany(StudentProfile::class, 'students_tags', 'tag_id', 'student_id');
   }
 }

@@ -32,7 +32,7 @@ class StudentProfile extends Model
 
   public function tags()
   {
-    return $this->belongsToMany(Tag::class, 'students_tags');
+    return $this->belongsToMany(Tag::class, 'students_tags', 'student_id', 'tag_id');
   }
 
   public function labGroups()

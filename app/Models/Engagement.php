@@ -20,8 +20,8 @@ class Engagement extends Model
   ];
 
   protected $casts = [
-    'starts_at'       => 'datetime',
-    'ends_at'         => 'datetime',
+    'starts_at' => 'datetime',
+    'ends_at' => 'datetime',
     'scheduled_hours' => 'decimal:2',
   ];
 

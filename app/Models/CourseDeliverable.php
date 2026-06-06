@@ -21,7 +21,7 @@ class CourseDeliverable extends Model
   ];
 
   protected $casts = [
-    'due_date'  => 'datetime',
+    'due_date' => 'datetime',
     'max_score' => 'integer',
     'course_weight' => 'integer',
   ];

@@ -20,13 +20,13 @@ class Submission extends Model
   ];
 
   protected $casts = [
-    'raw_score'      => 'decimal:2',
+    'raw_score' => 'decimal:2',
     'override_score' => 'decimal:2',
   ];
 
   public function deliverable()
   {
-    return $this->belongsTo(CourseDeliverable::class);
+    return $this->belongsTo(CourseDeliverable::class, 'deliverable_id');
   }
 
   public function student()

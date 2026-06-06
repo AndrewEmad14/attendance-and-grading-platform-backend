@@ -28,16 +28,15 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'expires_at'        => 'datetime',
-        'role'              => 'string',
+        'expires_at' => 'datetime',
+        'role' => 'string',
     ];
 
-    public function setPasswordAttribute($value)
+    public function setPasswordHashAttribute($value)
     {
         $this->attributes['password_hash'] = bcrypt($value);
     }
 
-    // Relationships
     public function studentProfile()
     {
         return $this->hasOne(StudentProfile::class);
@@ -46,11 +45,6 @@ class User extends Authenticatable
     public function staffProfile()
     {
         return $this->hasOne(StaffProfile::class);
-    }
-
-    public function labGroups()
-    {
-        return $this->belongsToMany(LabGroup::class, 'lab_group_users', 'student_id', 'lab_group_id');
     }
 
     public function taughtEngagements()

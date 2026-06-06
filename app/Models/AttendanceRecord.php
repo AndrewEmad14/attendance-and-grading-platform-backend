@@ -18,7 +18,7 @@ class AttendanceRecord extends Model
 
   protected $casts = [
     'arrived_at' => 'datetime',
-    'left_at'    => 'datetime',
+    'left_at' => 'datetime',
   ];
 
   public function engagement()
@@ -33,6 +33,6 @@ class AttendanceRecord extends Model
 
   public function excuseRequest()
   {
-    return $this->hasOne(ExcuseRequest::class);
+    return $this->hasOne(ExcuseRequest::class, 'attendance_id');
   }
 }

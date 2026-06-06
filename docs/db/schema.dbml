@@ -27,16 +27,7 @@ Table cohorts {
   created_at datetime
   updated_at datetime
 }
-
-Table cohorts_copy {
-  track_id int 
-  id int pk
-  number int 
-  is_active tinyint 
-  created_at datetime
-  updated_at datetime
-}
-Ref: cohorts_copy.track_id > tracks.id
+Ref: cohorts.track_id > tracks.id
 
 Table courses {
   cohort_id int 
@@ -110,11 +101,11 @@ Ref: labs.lab_group_id > lab_groups.id
 Table lab_group_users {
   id int pk
   lab_group_id int 
-  user_id int 
+  student_id int 
   created_at datetime
   updated_at datetime
 }
-Ref: lab_group_users.user_id > users.id
+Ref: lab_group_users.student_id > student_profiles.id
 Ref: lab_group_users.lab_group_id > lab_groups.id
 
 Table business_sessions {
@@ -132,7 +123,7 @@ Table business_sessions_cohorts {
   created_at datetime
   updated_at datetime
 }
-Ref: business_sessions_cohorts.cohort_id > cohorts_copy.id
+Ref: business_sessions_cohorts.cohort_id > cohorts.id
 Ref: business_sessions_cohorts.business_session_id > business_sessions.id
 
 Table courses_deliverables {
