@@ -3,6 +3,13 @@
 A stateless, headless REST API backend built with **Laravel 13**, **PHP 8.3**, and **PostgreSQL**.  
 Designed to serve a separate Vue frontend. No sessions, no Blade, no assets — pure JSON.
 
+## Related Docs
+
+- [Requirements](docs/api/requirements.md)
+- [API Design Guidelines](docs/api/design-guidelines.md)
+- [API Endpoints](docs/api/endpoints.md)
+- [DB Schema](docs/db/schema.dbml)
+
 ---
 
 ## Table of Contents
@@ -17,6 +24,7 @@ Designed to serve a separate Vue frontend. No sessions, no Blade, no assets — 
 - [Related Repositories](#-related-repositories)
 
 ---
+
 
 ## 📋 Requirements
 
@@ -111,6 +119,8 @@ API is now available at `http://127.0.0.1:8000/api`.
 ## 🗄️ Database Schema
 
 The schema is split into five domain groups. Each diagram below shows one group's tables and their relationships. Foreign keys that cross groups (e.g. `engagements.instructor_id → staff_profiles`) are shown as dashed references.
+
+![ERD](docs/db/ERD.svg)
 
 ---
 
