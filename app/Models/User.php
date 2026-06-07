@@ -32,9 +32,12 @@ class User extends Authenticatable
         'role' => 'string',
     ];
 
-    public function setPasswordHashAttribute($value)
+    public function setPasswordHashAttribute($value): void
     {
-        $this->attributes['password_hash'] = bcrypt($value);
+        $this->attributes['password_hash'] =
+            \Illuminate\Support\Facades\Hash::needsRehash($value)
+            ? \Illuminate\Support\Facades\Hash::make($value)
+            : $value;
     }
 
     public function studentProfile()

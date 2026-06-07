@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('business_session_id')->constrained('business_sessions')->onDelete('cascade');
             $table->foreignId('cohort_id')->constrained('cohorts')->onDelete('cascade');
+            $table->unique(['business_session_id', 'cohort_id']);
             $table->timestamps();
         });
     }

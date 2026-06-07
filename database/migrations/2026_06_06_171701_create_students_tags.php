@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('student_id')->constrained('student_profiles')->cascadeOnDelete();
             $table->foreignId('tag_id')->constrained('tags')->cascadeOnDelete();
+            $table->unique(['student_id', 'tag_id']);
             $table->timestamps();
         });
     }

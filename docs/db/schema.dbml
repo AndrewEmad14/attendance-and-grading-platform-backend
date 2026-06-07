@@ -156,7 +156,6 @@ Ref: submissions.deliverable_id > courses_deliverables.id
 
 Table engagements {
   id int pk
-  engageable_type varchar 
   instructor_id int 
   type varchar 
   starts_at datetime
@@ -193,3 +192,15 @@ Table excuse_requests {
   updated_at datetime
 }
 Ref: excuse_requests.attendance_id > attendance_records.id
+
+Table announcements {
+  id int pk
+  cohort_id int 
+  author_id int
+  title varchar 
+  body text 
+  created_at datetime
+  updated_at datetime
+}
+Ref: announcements.cohort_id > cohorts_copy.id
+Ref: announcements.author_id > staff_profiles.id
