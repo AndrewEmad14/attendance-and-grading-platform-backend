@@ -148,33 +148,40 @@ class DatabaseSeeder extends Seeder
             Engagement::factory()->forEngageable($bs)->create(['staff_id' => $staff->random()->id]);
         }
 
-        // 15. Attendance records – BULK INSERT (fast)
+        // 14. Attendance records – MEMORY SAFE BULK INSERT
         $engagements = Engagement::all();
-        $engagementIds = $engagements->pluck('id')->toArray();
         $studentIds = $students->pluck('id')->toArray();
         $studentCount = count($studentIds);
         $attendanceData = [];
 
-        foreach ($engagementIds as $engagementId) {
+        foreach ($engagements as $engagement) {
             $presentCount = rand(ceil($studentCount * 0.6), $studentCount);
+            
             // Pick random student IDs
             $presentKeys = (array) array_rand($studentIds, $presentCount);
             $presentStudentIds = array_map(fn($key) => $studentIds[$key], $presentKeys);
+            
             foreach ($presentStudentIds as $studentId) {
                 $attendanceData[] = [
-                    'engagement_id' => $engagementId,
+                    'engagement_id' => $engagement->id,
                     'student_id' => $studentId,
                     'arrived_at' => now()->subDays(rand(0, 30))->subHours(rand(1, 8))->toDateTimeString(),
                     'left_at' => now()->subDays(rand(0, 30))->toDateTimeString(),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
+
+                // Flush to Supabase immediately when we hit 1,000 records to save memory
+                if (count($attendanceData) >= 1000) {
+                    DB::table('attendance_records')->insert($attendanceData);
+                    $attendanceData = []; // Wipe the array to free up RAM
+                }
             }
         }
 
-        // Insert in chunks to avoid memory overload
-        foreach (array_chunk($attendanceData, 500) as $chunk) {
-            DB::table('attendance_records')->insert($chunk);
+        // Insert any leftover records remaining in the array
+        if (!empty($attendanceData)) {
+            DB::table('attendance_records')->insert($attendanceData);
         }
 
         // 16. Excuse requests (10% of attendance records)
