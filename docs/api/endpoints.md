@@ -314,7 +314,7 @@ Response `201 Created`.
 
 ## Engagements
 
-> Polymorphic — attaches to a `course`, `lab`, or `business_session` via `engageable_type` + `engageable_id`. Instructor access is limited to the `starts_at` → `ends_at` window (ENG-5).
+> Polymorphic — attaches to a `course`, `lab`, or `business_session` via `engageable_id`. Instructor access is limited to the `starts_at` → `ends_at` window (ENG-5).
 
 | Method | Path | Role |
 |---|---|---|
@@ -329,10 +329,10 @@ Response `201 Created`.
 ### `POST /engagements`
 ```json
 // Lecture
-{ "instructor_id": 4, "engageable_type": "course", "engageable_id": 1, "type": "lecture", "starts_at": "2024-09-10T09:00:00Z", "ends_at": "2024-11-30T17:00:00Z", "scheduled_hours": 3.0 }
+{ "instructor_id": 4, "engageable_id": 1, "type": "lecture", "starts_at": "2024-09-10T09:00:00Z", "ends_at": "2024-11-30T17:00:00Z", "scheduled_hours": 3.0 }
 
 // Lab
-{ "instructor_id": 5, "engageable_type": "lab", "engageable_id": 7, "type": "lab", "starts_at": "2024-09-12T10:00:00Z", "ends_at": "2024-11-30T17:00:00Z", "scheduled_hours": 2.0 }
+{ "instructor_id": 5, "engageable_id": 7, "type": "lab", "starts_at": "2024-09-12T10:00:00Z", "ends_at": "2024-11-30T17:00:00Z", "scheduled_hours": 2.0 }
 ```
 
 ### `PATCH /engagements/{engagementId}`
@@ -342,7 +342,7 @@ Response `201 Created`.
 
 ### Engagement Object
 ```json
-{ "id": 3, "instructor_id": 5, "engageable_type": "lab", "engageable_id": 7, "type": "lab", "starts_at": "2024-09-12T10:00:00Z", "ends_at": "2024-11-30T17:00:00Z", "scheduled_hours": 2.0, "created_at": "..." }
+{ "id": 3, "instructor_id": 5, "engageable_id": 7, "type": "lab", "starts_at": "2024-09-12T10:00:00Z", "ends_at": "2024-11-30T17:00:00Z", "scheduled_hours": 2.0, "created_at": "..." }
 ```
 
 ---

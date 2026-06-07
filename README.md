@@ -175,7 +175,7 @@ erDiagram
     business_sessions       ||--o{ business_sessions_cohorts : "covers"
 ```
 
-> The `engagements.instructor_id` FK references `staff_profiles.id`. The `engagements.engageable_id` + `engageable_type` form a polymorphic relation covering `courses`, `labs`, and `business_sessions`.
+> The `engagements.instructor_id` FK references `staff_profiles.id`. The `engagements.engageable_id` forms a polymorphic relation covering `courses`, `labs`, and `business_sessions`.
 
 ---
 

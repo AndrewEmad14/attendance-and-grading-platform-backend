@@ -12,7 +12,6 @@ class EngagementFactory extends Factory
   public function definition()
   {
     return [
-      'engageable_type' => null,
       'engageable_id' => null,
       'staff_id' => null,
       'type' => 'lecture',
@@ -32,7 +31,6 @@ class EngagementFactory extends Factory
     };
 
     return $this->state([
-      'engageable_type' => $engageable::class,
       'engageable_id' => $engageable->id,
       'type' => $type,
     ]);
