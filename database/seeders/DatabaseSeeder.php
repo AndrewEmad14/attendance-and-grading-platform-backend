@@ -2,24 +2,189 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use App\Models\Track;
+use App\Models\Cohort;
+use App\Models\StudentProfile;
+use App\Models\StaffProfile;
+use App\Models\Tag;
+use App\Models\LabGroup;
+use App\Models\Course;
+use App\Models\BusinessSession;
+use App\Models\Lab;
+use App\Models\CourseDeliverable;
+use App\Models\Engagement;
+use App\Models\ExcuseRequest;
+use App\Models\Submission;
+use App\Models\Announcement;
+use App\Models\User;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
-    public function run(): void
+    public function run()
     {
-        // User::factory(10)->create();
+        // 1. Tracks (3)
+        $tracks = Track::factory(3)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // 2. Cohorts: 1 active + 3 inactive per track
+        $cohorts = collect();
+        foreach ($tracks as $track) {
+            $cohorts->push(Cohort::factory()->active()->create(['track_id' => $track->id]));
+            $cohorts = $cohorts->concat(Cohort::factory(3)->create(['track_id' => $track->id, 'is_active' => false]));
+        }
+
+        // 3. Student profiles (30 per cohort)
+        $students = collect();
+        foreach ($cohorts as $cohort) {
+            $students = $students->concat(StudentProfile::factory(30)->create(['cohort_id' => $cohort->id]));
+        }
+
+        // // 4. Staff profiles (10)
+        // $staff = StaffProfile::factory(10)->create();
+        // $staffIds = $staff->pluck('id')->toArray();
+
+        // 4. Create staff profiles with correct roles
+        $staff = collect();
+
+        // One branch_manager
+        $branchManagerUser = User::factory()->branchManager()->create();
+        $staff->push(StaffProfile::factory()->create(['user_id' => $branchManagerUser->id]));
+
+        // Two track_admins
+        $trackAdminUsers = User::factory(2)->trackAdmin()->create();
+        foreach ($trackAdminUsers as $user) {
+            $staff->push(StaffProfile::factory()->create(['user_id' => $user->id]));
+        }
+
+        // Seven instructors
+        $instructorUsers = User::factory(7)->instructor()->create();
+        foreach ($instructorUsers as $user) {
+            $staff->push(StaffProfile::factory()->create(['user_id' => $user->id]));
+        }
+
+        // 5. Tags (10)
+        $tags = Tag::factory(10)->create();
+        foreach ($students as $student) {
+            $student->tags()->attach($tags->random(rand(1, 3))->pluck('id'));
+        }
+
+        // 6. Lab groups (2 per cohort)
+        $labGroups = collect();
+        foreach ($cohorts as $cohort) {
+            $labGroups = $labGroups->concat(LabGroup::factory(2)->create(['cohort_id' => $cohort->id]));
+        }
+
+        // 7. Courses (3 per cohort)
+        $courses = collect();
+        foreach ($cohorts as $cohort) {
+            $courses = $courses->concat(Course::factory(3)->create(['cohort_id' => $cohort->id]));
+        }
+
+        // 8. Business sessions (5)
+        $businessSessions = BusinessSession::factory(5)->create();
+
+        // 9. Labs (2 per lab group)
+        $labs = collect();
+        foreach ($labGroups as $labGroup) {
+            $course = $courses->where('cohort_id', $labGroup->cohort_id)->random();
+            $labs = $labs->concat(Lab::factory(2)->create([
+                'lab_group_id' => $labGroup->id,
+                'course_id' => $course->id,
+            ]));
+        }
+
+        // 10. Assign students to lab groups (each student to 1 lab group of their cohort)
+        foreach ($students as $student) {
+            $labGroup = $labGroups->where('cohort_id', $student->cohort_id)->random();
+            $student->labGroups()->attach($labGroup->id);
+        }
+
+        // 11. Course deliverables (4 per course)
+        $deliverables = collect();
+        foreach ($courses as $course) {
+            $deliverables = $deliverables->concat(CourseDeliverable::factory(4)->create(['course_id' => $course->id]));
+        }
+
+        // 12. Submissions (for 60% of student–deliverable pairs)
+        $studentIds = $students->pluck('id')->toArray();
+        foreach ($deliverables as $deliverable) {
+            $randomStudents = collect($studentIds)->random(min(10, count($studentIds)));
+            foreach ($randomStudents as $studentId) {
+                Submission::factory()->create([
+                    'deliverable_id' => $deliverable->id,
+                    'student_id' => $studentId,
+                ]);
+            }
+        }
+
+        // 13. Engagements
+        // Lectures (2 per course)
+        foreach ($courses as $course) {
+            Engagement::factory(2)->forEngageable($course)->create(['staff_id' => $staff->random()->id]);
+        }
+        // Labs (1 per lab)
+        foreach ($labs as $lab) {
+            Engagement::factory()->forEngageable($lab)->create(['staff_id' => $staff->random()->id]);
+        }
+        // Business sessions (1 per session)
+        foreach ($businessSessions as $bs) {
+            Engagement::factory()->forEngageable($bs)->create(['staff_id' => $staff->random()->id]);
+        }
+
+        // 14. Attendance records – BULK INSERT (fast)
+        $engagements = Engagement::all();
+        $engagementIds = $engagements->pluck('id')->toArray();
+        $studentIds = $students->pluck('id')->toArray();
+        $studentCount = count($studentIds);
+        $attendanceData = [];
+
+        foreach ($engagementIds as $engagementId) {
+            $presentCount = rand(ceil($studentCount * 0.6), $studentCount);
+            // Pick random student IDs
+            $presentKeys = (array) array_rand($studentIds, $presentCount);
+            $presentStudentIds = array_map(fn($key) => $studentIds[$key], $presentKeys);
+            foreach ($presentStudentIds as $studentId) {
+                $attendanceData[] = [
+                    'engagement_id' => $engagementId,
+                    'student_id' => $studentId,
+                    'arrived_at' => now()->subDays(rand(0, 30))->subHours(rand(1, 8))->toDateTimeString(),
+                    'left_at' => now()->subDays(rand(0, 30))->toDateTimeString(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+        }
+
+        // Insert in chunks to avoid memory overload
+        foreach (array_chunk($attendanceData, 500) as $chunk) {
+            DB::table('attendance_records')->insert($chunk);
+        }
+
+        // 15. Excuse requests (10% of attendance records)
+        $attendanceRecords = DB::table('attendance_records')->pluck('id')->toArray();
+        $excuseCount = (int)(count($attendanceRecords) * 0.1);
+        $selectedIds = (array) array_rand($attendanceRecords, $excuseCount);
+        foreach ($selectedIds as $attendanceId) {
+            ExcuseRequest::factory()->create(['attendance_id' => $attendanceId]);
+        }
+
+        // 16. Attach cohorts to business sessions
+        foreach ($businessSessions as $bs) {
+            $randomCohorts = $cohorts->random(rand(1, 2));
+            $bs->cohorts()->attach($randomCohorts->pluck('id'));
+        }
+
+        // 17. Announcements – fix staff_id extraction
+        // 5 global announcements
+        Announcement::factory(5)->global()->create([
+            'staff_id' => $staff->random()->id,
         ]);
+        // 2 per cohort
+        foreach ($cohorts as $cohort) {
+            Announcement::factory(2)->forCohort($cohort->id)->create([
+                'staff_id' => $staff->random()->id,
+            ]);
+        }
     }
 }

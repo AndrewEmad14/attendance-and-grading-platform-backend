@@ -10,7 +10,6 @@ class Engagement extends Model
   use HasFactory;
 
   protected $fillable = [
-    'engageable_type',
     'engageable_id',
     'staff_id',
     'type',
