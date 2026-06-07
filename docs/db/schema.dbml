@@ -202,5 +202,5 @@ Table announcements {
   created_at datetime
   updated_at datetime
 }
-Ref: announcements.cohort_id > cohorts_copy.id
+Ref: announcements.cohort_id > cohorts.id
 Ref: announcements.author_id > staff_profiles.id

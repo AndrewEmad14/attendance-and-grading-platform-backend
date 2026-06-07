@@ -1,6 +1,6 @@
 # API Reference — Attendance & Grading Platform
 
-> **Base URL (dev):** `http://127.0.0.1:8000/api` | **Base URL (prod):** `https://api.example.com/api`
+ > **Base URL (dev):** `http://127.0.0.1:8000/api` | **Base URL (prod):** `https://attendance-and-grading-backend-production.up.railway.app/api`
 
 ## API Reference — Table of Contents
 

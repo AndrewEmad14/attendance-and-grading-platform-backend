@@ -32,6 +32,11 @@ class User extends Authenticatable
         'role' => 'string',
     ];
 
+    public function getAuthPasswordName(): string
+    {
+        return 'password_hash';
+    }
+
     public function setPasswordHashAttribute($value): void
     {
         $this->attributes['password_hash'] =
