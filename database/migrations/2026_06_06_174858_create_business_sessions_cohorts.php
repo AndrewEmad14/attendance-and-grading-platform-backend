@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('courses_deliverables', function (Blueprint $table) {
+        Schema::create('business_sessions_cohorts', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('course_id')->constrained('courses')->onDelete('cascade');
-            $table->enum('type', ['lab', 'project', 'exam']);
-            $table->string('name');
-            $table->integer('weight');
+            $table->foreignId('business_session_id')->constrained('business_sessions')->onDelete('cascade');
+            $table->foreignId('cohort_id')->constrained('cohorts')->onDelete('cascade');
+            $table->unique(['business_session_id', 'cohort_id']);
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('courses_deliverables');
+        Schema::dropIfExists('business_sessions_cohorts');
     }
 };

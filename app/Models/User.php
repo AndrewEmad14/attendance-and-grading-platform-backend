@@ -2,31 +2,61 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $table = 'users';
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password_hash',
+        'role',
+        'expires_at',
+    ];
+
+    protected $hidden = [
+        'password_hash',
+        'remember_token',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'expires_at' => 'datetime',
+        'role' => 'string',
+    ];
+
+    public function getAuthPasswordName(): string
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return 'password_hash';
+    }
+
+    public function setPasswordHashAttribute($value): void
+    {
+        $this->attributes['password_hash'] =
+            \Illuminate\Support\Facades\Hash::needsRehash($value)
+            ? \Illuminate\Support\Facades\Hash::make($value)
+            : $value;
+    }
+
+    public function studentProfile()
+    {
+        return $this->hasOne(StudentProfile::class);
+    }
+
+    public function staffProfile()
+    {
+        return $this->hasOne(StaffProfile::class);
+    }
+
+    public function taughtEngagements()
+    {
+        return $this->hasMany(Engagement::class, 'staff_id');
     }
 }

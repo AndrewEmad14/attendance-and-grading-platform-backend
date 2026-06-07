@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('staff_profiles', function (Blueprint $table) {
+        Schema::create('tags', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('staff_id')->constrained('users')->onDelete('cascade');
-            $table->enum('compensation_type', ['internal', 'external']);
-            $table->decimal('hourly_rate');
+            $table->string('tag');
             $table->timestamps();
         });
     }
@@ -25,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('staff_profiles');
+        Schema::dropIfExists('tags');
     }
 };

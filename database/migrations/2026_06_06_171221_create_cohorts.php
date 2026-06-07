@@ -11,11 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('courses', function (Blueprint $table) {
+        Schema::create('cohorts', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('cohort_id')->constrained('cohorts')->onDelete('cascade');
-            $table->string('name');
+            $table->integer('number')->unique();
+            $table->foreignId('track_id')->constrained('tracks')->cascadeOnDelete();
+            $table->boolean('is_active');
             $table->timestamps();
+
+            $table->unique(['track_id', 'is_active'], 'unique_active_cohort_per_track')
+                ->where('is_active', true);
         });
     }
 
@@ -24,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('courses');
+        Schema::dropIfExists('cohorts');
     }
 };

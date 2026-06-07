@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('engagements', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('cohort_id')->constrained('cohorts')->onDelete('cascade');
-            // $table->foreignId('instructor_id')->constrained('users')->onDelete('cascade');
+            $table->morphs('engageable');
+            $table->foreignId('staff_id')->constrained('staff_profiles')->onDelete('cascade');
             $table->enum('type', ['lecture', 'lab', 'business_session']);
             $table->timestamp('starts_at')->nullable();
             $table->timestamp('ends_at')->nullable();

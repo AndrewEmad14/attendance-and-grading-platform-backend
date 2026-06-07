@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('attendance_records', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('engagement_id')->constrained('engagements')->onDelete('cascade');
-            // $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('engagement_id')->constrained('engagements')->onDelete('cascade');
+            $table->foreignId('student_id')->constrained('student_profiles')->onDelete('cascade');
             $table->timestamp('arrived_at')->nullable();
             $table->timestamp('left_at')->nullable();
             $table->timestamps();

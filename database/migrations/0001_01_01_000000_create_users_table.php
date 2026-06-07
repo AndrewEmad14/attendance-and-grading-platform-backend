@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('password_hash');
             $table->enum('role', ['branch_manager', 'track_admin', 'instructor', 'student']);
             $table->timestamp('expires_at')->nullable();
-            // $table->foreignId('track_id')->nullable()->constrained('tracks');
             $table->rememberToken();
             $table->timestamps();
         });

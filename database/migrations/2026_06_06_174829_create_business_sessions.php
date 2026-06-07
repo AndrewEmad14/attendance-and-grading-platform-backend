@@ -11,12 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('excuse_requests', function (Blueprint $table) {
+        Schema::create('business_sessions', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('attendance_id')->constrained('attendance_records')->onDelete('cascade');
-            $table->text('reason');
-            $table->string('attachment_path');
-            $table->enum('status', ['pending', 'approved', 'rejected']);
+            $table->string('name');
             $table->timestamps();
         });
     }
@@ -26,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('excuse_requests');
+        Schema::dropIfExists('business_sessions');
     }
 };
