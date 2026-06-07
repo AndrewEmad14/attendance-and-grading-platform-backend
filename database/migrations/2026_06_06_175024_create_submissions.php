@@ -18,8 +18,8 @@ return new class extends Migration
             $table->enum('submission_type', ['file', 'link']);
             $table->string('submission_path');
             $table->decimal('raw_score');
-            $table->decimal('override_score');
-            $table->text('override_note');
+            $table->decimal('override_score')->nullable();
+            $table->text('override_note')->nullable();
             $table->timestamps();
         });
     }
