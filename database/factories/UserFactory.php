@@ -7,39 +7,52 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-/**
- * @extends Factory<User>
- */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
-    protected static ?string $password;
+    protected $model = User::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
-    public function definition(): array
+    public function definition()
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'name' => $this->faker->name(),
+            'email' => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            'password_hash' => Hash::make('password'),
+            'role' => 'student',
+            'expires_at' => $this->faker->optional(0.2)->dateTimeBetween('+1 month', '+1 year'),
             'remember_token' => Str::random(10),
         ];
     }
 
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
-    public function unverified(): static
+    public function unverified()
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    public function role(string $role)
+    {
+        return $this->state(fn(array $attributes) => ['role' => $role]);
+    }
+
+    public function branchManager()
+    {
+        return $this->state(['role' => 'branch_manager']);
+    }
+
+    public function trackAdmin()
+    {
+        return $this->state(['role' => 'track_admin']);
+    }
+
+    public function instructor()
+    {
+        return $this->state(['role' => 'instructor']);
+    }
+
+    public function student()
+    {
+        return $this->state(['role' => 'student']);
     }
 }
