@@ -4,9 +4,10 @@ RUN apk add --no-cache \
     curl \
     zip \
     unzip \
-    git
+    git\
+    libpq-dev
 
-RUN docker-php-ext-install pdo pdo_mysql
+RUN docker-php-ext-install pdo pdo_mysql pdo_pgsql
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
