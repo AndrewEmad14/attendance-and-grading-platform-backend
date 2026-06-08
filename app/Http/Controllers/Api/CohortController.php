@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCohortRequest;
+use App\Http\Requests\UpdateCohortRequest;
 use App\Http\Resources\CohortResource;
 use App\Models\Cohort;
 use App\Models\Track;
@@ -42,6 +43,13 @@ class CohortController extends Controller
     public function show(Request $request, Cohort $cohort): JsonResponse
     {
         Gate::authorize('view', $cohort);
+
+        return (new CohortResource($cohort->load('track')))->response();
+    }
+
+    public function update(UpdateCohortRequest $request, Cohort $cohort): JsonResponse
+    {
+        $cohort->update($request->validated());
 
         return (new CohortResource($cohort->load('track')))->response();
     }

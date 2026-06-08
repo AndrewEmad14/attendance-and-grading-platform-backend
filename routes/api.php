@@ -14,6 +14,8 @@ Route::get('/', function () {
       Route::prefix('tracks/{track}')->group(function () {
           Route::post('cohorts', [CohortController::class, 'store']);
       });
+
+      Route::patch('cohorts/{cohort}', [CohortController::class, 'update']);
   });
 
 

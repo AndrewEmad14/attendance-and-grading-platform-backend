@@ -53,7 +53,7 @@ class StoreCohortRequest extends FormRequest
                         ->where('is_active', true)
                         ->exists();
 
-                    if ($activeExists) {
+                    if ($activeExists && $this->input('is_active') === true) {
                         $this->validator->errors()->add(
                             'track_id', 
                             'The selected track currently has an active cohort.'
