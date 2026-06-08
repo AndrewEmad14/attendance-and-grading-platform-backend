@@ -39,4 +39,9 @@ class Engagement extends Model
   {
     return $this->hasMany(AttendanceRecord::class);
   }
+
+  public function billingRecord()
+  {
+    return $this->hasOne(BillingRecord::class);
+  }
 }

@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class CohortAdmins extends Model
 {
+  use HasFactory;
+
+  protected $table = 'cohorts_admins';
+
   protected $fillable = ['cohort_id', 'staff_id'];
 
   public function cohort()
