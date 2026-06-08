@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CohortController;
+use App\Http\Controllers\Api\LabGroupController;
 
 
 Route::get('/', function () {
@@ -11,11 +12,22 @@ Route::get('/', function () {
 
 
   Route::middleware('auth:sanctum')->group(function () {
-      Route::prefix('tracks/{track}')->group(function () {
-          Route::post('cohorts', [CohortController::class, 'store']);
-      });
+    Route::prefix('tracks/{track}')->group(function () {
+      Route::post('cohorts', [CohortController::class, 'store']);
+    });
 
-      Route::patch('cohorts/{cohort}', [CohortController::class, 'update']);
+    Route::prefix('cohorts/{cohort}')->group(function () {
+      Route::get('lab-groups', [LabGroupController::class, 'index']);
+      Route::post('lab-groups', [LabGroupController::class, 'store']);
+    });
+
+    Route::prefix('lab-groups/{labGroup}')->group(function () {
+      Route::post('students', [LabGroupController::class, 'attachStudent']);
+      Route::delete('students/{studentId}', [LabGroupController::class, 'detachStudent']);
+      Route::delete('', [LabGroupController::class, 'destroy']);
+    });
+
+    Route::patch('cohorts/{cohort}', [CohortController::class, 'update']);
   });
 
 
