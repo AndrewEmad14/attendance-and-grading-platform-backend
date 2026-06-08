@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CohortController;
 
 
 Route::get('/', function () {
@@ -9,7 +10,11 @@ Route::get('/', function () {
   });
 
 
-
+  Route::middleware('auth:sanctum')->group(function () {
+      Route::prefix('tracks/{track}')->group(function () {
+          Route::post('cohorts', [CohortController::class, 'store']);
+      });
+  });
 
 
   Route::prefix('auth')->group(function () {
