@@ -16,7 +16,7 @@ class StaffProfileFactory extends Factory
     return [
       'user_id' => User::factory()->role($role),
       'compensation_type' => $this->faker->randomElement(['internal', 'external']),
-      'hourly_rate' => $this->faker->randomFloat(2, 20, 100),
+      'hourly_rate' => $this->faker->numberBetween(100, 1000),
     ];
   }
 }
