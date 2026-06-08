@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->enum('compensation_type', ['internal', 'external']);
-            $table->decimal('hourly_rate');
+            $table->int('hourly_rate');
             $table->timestamps();
         });
     }

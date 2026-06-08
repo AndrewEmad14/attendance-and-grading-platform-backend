@@ -17,8 +17,8 @@ return new class extends Migration
             $table->foreignId('student_id')->constrained('student_profiles')->onDelete('cascade');
             $table->enum('submission_type', ['file', 'link']);
             $table->string('submission_path');
-            $table->decimal('raw_score');
-            $table->decimal('override_score')->nullable();
+            $table->float('raw_score');
+            $table->float('override_score')->nullable();
             $table->text('override_note')->nullable();
             $table->timestamps();
         });
