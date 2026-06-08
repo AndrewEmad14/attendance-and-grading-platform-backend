@@ -14,6 +14,8 @@ class ExcuseRequest extends Model
     'reason',
     'attachment_path',
     'status',
+    'reviewed_by',
+    'reviewed_at'
   ];
 
   protected $casts = [
@@ -23,5 +25,10 @@ class ExcuseRequest extends Model
   public function attendanceRecord()
   {
     return $this->belongsTo(AttendanceRecord::class, 'attendance_id');
+  }
+
+  public function reviewer()
+  {
+    return $this->belongsTo(StaffProfile::class, 'reviewed_by');
   }
 }

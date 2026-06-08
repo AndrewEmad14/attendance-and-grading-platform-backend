@@ -18,7 +18,7 @@ class LabGroup extends Model
 
   public function students()
   {
-    return $this->belongsToMany(StudentProfile::class, 'lab_group_users', 'lab_group_id', 'student_id');
+    return $this->hasMany(StudentProfile::class);
   }
 
   public function labs()
