@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CohortController;
 use App\Http\Controllers\Api\LabGroupController;
+use App\Http\Controllers\Api\EngagementController;
 
 
 Route::get('/', function () {
@@ -25,6 +26,14 @@ Route::get('/', function () {
       Route::post('students', [LabGroupController::class, 'attachStudent']);
       Route::delete('students/{studentId}', [LabGroupController::class, 'detachStudent']);
       Route::delete('', [LabGroupController::class, 'destroy']);
+    });
+
+    Route::prefix('engagements')->group(function () {
+      Route::get('', [EngagementController::class, 'index']);
+      Route::post('', [EngagementController::class, 'store']);
+      Route::get('{engagement}', [EngagementController::class, 'show']);
+      Route::patch('{engagement}', [EngagementController::class, 'update']);
+      Route::delete('{engagement}', [EngagementController::class, 'destroy']);
     });
 
     Route::patch('cohorts/{cohort}', [CohortController::class, 'update']);

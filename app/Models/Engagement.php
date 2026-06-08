@@ -21,7 +21,7 @@ class Engagement extends Model
   protected $casts = [
     'starts_at' => 'datetime',
     'ends_at' => 'datetime',
-    'scheduled_hours' => 'decimal:2',
+    'scheduled_hours' => 'float',
   ];
 
   // Polymorphic relation
