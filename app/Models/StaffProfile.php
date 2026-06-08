@@ -16,7 +16,7 @@ class StaffProfile extends Model
   ];
 
   protected $casts = [
-    'hourly_rate' => 'decimal:2',
+    'hourly_rate' => 'integer',
   ];
 
   public function user()
@@ -27,5 +27,10 @@ class StaffProfile extends Model
   public function engagements()
   {
     return $this->hasMany(Engagement::class, 'staff_id');
+  }
+
+  public function managedCohorts()
+  {
+    return $this->belongsToMany(Cohort::class, 'cohorts_admins', 'staff_id', 'cohort_id');
   }
 }

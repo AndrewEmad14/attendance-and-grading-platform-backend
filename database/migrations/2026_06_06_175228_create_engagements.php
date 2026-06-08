@@ -15,10 +15,9 @@ return new class extends Migration
             $table->id();
             $table->morphs('engageable');
             $table->foreignId('staff_id')->constrained('staff_profiles')->onDelete('cascade');
-            $table->enum('type', ['lecture', 'lab', 'business_session']);
             $table->timestamp('starts_at')->nullable();
             $table->timestamp('ends_at')->nullable();
-            $table->decimal('scheduled_hours');
+            $table->int('scheduled_hours');
             $table->timestamps();
         });
     }

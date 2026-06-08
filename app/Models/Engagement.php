@@ -11,8 +11,8 @@ class Engagement extends Model
 
   protected $fillable = [
     'engageable_id',
+    'engageable_type',
     'staff_id',
-    'type',
     'starts_at',
     'ends_at',
     'scheduled_hours',
@@ -21,7 +21,7 @@ class Engagement extends Model
   protected $casts = [
     'starts_at' => 'datetime',
     'ends_at' => 'datetime',
-    'scheduled_hours' => 'float',
+    'scheduled_hours' => 'integer',
   ];
 
   // Polymorphic relation
