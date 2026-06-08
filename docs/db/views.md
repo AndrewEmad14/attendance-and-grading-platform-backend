@@ -33,7 +33,7 @@ v_submission_grader            (independent)
 
 **Why a view:** The normalization + penalty formula (GRD-3, ENG-2) would be duplicated across the student portal, Track Admin grade table, and the two aggregate views below. One place to fix if the penalty rule changes.
 
-**Columns:** `student_id`, `course_id`, `deliverable_id`, `type`, `course_weight`, `submitted_at`, `due_date`, `component_score`
+**Columns:** `student_id`, `course_id`, `deliverable_id`, `type`, `course_weight`, `created_at`, `due_date`, `component_score`
 
 **Used by:**
 - Student portal — per-component score breakdown (POR-1)
@@ -105,7 +105,7 @@ engagements (instructor_id, engageable_type='lab')
 
 **Why a view:** The join chain is 4 tables deep and appears in the grading list, the submission tracker widget, and the authorization policy. Inlining it in each location would be error-prone.
 
-**Columns:** `instructor_id`, `engagement_id`, `lab_id`, `lab_group_id`, `student_id`, `submission_id`, `deliverable_id`, `raw_score`, `graded_by`, `graded_at`, `overridden_by`, `submitted_at`
+**Columns:** `instructor_id`, `engagement_id`, `lab_id`, `lab_group_id`, `student_id`, `submission_id`, `deliverable_id`, `raw_score`, `graded_by`, `graded_at`, `overridden_by`, `created_at`
 
 **Used by:**
 - Instructor grading list (primary use)

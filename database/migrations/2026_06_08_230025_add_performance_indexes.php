@@ -20,9 +20,9 @@ return new class extends Migration
         });
 
         // cohort_admins — looked up on every Track Admin dashboard load
-        Schema::table('cohort_admins', function (Blueprint $table) {
-            $table->index('cohort_id', 'idx_cohort_admins_cohort');
-            $table->index('staff_profile_id', 'idx_cohort_admins_staff');
+        Schema::table('cohorts_admins', function (Blueprint $table) {
+            $table->index('cohort_id', 'idx_cohorts_admins_cohort');
+            $table->index('staff_id', 'idx_cohorts_admins_staff');
         });
 
         // student_profiles — instructor scoping (ACC-3) filters by lab_group_id constantly
@@ -33,7 +33,7 @@ return new class extends Migration
 
         // engagements — account window check (ENG-5/SEC-2) and polymorphic lookup
         Schema::table('engagements', function (Blueprint $table) {
-            $table->index('instructor_id',                       'idx_engagements_instructor');
+            $table->index('staff_id',                       'idx_engagements_instructor');
             $table->index(['engageable_type', 'engageable_id'],  'idx_engagements_engageable');
             $table->index(['starts_at', 'ends_at'],              'idx_engagements_window');
         });
@@ -52,14 +52,14 @@ return new class extends Migration
 
         // excuse_requests — Track Admin approval queue filters by status
         Schema::table('excuse_requests', function (Blueprint $table) {
-            $table->index(['student_id', 'status'], 'idx_excuse_student_status');
+            $table->index(['attendance_id', 'status'], 'idx_excuse_student_status');
         });
 
         // billing_records — forwarded_at=null means "not yet sent"; queried every billing run
         Schema::table('billing_records', function (Blueprint $table) {
-            $table->index('user_id', 'idx_billing_user');
+            $table->index('staff_id', 'idx_billing_user');
             $table->index('forwarded_at', 'idx_billing_forwarded');
-            $table->unique(['engagement_id', 'user_id', 'billing_period'], 'uq_billing_record');
+            $table->unique(['engagement_id', 'staff_id'], 'uq_billing_record');
         });
 
         // courses_deliverables — due_date needed for late-penalty calculation

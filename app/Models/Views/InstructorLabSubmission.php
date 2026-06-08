@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\DB;
  * @property int|null    $graded_by
  * @property string|null $graded_at
  * @property int|null    $overridden_by
- * @property string|null $submitted_at
+ * @property string|null $created_at
  */
 class InstructorLabSubmission extends Model
 {
@@ -35,7 +35,7 @@ class InstructorLabSubmission extends Model
 
   protected $casts = [
     'graded_at'    => 'datetime',
-    'submitted_at' => 'datetime',
+    'created_at' => 'datetime',
   ];
 
   // ── Relationships ────────────────────────────────────────────────

@@ -24,20 +24,20 @@ return new class extends Migration
                 cd.id                              AS deliverable_id,
                 cd.type,
                 cd.course_weight,
-                sub.submitted_at,
+                sub.created_at,
                 cd.due_date,
 
                 CASE
                     WHEN cd.type = 'lab'
-                         AND sub.submitted_at > cd.due_date
-                         AND EXTRACT(DAY FROM (sub.submitted_at - cd.due_date)) >= 4
+                         AND sub.created_at > cd.due_date
+                         AND EXTRACT(DAY FROM (sub.created_at - cd.due_date)) >= 4
                         THEN 0
 
-                    WHEN cd.type = 'lab' AND sub.submitted_at > cd.due_date
+                    WHEN cd.type = 'lab' AND sub.created_at > cd.due_date
                         THEN ROUND(
                             (sub.raw_score::numeric / NULLIF(cd.max_score, 0))
                             * cd.course_weight
-                            * (1 - 0.25 * EXTRACT(DAY FROM (sub.submitted_at - cd.due_date)))
+                            * (1 - 0.25 * EXTRACT(DAY FROM (sub.created_at - cd.due_date)))
                         , 2)
 
                     ELSE
@@ -121,7 +121,7 @@ return new class extends Migration
         DB::statement("
             CREATE VIEW v_instructor_lab_submissions AS
             SELECT
-                e.instructor_id,
+                e.staff_id,
                 e.id            AS engagement_id,
                 l.id            AS lab_id,
                 l.lab_group_id,
@@ -130,9 +130,8 @@ return new class extends Migration
                 sub.deliverable_id,
                 sub.raw_score,
                 sub.graded_by,
-                sub.graded_at,
-                sub.overridden_by,
-                sub.submitted_at
+                sub.overriden_by,
+                sub.created_at
             FROM engagements e
             JOIN labs              l   ON l.id           = e.engageable_id
                                       AND e.engageable_type = 'lab'
@@ -170,7 +169,7 @@ return new class extends Migration
                 l.id            AS lab_id,
                 l.lab_group_id,
                 e.id            AS engagement_id,
-                e.instructor_id AS grader_id
+                e.staff_id AS grader_id
             FROM submissions       sub
             JOIN courses_deliverables cd ON cd.id          = sub.deliverable_id
                                         AND cd.type        = 'lab'

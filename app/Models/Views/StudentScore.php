@@ -19,7 +19,7 @@ use App\Models\CourseDeliverable;
  * @property int         $deliverable_id
  * @property string      $type              lab | final_exam | ...
  * @property int         $course_weight
- * @property string|null $submitted_at
+ * @property string|null $created_at
  * @property string|null $due_date
  * @property float       $component_score   normalized + penalty applied
  */
@@ -31,7 +31,7 @@ class StudentScore extends Model
   protected $casts = [
     'course_weight'   => 'integer',
     'component_score' => 'float',
-    'submitted_at'    => 'datetime',
+    'created_at'    => 'datetime',
     'due_date'        => 'datetime',
   ];
 
