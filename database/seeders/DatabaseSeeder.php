@@ -155,7 +155,7 @@ class DatabaseSeeder extends Seeder
             Engagement::factory()->forEngageable($bs)->create(['staff_id' => $staff->random()->id]);
         }
 
-        // 14. Attendance records – BULK INSERT (fast)
+        // 14. Attendance records – MEMORY SAFE BULK INSERT
         $engagements = Engagement::all();
         $studentIds = $students->pluck('id')->toArray();
         $studentCount = count($studentIds);
