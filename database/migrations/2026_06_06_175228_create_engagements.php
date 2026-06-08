@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('staff_id')->constrained('staff_profiles')->onDelete('cascade');
             $table->timestamp('starts_at')->nullable();
             $table->timestamp('ends_at')->nullable();
-            $table->int('scheduled_hours');
+            $table->integer('scheduled_hours');
             $table->timestamps();
         });
     }
