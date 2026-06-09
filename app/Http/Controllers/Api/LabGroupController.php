@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreLabGroupRequest;
 use App\Http\Requests\AttachStudentToLabGroupRequest;
 use App\Http\Resources\LabGroupResource;
+use App\Http\Resources\CohortStudentResource;
 use App\Models\Cohort;
 use App\Models\LabGroup;
+use App\Models\StudentProfile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -16,15 +18,45 @@ class LabGroupController extends Controller
 {
     public function index(Request $request, Cohort $cohort): JsonResponse
     {
-        if ($request->user()->role !== 'branch_manager' && $request->user()->role !== 'track_admin') {
+        $user = $request->user();
+        
+        if ($user->role === 'student') {
+            $query = $cohort->labGroups()->where('id', $user->studentProfile?->lab_group_id);
+        } elseif ($user->role === 'instructor') {
+            $query = $cohort->labGroups()->whereHas('labs.engagements', function ($q) use ($user) {
+                $q->where('staff_id', $user->staffProfile->id);
+            });
+        } elseif ($user->role === 'track_admin' || $user->role === 'branch_manager') {
+            $query = $cohort->labGroups();
+        } else {
             abort(403, 'This action is unauthorized.');
         }
 
-        $labGroups = $cohort->labGroups()
-            ->withCount('students')
+        if ($request->boolean('include_students') && $user->role !== 'student') {
+            $query->with(['students.user']);
+        }
+
+        $labGroups = $query->withCount('students')
             ->paginate($request->get('per_page', 15));
 
         return LabGroupResource::collection($labGroups)->response();
+    }
+
+    public function cohortStudents(Request $request, Cohort $cohort): JsonResponse
+    {
+        if ($request->user()->role !== 'track_admin' && $request->user()->role !== 'branch_manager') {
+            abort(403, 'This action is unauthorized.');
+        }
+
+        $query = $cohort->students()->with(['user']);
+
+        if ($request->boolean('unassigned_only')) {
+            $query->whereNull('lab_group_id');
+        }
+
+        $students = $query->paginate($request->get('per_page', 15));
+
+        return CohortStudentResource::collection($students)->response();
     }
 
     public function store(StoreLabGroupRequest $request, Cohort $cohort): JsonResponse
@@ -38,9 +70,11 @@ class LabGroupController extends Controller
 
     public function attachStudent(AttachStudentToLabGroupRequest $request, LabGroup $labGroup): JsonResponse
     {
-        $student = \App\Models\StudentProfile::findOrFail($request->input('student_id'));
+        $student = StudentProfile::where('cohort_id', $labGroup->cohort_id)
+            ->findOrFail($request->input('student_id'));
+
         $student->labGroup()->associate($labGroup)->save();
-        
+
         return response()->json([
             'message' => 'Student linked to the lab group assignment matrix successfully.'
         ], 201);
@@ -52,7 +86,8 @@ class LabGroupController extends Controller
             abort(403, 'This action is unauthorized.');
         }
 
-        $labGroup->students()->detach($studentId);
+        $student = $labGroup->students()->findOrFail($studentId);
+        $student->labGroup()->disassociate()->save();
 
         return response()->json(null, 204);
     }
@@ -63,7 +98,9 @@ class LabGroupController extends Controller
             abort(403, 'This action is unauthorized.');
         }
 
-        $labGroup->students()->detach();
+        StudentProfile::where('lab_group_id', $labGroup->id)
+            ->update(['lab_group_id' => null]);
+
         $labGroup->delete();
 
         return response()->json(null, 204);
