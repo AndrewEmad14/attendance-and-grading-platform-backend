@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\SubmissionController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\NoteController;
+use App\Http\Controllers\Api\GradingAnalyticsController;
 
 
 Route::get('/', function () {
@@ -43,6 +44,9 @@ Route::patch('/test-notes/{studentId}', [NoteController::class, 'append']);
 
     Route::patch('/students/{studentId}/notes', [NoteController::class, 'append']);
 
+
+    Route::get('/analytics/cohorts/{cohortId}',  [GradingAnalyticsController::class, 'cohortGrades']);
+    Route::get('/analytics/lab-groups/{labGroupId}', [GradingAnalyticsController::class, 'labGroupGrades']);
 
     Route::prefix('cohorts/{cohort}')->group(function () {
       Route::get('lab-groups', [LabGroupController::class, 'index']);
