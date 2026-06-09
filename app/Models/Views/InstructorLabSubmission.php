@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
  * Answers: "given an instructor, which lab submissions are theirs to grade?"
  * Resolves: engagement → lab → lab_group → student_profiles → submissions
  *
- * @property int         $instructor_id
+ * @property int         $staff_id
  * @property int         $engagement_id
  * @property int         $lab_id
  * @property int         $lab_group_id
@@ -42,7 +42,7 @@ class InstructorLabSubmission extends Model
 
   public function instructor(): BelongsTo
   {
-    return $this->belongsTo(User::class, 'instructor_id');
+    return $this->belongsTo(User::class, 'staff_id');
   }
 
   public function student(): BelongsTo
@@ -65,7 +65,7 @@ class InstructorLabSubmission extends Model
   /** All lab submissions an instructor must grade. */
   public function scopeForInstructor($query, int $instructorId)
   {
-    return $query->where('instructor_id', $instructorId);
+    return $query->where('staff_id', $instructorId);
   }
 
   /** Ungraded submissions only. */
@@ -91,7 +91,7 @@ class InstructorLabSubmission extends Model
    */
   public static function canGrade(int $instructorId, int $submissionId): bool
   {
-    return static::where('instructor_id', $instructorId)
+    return static::where('staff_id', $instructorId)
       ->where('submission_id', $submissionId)
       ->exists();
   }
@@ -118,6 +118,6 @@ class InstructorLabSubmission extends Model
       })
       ->where('l.course_id', $courseId)
       ->distinct()
-      ->pluck('e.instructor_id');
+      ->pluck('e.staff_id');
   }
 }
