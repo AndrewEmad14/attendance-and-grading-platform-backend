@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Enums\Role;
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CohortController;
@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\LabGroupController;
 use App\Http\Controllers\Api\EngagementController;
 use App\Http\Controllers\Api\BusinessSessionController;
 use App\Http\Controllers\Api\CourseController;
+
+//$table->enum('role', ['branch_manager', 'track_admin', 'instructor', 'student']);
 
 
 Route::get('/', function () {
