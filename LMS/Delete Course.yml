@@ -1,0 +1,17 @@
+info:
+  name: Delete Course
+  type: http
+  seq: 5
+
+http:
+  method: DELETE
+  url: "{{baseurl}}/courses/1"
+  auth:
+    type: bearer
+    token: 2|jqywaJid6pvH1m1gEwoy3UsEmJiljtUGUp2OJ9bRe90fb001
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
