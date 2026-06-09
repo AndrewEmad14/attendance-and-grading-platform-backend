@@ -39,4 +39,9 @@ class Cohort extends Model
   {
     return $this->belongsToMany(BusinessSession::class, 'business_sessions_cohorts');
   }
+
+  public function trackAdmins()
+  {
+    return $this->belongsToMany(StaffProfile::class, 'cohorts_admins', 'cohort_id', 'staff_id');
+  }
 }

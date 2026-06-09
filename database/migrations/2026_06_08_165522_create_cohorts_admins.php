@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('lab_group_users', function (Blueprint $table) {
+        Schema::create('cohorts_admins', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('lab_group_id')->constrained('lab_groups')->onDelete('cascade');
-            $table->foreignId('student_id')->constrained('student_profiles')->onDelete('cascade');
+            $table->foreignId('cohort_id')->constrained('cohorts')->onDelete('cascade');
+            $table->foreignId('staff_id')->constrained('staff_profiles')->onDelete('cascade');
             $table->timestamps();
+
+            $table->unique(['cohort_id', 'staff_id']);
         });
     }
 
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('lab_group_users');
+        Schema::dropIfExists('cohorts_admins');
     }
 };

@@ -1,0 +1,22 @@
+# Dependencies (container installs its own)
+node_modules
+
+# Build output
+dist
+build
+
+# Git
+.git
+.gitignore
+
+# Environment files (security)
+.env
+.env.local
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log
