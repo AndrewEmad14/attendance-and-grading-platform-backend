@@ -1,0 +1,27 @@
+info:
+  name: Create Course
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseurl}}/cohorts/1/courses"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Web Fundamentals",
+        "deliverables": [
+          {"name":"Lab 1","type":"lab","max_score":70,"course_weight":40,"due_date":"2026-07-01"},
+          {"name":"Final Exam","type":"exam","max_score":100,"course_weight":60,"due_date":"2026-07-15"}
+        ]
+      }
+  auth:
+    type: bearer
+    token: 2|jqywaJid6pvH1m1gEwoy3UsEmJiljtUGUp2OJ9bRe90fb001
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
