@@ -36,8 +36,8 @@ class GradingService // grading logic
     { //save overidden data
         $submission->override_score  = $newScore;
         $submission->override_note   = $note;
-        $submission->overriden_by   = $overriddenBy;
-        $submission->overriden_at   = now();
+        $submission->overridden_by   = $overriddenBy;
+        $submission->overridden_at   = now();
         $submission->save();
 
         return $submission;

@@ -22,8 +22,8 @@ class SubmissionFactory extends Factory
       'graded_by' => null,
       'override_score' => null,
       'override_note' => null,
-      'overriden_by' => null,
-      'overriden_at' => null,
+      'overridden_by' => null,
+      'overridden_at' => null,
     ];
   }
 }

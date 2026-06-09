@@ -20,14 +20,14 @@ class Submission extends Model
     'override_score',
     'override_note',
     'graded_by',
-    'overriden_by',
-    'overriden_at'
+    'overridden_by',
+    'overridden_at'
   ];
 
   protected $casts = [
     'raw_score' => 'float', //decimal ret. str
     'override_score' => 'float',
-    'overriden_at' => 'datetime'
+    'overridden_at' => 'datetime'
   ];
 
   public function deliverable()
@@ -40,7 +40,7 @@ class Submission extends Model
     return $this->belongsTo(StudentProfile::class, 'student_id');
   }
 
-  public function effectiveRawScore(): ?float // if there is overriden score take it else the raw one
+  public function effectiveRawScore(): ?float // if there is overridden score take it else the raw one
   {
     return $this->override_score ?? $this->raw_score;
   }
@@ -50,8 +50,8 @@ class Submission extends Model
     return $this->belongsTo(User::class, 'graded_by');
   }
 
-  public function overriddenBy(): BelongsTo // user overriden grade (track admin in policy)
+  public function overriddenBy(): BelongsTo // user overridden grade (track admin in policy)
   {
-    return $this->belongsTo(User::class, 'overriden_by');
+    return $this->belongsTo(User::class, 'overridden_by');
   }
 }

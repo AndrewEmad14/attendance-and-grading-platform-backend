@@ -37,11 +37,11 @@ class SubmissionResource extends JsonResource
                 'id'   => $this->gradedBy->id,
                 'name' => $this->gradedBy->name,
             ]),
-            'overriden_by'     => $this->whenLoaded('overriddenBy', fn() => [
+            'overridden_by'     => $this->whenLoaded('overriddenBy', fn() => [
                 'id'   => $this->overriddenBy->id,
                 'name' => $this->overriddenBy->name,
             ]),
-            'overriden_at'     => $this->overriden_at,
+            'overridden_at'     => $this->overridden_at,
         ];
     }
 }

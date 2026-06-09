@@ -80,5 +80,5 @@ An index was added only when a query pattern is frequent **and** the table will 
 
 ## What was intentionally left out
 - `user_id` on `staff_profiles`, `student_profiles` — covered by the FK constraint index Postgres creates automatically
-- `graded_by` / `overriden_by` on `submissions` — only queried in the audit trail, which is infrequent
+- `graded_by` / `overridden_by` on `submissions` — only queried in the audit trail, which is infrequent
 - `course_id` on `labs` — small table, full scan is fine
