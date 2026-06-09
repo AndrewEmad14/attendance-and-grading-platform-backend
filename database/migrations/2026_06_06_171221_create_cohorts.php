@@ -14,11 +14,14 @@ return new class extends Migration
     {
         Schema::create('cohorts', function (Blueprint $table) {
             $table->id();
-            $table->integer('number')->unique();
+            $table->integer('number');
             $table->foreignId('track_id')->constrained('tracks')->cascadeOnDelete();
             $table->boolean('is_active');
             $table->timestamps();
+            $table->unique(['track_id', 'number']);
         });
+
+
 
         DB::statement('
             CREATE UNIQUE INDEX unique_active_cohort_per_track 

@@ -23,7 +23,9 @@ Route::patch('/test-notes/{studentId}', [NoteController::class, 'append']);
 
     Route::prefix('tracks/{track}')->group(function () {
       Route::post('cohorts', [CohortController::class, 'store']);
+      Route::get('cohorts', [CohortController::class, 'index']);
     });
+    Route::get('cohorts', [CohortController::class, 'index']);
 
     Route::get('/cohorts/{cohortId}/courses',  [CourseController::class, 'index']);
     Route::post('/cohorts/{cohortId}/courses', [CourseController::class, 'store']);
@@ -51,6 +53,7 @@ Route::patch('/test-notes/{studentId}', [NoteController::class, 'append']);
     Route::prefix('cohorts/{cohort}')->group(function () {
       Route::get('lab-groups', [LabGroupController::class, 'index']);
       Route::post('lab-groups', [LabGroupController::class, 'store']);
+      Route::get('students', [LabGroupController::class, 'cohortStudents']);
     });
 
     Route::prefix('lab-groups/{labGroup}')->group(function () {

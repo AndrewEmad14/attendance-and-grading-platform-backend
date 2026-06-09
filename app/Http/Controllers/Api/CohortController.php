@@ -14,12 +14,41 @@ use Illuminate\Support\Facades\Gate;
 
 class CohortController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(Request $request, ?Track $track = null): JsonResponse
     {
         Gate::authorize('viewAny', Cohort::class);
 
-        $cohorts = Cohort::with(['track'])
-            ->paginate($request->get('per_page', 15));
+        $user = $request->user();
+        $query = Cohort::query();
+
+        if ($track && $track->exists) {
+            $query->where('track_id', $track->id);
+        }
+
+        if ($user->role === 'track_admin') {
+            $query->whereHas('admins', function ($q) use ($user) {
+                $q->where('staff_id', $user->staffProfile->id);
+            });
+        } elseif ($user->role === 'instructor') {
+            $query->whereHas('engagements', function ($q) use ($user) {
+                $q->where('staff_id', $user->staffProfile->id);
+            });
+        } elseif ($user->role === 'student') {
+            $query->where('id', $user->studentProfile->cohort_id);
+        }
+
+        if ($request->has('is_active')) {
+            $query->where('is_active', $request->boolean('is_active'));
+        }
+
+        if ($request->boolean('include_meta')) {
+            $query->withCount('students')
+                ->with(['admins.user']);
+        }
+
+        $query->with(['track']);
+
+        $cohorts = $query->paginate($request->get('per_page', 15));
 
         return CohortResource::collection($cohorts)->response();
     }

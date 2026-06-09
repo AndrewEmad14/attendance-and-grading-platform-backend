@@ -16,7 +16,11 @@ class CohortResource extends JsonResource
             'is_active' => $this->is_active,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
+            
+            // Conditional
             'track' => new TrackResource($this->whenLoaded('track')),
+            'students_count' => $this->whenCounted('students'),
+            'admins' => TrackAdminResource::collection($this->whenLoaded('admins')),
         ];
     }
 }

@@ -12,7 +12,22 @@ class StoreEngagementRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->role === 'track_admin' || $this->user()->role === 'branch_manager';
+        $type = $this->input('type');
+        $engageableId = $this->input('engageable_id');
+
+        $morphMap = [
+            'lecture'          => \App\Models\Course::class,
+            'lab'              => \App\Models\Lab::class,
+            'business_session' => \App\Models\BusinessSession::class,
+        ];
+
+        $engageableType = $morphMap[$type] ?? null;
+        $contextEntity = ($engageableType && $engageableId) 
+            ? $engageableType::find($engageableId) 
+            : null;
+
+        // Pass the matching course, lab, or business session entity directly to the policy
+        return $this->user()->can('create', [\App\Models\Engagement::class, $contextEntity]);
     }
 
     protected function prepareForValidation(): void
@@ -81,13 +96,16 @@ class StoreEngagementRequest extends FormRequest
                 $engageableId = $this->input('engageable_id');
 
                 if ($engageableType && $engageableId) {
-                    $exists = $engageableType::where('id', $engageableId)->exists();
+                    $entity = $engageableType::find($engageableId);
 
-                    if (!$exists) {
-                        $this->validator->errors()->add(
-                            'engageable_id',
-                            sprintf('The selected engageable ID is invalid for the specified engagement type of %s.', $type)
-                        );
+                    if (!$entity) {
+                        $this->validator->errors()->add('engageable_id', 'The selected entity does not exist.');
+                        return;
+                    }
+
+                    // Ensure the item belongs to the current scope
+                    if (method_exists($entity, 'cohort') && $entity->cohort_id !== $currentTargetCohortId) {
+                        $this->validator->errors()->add('engageable_id', 'The selected course/lab belongs to an alternate track cohort configuration.');
                     }
                 }
             }

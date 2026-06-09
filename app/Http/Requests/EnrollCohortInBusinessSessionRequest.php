@@ -9,7 +9,17 @@ class EnrollCohortInBusinessSessionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->role === 'track_admin' || $this->user()->role === 'branch_manager';
+        $businessSession = $this->route('businessSession');
+        $cohortId = $this->input('cohort_id');
+        
+        $targetCohort = $cohortId ? \App\Models\Cohort::find($cohortId) : null;
+
+        if (!$businessSession instanceof \App\Models\BusinessSession) {
+            return false;
+        }
+
+        // Pass the business session instance and the cohort model context to the policy
+        return $this->user()->can('enrollCohort', [$businessSession, $targetCohort]);
     }
 
     public function rules(): array
