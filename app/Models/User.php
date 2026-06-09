@@ -59,4 +59,13 @@ class User extends Authenticatable
     {
         return $this->hasMany(Engagement::class, 'staff_id');
     }
+
+    public function tags(){
+        return $this->belongsToMany(
+        Tag::class,
+        'students_tags',
+        'student_id',
+        'tag_id'
+        );
+    }
 }

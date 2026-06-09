@@ -13,8 +13,8 @@ class CourseDeliverable extends Model
 
   protected $fillable = [
     'course_id',
-    'type',
-    'name',
+    'type', // labs_tasks
+    'name', // lab1_php/ lab2_laravel....
     'max_score',
     'course_weight',
     'due_date',

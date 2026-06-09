@@ -25,7 +25,7 @@ class Engagement extends Model
   ];
 
   // Polymorphic relation
-  public function engageable()
+  public function engageable() // course,lab,meeting
   {
     return $this->morphTo();
   }
