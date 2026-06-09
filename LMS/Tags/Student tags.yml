@@ -1,11 +1,11 @@
 info:
-  name: OverrideSubmission
+  name: Student tags
   type: http
-  seq: 2
+  seq: 3
 
 http:
-  method: POST
-  url: "{{baseurl}}/submissions/1441/override"
+  method: GET
+  url: "{{baseurl}}/students/2/tags"
   auth: inherit
 
 settings:

@@ -140,9 +140,9 @@ Table submissions {
   deliverable_id int 
   graded_by int
   override_score numeric 
-  overriden_by int
+  overridden_by int
   override_note text 
-  overrided_at datetime
+  overridden_at datetime
   created_at datetime
   updated_at datetime
   student_id int 
@@ -150,7 +150,7 @@ Table submissions {
 Ref: submissions.student_id > student_profiles.id
 Ref: submissions.deliverable_id > courses_deliverables.id
 Ref: submissions.graded_by > staff_profiles.id
-Ref: submissions.overriden_by > staff_profiles.id
+Ref: submissions.overridden_by > staff_profiles.id
 
 
 Table engagements {

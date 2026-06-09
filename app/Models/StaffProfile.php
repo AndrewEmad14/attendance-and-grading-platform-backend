@@ -36,9 +36,9 @@ class StaffProfile extends Model
     return $this->belongsToMany(Cohort::class, 'cohorts_admins', 'staff_id', 'cohort_id');
   }
 
-  public function overridedSubmissions()
+  public function overriddenSubmissions()
   {
-    return $this->hasMany(Submission::class, 'overriden_by');
+    return $this->hasMany(Submission::class, 'overridden_by');
   }
 
   public function gradedSubmissions()

@@ -19,11 +19,15 @@ class CohortPolicy
         }
 
         if ($user->role === 'track_admin') {
-            return $user->track_id === $cohort->track_id;
+            return $user->staffProfile && $user->staffProfile->managedCohorts->contains($cohort->id);
         }
 
-        if ($user->role === 'instructor' || $user->role === 'student') {
-            return $user->cohort_id === $cohort->id;
+        if ($user->role === 'instructor') {
+            return $cohort->engagements()->where('staff_id', $user->staffProfile?->id)->exists();
+        }
+
+        if ($user->role === 'student') {
+            return $user->studentProfile && $user->studentProfile->cohort_id === $cohort->id;
         }
 
         return false;

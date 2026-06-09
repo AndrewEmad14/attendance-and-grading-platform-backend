@@ -130,7 +130,7 @@ return new class extends Migration
                 sub.deliverable_id,
                 sub.raw_score,
                 sub.graded_by,
-                sub.overriden_by,
+                sub.overridden_by,
                 sub.created_at
             FROM engagements e
             JOIN labs              l   ON l.id           = e.engageable_id

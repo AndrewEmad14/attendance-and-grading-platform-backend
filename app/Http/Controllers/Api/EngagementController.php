@@ -23,18 +23,38 @@ class EngagementController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $query = Engagement::query();
+        
+        $query = Engagement::with([
+            'engageable',
+            'engageable.labGroup'
+        ]);
 
         if ($user->role === 'instructor') {
-            $query->where('staff_id', $user->staff_profile_id);
+            $query->where('staff_id', $user->staffProfile->id);
         } elseif ($user->role === 'student') {
-            abort(403, 'This action is unauthorized.');
-        } elseif ($request->filled('staff_id')) {
-            $query->where('staff_id', $request->get('staff_id'));
+            $query->forCohort($user->studentProfile->cohort_id);
+        } else {
+            if ($request->filled('cohort_id')) {
+                $query->forCohort($request->get('cohort_id'));
+            }
+            if ($request->filled('staff_id')) {
+                $query->where('staff_id', $request->get('staff_id'));
+            }
         }
 
         if ($request->filled('type')) {
             $query->where('type', $request->get('type'));
+            
+            if ($request->filled('engageable_id')) {
+                $query->where('engageable_id', $request->get('engageable_id'));
+            }
+        }
+
+        if ($request->filled('date_from')) {
+            $query->where('starts_at', '>=', $request->get('date_from'));
+        }
+        if ($request->filled('date_to')) {
+            $query->where('ends_at', '<=', $request->get('date_to'));
         }
 
         $engagements = $query->paginate($request->get('per_page', 15));
@@ -46,7 +66,7 @@ class EngagementController extends Controller
     {
         $engagement = $this->engagementService->createEngagement($request->validated());
 
-        return (new EngagementResource($engagement))
+        return (new EngagementResource($engagement->load(['engageable', 'engageable.labGroup'])))
             ->response()
             ->setStatusCode(201);
     }
@@ -55,22 +75,28 @@ class EngagementController extends Controller
     {
         $user = $request->user();
 
-        if ($user->role === 'instructor' && $engagement->staff_id !== $user->staff_profile_id) {
+        if ($user->role === 'instructor' && $engagement->staff_id !== $user->staffProfile->id) {
             abort(403, 'This action is unauthorized.');
         }
 
         if ($user->role === 'student') {
-            abort(403, 'This action is unauthorized.');
+            $isAuthorized = Engagement::where('id', $engagement->id)
+                ->forCohort($user->studentProfile->cohort_id)
+                ->exists();
+
+            if (!$isAuthorized) {
+                abort(403, 'This action is unauthorized.');
+            }
         }
 
-        return (new EngagementResource($engagement))->response();
+        return (new EngagementResource($engagement->load(['engageable', 'engageable.labGroup'])))->response();
     }
 
     public function update(UpdateEngagementRequest $request, Engagement $engagement): JsonResponse
     {
         $engagement->update($request->validated());
 
-        return (new EngagementResource($engagement))->response();
+        return (new EngagementResource($engagement->load(['engageable', 'engageable.labGroup'])))->response();
     }
 
     public function destroy(Request $request, Engagement $engagement): JsonResponse

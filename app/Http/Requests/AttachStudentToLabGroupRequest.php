@@ -41,7 +41,7 @@ class AttachStudentToLabGroupRequest extends FormRequest
                         );
                     }
 
-                    $alreadyAttached = $labGroup->students()->where('student_id', $studentId)->exists();
+                    $alreadyAttached = $student && $student->lab_group_id === $labGroup->id;
                     if ($alreadyAttached) {
                         $this->validator->errors()->add(
                             'student_id',

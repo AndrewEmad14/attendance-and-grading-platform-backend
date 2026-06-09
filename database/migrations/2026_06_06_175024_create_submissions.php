@@ -20,9 +20,9 @@ return new class extends Migration
             $table->float('raw_score');
             $table->foreignId('graded_by')->nullable()->constrained('staff_profiles')->nullOnDelete();
             $table->float('override_score')->nullable();
-            $table->foreignId('overriden_by')->nullable()->constrained('staff_profiles')->nullOnDelete();
+            $table->foreignId('overridden_by')->nullable()->constrained('staff_profiles')->nullOnDelete();
             $table->text('override_note')->nullable();
-            $table->timestamp('overrided_at')->nullable();
+            $table->timestamp('overridden_at')->nullable();
             $table->timestamps();
         });
     }

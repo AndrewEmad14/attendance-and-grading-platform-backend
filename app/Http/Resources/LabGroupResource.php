@@ -16,6 +16,9 @@ class LabGroupResource extends JsonResource
             'student_count' => $this->whenCounted('students'),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
+
+            // Conditional
+            'students' => CohortStudentResource::collection($this->whenLoaded('students')),
         ];
     }
 }

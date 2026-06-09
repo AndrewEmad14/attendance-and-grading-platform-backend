@@ -9,7 +9,13 @@ class UpdateEngagementRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->role === 'track_admin' || $this->user()->role === 'branch_manager';
+        $engagement = $this->route('engagement');
+
+        if (!$engagement instanceof \App\Models\Engagement) {
+            return false;
+        }
+
+        return $this->user()->can('update', $engagement);
     }
 
     public function rules(): array

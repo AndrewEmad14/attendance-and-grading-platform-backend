@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\RateLimiter;
 use App\Models\Submission;
 use App\Policies\SubmissionPolicy;
 use Illuminate\Support\Facades\Gate;
+use App\Models\Tag;
+use App\Policies\TagPolicy;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -40,6 +42,7 @@ class AppServiceProvider extends ServiceProvider
                 });
         });
 
+        Gate::policy(Tag::class, TagPolicy::class);
         Gate::policy(Submission::class, SubmissionPolicy::class);
     }
 }
