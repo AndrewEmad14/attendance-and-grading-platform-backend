@@ -53,5 +53,8 @@ Route::get('/', function () {
   Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:login');
     Route::post('me',[AuthController::class, 'me'])->middleware('auth:sanctum');
+    Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+    Route::post('logout-all', [AuthController::class, 'logoutAll'])->middleware('auth:sanctum');
   });
+  
   
