@@ -127,16 +127,16 @@ class DatabaseSeeder extends Seeder
                 $isOverridden = $isGraded && (rand(0, 9) === 0);
 
                 $gradedBy = $isGraded ? collect($staffIds)->random() : null;
-                $overridenBy = $isOverridden ? collect($staffIds)->random() : null;
+                $overriddenBy = $isOverridden ? collect($staffIds)->random() : null;
 
                 Submission::factory()->create([
                     'deliverable_id' => $deliverable->id,
                     'student_id' => $studentId,
                     'graded_by' => $gradedBy,
                     'override_score' => $isOverridden ? rand(0, 100) : null,
-                    'overriden_by' => $overridenBy,
+                    'overridden_by' => $overriddenBy,
                     'override_note' => $isOverridden ? 'Grade adjusted after review.' : null,
-                    'overrided_at' => $isOverridden ? now() : null,
+                    'overridden_at' => $isOverridden ? now() : null,
                 ]);
             }
         }

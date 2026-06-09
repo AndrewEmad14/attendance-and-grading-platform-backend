@@ -28,7 +28,8 @@ class SubmissionResource extends JsonResource
             'override_score'    => $this->override_score,
             'override_note'     => $this->override_note,
             'effective_raw_score' => $this->effectiveRawScore(), // override_score ?? raw_score
-            'normalized_score'  => $this->whenLoaded('deliverable', // only compute when deliverable is loaded
+            'normalized_score'  => $this->whenLoaded(
+                'deliverable', // only compute when deliverable is loaded
                 fn() => $gradingService->computeNormalizedScore($this->resource)
             ),
             'is_overridden'     => !is_null($this->override_score), // true when override exists
