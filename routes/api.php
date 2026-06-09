@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Enums\Role;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CohortController;
 use App\Http\Controllers\Api\LabGroupController;
@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\SubmissionController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\NoteController;
 use App\Http\Controllers\Api\GradingAnalyticsController;
+use App\Http\Controllers\Api\UserController;
+//$table->enum('role', ['branch_manager', 'track_admin', 'instructor', 'student']);
 
 
 Route::get('/', function () {
@@ -84,7 +86,19 @@ Route::patch('/test-notes/{studentId}', [NoteController::class, 'append']);
   });
 
   Route::prefix('auth')->group(function () {
-    Route::post('login', [AuthController::class, 'login']);
-    Route::post('me',[AuthController::class, 'me'])->middleware('auth:sanctum');
-  });
+    Route::post('login', [AuthController::class, 'login'])->middleware('throttle:login');
+    
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('me', [AuthController::class, 'me']);
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::post('logout-all', [AuthController::class, 'logoutAll']);
+    });
+});
   
+  Route::group(['prefix' => 'users','middleware' => ['auth:sanctum','role:'.Role::BRANCH_MANAGER.','.Role::TRACK_ADMIN]], function () {
+    Route::get('', [UserController::class, 'index']);
+    Route::post('', [UserController::class, 'register']);
+    Route::get('{user}', [UserController::class, 'show']);
+    Route::patch('{user}', [UserController::class, 'update']);
+    Route::delete('{user}', [UserController::class, 'destroy']);
+  });
