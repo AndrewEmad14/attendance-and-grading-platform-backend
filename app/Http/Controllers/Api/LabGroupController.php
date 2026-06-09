@@ -38,8 +38,9 @@ class LabGroupController extends Controller
 
     public function attachStudent(AttachStudentToLabGroupRequest $request, LabGroup $labGroup): JsonResponse
     {
-        $labGroup->students()->attach($request->input('student_id'));
-
+        $student = \App\Models\StudentProfile::findOrFail($request->input('student_id'));
+        $student->labGroup()->associate($labGroup)->save();
+        
         return response()->json([
             'message' => 'Student linked to the lab group assignment matrix successfully.'
         ], 201);

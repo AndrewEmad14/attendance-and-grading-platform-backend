@@ -23,10 +23,10 @@ class EngagementController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $query = Engagement::query();
+        $query = Engagement::with('engageable');
 
         if ($user->role === 'instructor') {
-            $query->where('staff_id', $user->staff_profile_id);
+            $query->where('staff_id', $user->staffProfile->id);
         } elseif ($user->role === 'student') {
             abort(403, 'This action is unauthorized.');
         } elseif ($request->filled('staff_id')) {
@@ -55,7 +55,7 @@ class EngagementController extends Controller
     {
         $user = $request->user();
 
-        if ($user->role === 'instructor' && $engagement->staff_id !== $user->staff_profile_id) {
+        if ($user->role === 'instructor' && $engagement->staff_id !== $user->staffProfile->id) {
             abort(403, 'This action is unauthorized.');
         }
 
