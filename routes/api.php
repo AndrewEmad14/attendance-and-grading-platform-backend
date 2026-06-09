@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\LabGroupController;
 use App\Http\Controllers\Api\EngagementController;
 use App\Http\Controllers\Api\BusinessSessionController;
 use App\Http\Controllers\Api\CourseController;
+use App\Http\Controllers\Api\SubmissionController;
 
 //$table->enum('role', ['branch_manager', 'track_admin', 'instructor', 'student']);
 
@@ -30,6 +31,8 @@ Route::get('/', function () {
     Route::patch('/courses/{course}',          [CourseController::class, 'update']);
     Route::delete('/courses/{course}',         [CourseController::class, 'destroy']);
 
+    Route::patch('/submissions/{submission}', [SubmissionController::class, 'grade']);
+    Route::post('/submissions/{submission}/override', [SubmissionController::class, 'override']);
 
     Route::prefix('cohorts/{cohort}')->group(function () {
       Route::get('lab-groups', [LabGroupController::class, 'index']);

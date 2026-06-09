@@ -7,6 +7,12 @@ use Illuminate\Support\Str;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+
+use App\Models\Submission;
+use App\Policies\SubmissionPolicy;
+use Illuminate\Support\Facades\Gate;
+
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -34,5 +40,6 @@ class AppServiceProvider extends ServiceProvider
                 });
         });
 
+        Gate::policy(Submission::class, SubmissionPolicy::class);
     }
 }

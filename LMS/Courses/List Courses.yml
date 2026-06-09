@@ -1,12 +1,14 @@
 info:
-  name: Create Course
+  name: List Courses
   type: http
   seq: 2
 
 http:
-  method: POST
+  method: GET
   url: "{{baseurl}}/cohorts/1/courses"
-  auth: inherit
+  auth:
+    type: bearer
+    token: 2|jqywaJid6pvH1m1gEwoy3UsEmJiljtUGUp2OJ9bRe90fb001
 
 settings:
   encodeUrl: true

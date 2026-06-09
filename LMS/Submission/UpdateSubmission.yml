@@ -1,0 +1,23 @@
+info:
+  name: UpdateSubmission
+  type: http
+  seq: 1
+
+http:
+  method: PATCH
+  url: "{{baseurl}}/submissions/1"
+  body:
+    type: json
+    data: |-
+      {
+        "raw_score": 50
+      }
+  auth:
+    type: bearer
+    token: jqywaJid6pvH1m1gEwoy3UsEmJiljtUGUp2OJ9bRe90fb001
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
