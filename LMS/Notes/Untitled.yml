@@ -1,11 +1,11 @@
 info:
-  name: OverrideSubmission
+  name: Untitled
   type: http
-  seq: 2
+  seq: 1
 
 http:
-  method: POST
-  url: "{{baseurl}}/submissions/1441/override"
+  method: GET
+  url: ""
   auth: inherit
 
 settings:
