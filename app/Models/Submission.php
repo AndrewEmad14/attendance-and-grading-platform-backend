@@ -15,13 +15,16 @@ class Submission extends Model
     'submission_type',
     'submission_path',
     'raw_score',
+    'graded_by',
     'override_score',
     'override_note',
+    'overriden_by',
+    'overrided_at'
   ];
 
   protected $casts = [
-    'raw_score' => 'decimal:2',
-    'override_score' => 'decimal:2',
+    'raw_score' => 'float',
+    'override_score' => 'float',
   ];
 
   public function deliverable()
@@ -32,5 +35,15 @@ class Submission extends Model
   public function student()
   {
     return $this->belongsTo(StudentProfile::class, 'student_id');
+  }
+
+  public function grader()
+  {
+    return $this->belongsTo(StaffProfile::class, 'graded_by');
+  }
+
+  public function overrider()
+  {
+    return $this->belongsTo(StaffProfile::class, 'overriden_by');
   }
 }

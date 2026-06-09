@@ -17,6 +17,8 @@ return new class extends Migration
             $table->text('reason');
             $table->string('attachment_path');
             $table->enum('status', ['pending', 'approved', 'rejected']);
+            $table->foreignId('reviewed_by')->nullable()->constrained('staff_profiles')->nullOnDelete();
+            $table->timestamp('reviewed_at')->nullable();
             $table->timestamps();
         });
     }
