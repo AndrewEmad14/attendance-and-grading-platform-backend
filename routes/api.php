@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 
-
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CohortController;
 use App\Http\Controllers\Api\LabGroupController;
@@ -10,13 +9,16 @@ use App\Http\Controllers\Api\EngagementController;
 use App\Http\Controllers\Api\BusinessSessionController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\SubmissionController;
+use App\Http\Controllers\Api\TagController;
+use App\Http\Controllers\Api\NoteController;
+use App\Http\Controllers\Api\GradingAnalyticsController;
 
 
 Route::get('/', function () {
   return response()->json(['message' => 'API is running']);
   });
 
-
+Route::patch('/test-notes/{studentId}', [NoteController::class, 'append']);
   Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('tracks/{track}')->group(function () {
@@ -31,6 +33,20 @@ Route::get('/', function () {
 
     Route::patch('/submissions/{submission}', [SubmissionController::class, 'grade']);
     Route::post('/submissions/{submission}/override', [SubmissionController::class, 'override']);
+
+
+    Route::get('/tags',[TagController::class, 'index']);
+    Route::post('/tags',[TagController::class, 'store']);
+    Route::get('/students/{studentId}/tags', [TagController::class, 'studentTags']);
+    Route::post('/students/{studentId}/tags',  [TagController::class, 'attach']);
+    Route::delete('/students/{studentId}/tags/{tagId}',[TagController::class, 'detach']);
+
+
+    Route::patch('/students/{studentId}/notes', [NoteController::class, 'append']);
+
+
+    Route::get('/analytics/cohorts/{cohortId}',  [GradingAnalyticsController::class, 'cohortGrades']);
+    Route::get('/analytics/lab-groups/{labGroupId}', [GradingAnalyticsController::class, 'labGroupGrades']);
 
     Route::prefix('cohorts/{cohort}')->group(function () {
       Route::get('lab-groups', [LabGroupController::class, 'index']);
