@@ -5,8 +5,10 @@ info:
 
 http:
   method: GET
-  url: "{{baseurl}}/courses/1"
-  auth: inherit
+  url: "{{baseurl}}/courses/38"
+  auth:
+    type: bearer
+    token: 2|jqywaJid6pvH1m1gEwoy3UsEmJiljtUGUp2OJ9bRe90fb001
 
 settings:
   encodeUrl: true
