@@ -22,7 +22,7 @@ return new class extends Migration
             $table->float('override_score')->nullable();
             $table->foreignId('overriden_by')->nullable()->constrained('staff_profiles')->nullOnDelete();
             $table->text('override_note')->nullable();
-            $table->timestamp('overrided_at')->nullable();
+            $table->timestamp('overriden_at')->nullable();
             $table->timestamps();
         });
     }

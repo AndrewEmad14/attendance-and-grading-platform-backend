@@ -136,7 +136,7 @@ class DatabaseSeeder extends Seeder
                     'override_score' => $isOverridden ? rand(0, 100) : null,
                     'overriden_by' => $overridenBy,
                     'override_note' => $isOverridden ? 'Grade adjusted after review.' : null,
-                    'overrided_at' => $isOverridden ? now() : null,
+                    'overriden_at' => $isOverridden ? now() : null,
                 ]);
             }
         }

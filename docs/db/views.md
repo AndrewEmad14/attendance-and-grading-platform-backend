@@ -105,7 +105,7 @@ engagements (instructor_id, engageable_type='lab')
 
 **Why a view:** The join chain is 4 tables deep and appears in the grading list, the submission tracker widget, and the authorization policy. Inlining it in each location would be error-prone.
 
-**Columns:** `instructor_id`, `engagement_id`, `lab_id`, `lab_group_id`, `student_id`, `submission_id`, `deliverable_id`, `raw_score`, `graded_by`, `graded_at`, `overridden_by`, `created_at`
+**Columns:** `instructor_id`, `engagement_id`, `lab_id`, `lab_group_id`, `student_id`, `submission_id`, `deliverable_id`, `raw_score`, `graded_by`, `graded_at`, `overriden_by`, `created_at`
 
 **Used by:**
 - Instructor grading list (primary use)

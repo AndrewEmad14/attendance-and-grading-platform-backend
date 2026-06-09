@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\DB;
  * @property float|null  $raw_score
  * @property int|null    $graded_by
  * @property string|null $graded_at
- * @property int|null    $overridden_by
+ * @property int|null    $overriden_by
  * @property string|null $created_at
  */
 class InstructorLabSubmission extends Model
@@ -77,7 +77,7 @@ class InstructorLabSubmission extends Model
   /** Submissions that were overridden by a Track Admin. */
   public function scopeOverridden($query)
   {
-    return $query->whereNotNull('overridden_by');
+    return $query->whereNotNull('overriden_by');
   }
 
     // ── Authorization helper ─────────────────────────────────────────

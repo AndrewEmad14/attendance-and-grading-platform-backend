@@ -17,17 +17,17 @@ class Submission extends Model
     'submission_type', //github_link
     'submission_path', //the link
     'raw_score',
-    'override_score', 
+    'override_score',
     'override_note',
     'graded_by',
-    'overridden_by',
-    'overridden_at'
+    'overriden_by',
+    'overriden_at'
   ];
 
   protected $casts = [
     'raw_score' => 'float', //decimal ret. str
     'override_score' => 'float',
-    'overridden_at' =>'datetime'
+    'overriden_at' => 'datetime'
   ];
 
   public function deliverable()
@@ -42,16 +42,16 @@ class Submission extends Model
 
   public function effectiveRawScore(): ?float // if there is overriden score take it else the raw one
   {
-      return $this->override_score ?? $this->raw_score;
+    return $this->override_score ?? $this->raw_score;
   }
 
   public function gradedBy(): BelongsTo // user who graded submission (restriction on who is allowed in gradepolicy)
   {
-      return $this->belongsTo(User::class, 'graded_by');
+    return $this->belongsTo(User::class, 'graded_by');
   }
 
   public function overriddenBy(): BelongsTo // user overriden grade (track admin in policy)
   {
-      return $this->belongsTo(User::class, 'overridden_by');
+    return $this->belongsTo(User::class, 'overriden_by');
   }
 }

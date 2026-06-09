@@ -33,11 +33,11 @@ class GradingService // grading logic
     }
 
     public function applyOverride(Submission $submission, float $newScore, string $note, int $overriddenBy): Submission
-    {//save overidden data
+    { //save overidden data
         $submission->override_score  = $newScore;
         $submission->override_note   = $note;
-        $submission->overridden_by   = $overriddenBy;
-        $submission->overridden_at   = now();
+        $submission->overriden_by   = $overriddenBy;
+        $submission->overriden_at   = now();
         $submission->save();
 
         return $submission;

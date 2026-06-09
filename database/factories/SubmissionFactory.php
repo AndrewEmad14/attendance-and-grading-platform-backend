@@ -23,7 +23,7 @@ class SubmissionFactory extends Factory
       'override_score' => null,
       'override_note' => null,
       'overriden_by' => null,
-      'overrided_at' => null,
+      'overriden_at' => null,
     ];
   }
 }

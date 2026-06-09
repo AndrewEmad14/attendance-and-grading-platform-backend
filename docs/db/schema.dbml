@@ -142,7 +142,7 @@ Table submissions {
   override_score numeric 
   overriden_by int
   override_note text 
-  overrided_at datetime
+  overriden_at datetime
   created_at datetime
   updated_at datetime
   student_id int 
