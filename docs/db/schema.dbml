@@ -4,7 +4,7 @@ Table users {
   email varchar 
   email_verified_at datetime
   password_hash varchar 
-  role varchar 
+  role enum 
   expires_at datetime
   remember_token varchar
   created_at datetime
@@ -50,13 +50,15 @@ Table student_profiles {
   id int pk
   user_id int 
   notes text 
-  attendance_balance int 
+  lab_group_id int
   created_at datetime
   updated_at datetime
   cohort_id int 
+  attendance_balance int 
 }
 Ref: student_profiles.cohort_id > cohorts.id
 Ref: student_profiles.user_id > users.id
+Ref: student_profiles.lab_group_id > lab_groups.id
 
 Table students_tags {
   id int pk
@@ -73,6 +75,7 @@ Table staff_profiles {
   id int pk
   compensation_type varchar 
   hourly_rate numeric 
+  fixed_slary numeric 
   created_at datetime
   updated_at datetime
 }
@@ -80,33 +83,23 @@ Ref: staff_profiles.user_id > users.id
 
 Table lab_groups {
   cohort_id int 
-  id int pk
   name varchar 
   created_at datetime
   updated_at datetime
+  id int pk
 }
 Ref: lab_groups.cohort_id > cohorts.id
 
 Table labs {
   id int pk
-  course_id int 
   lab_group_id int 
   name varchar 
   created_at datetime
   updated_at datetime
+  course_id int 
 }
 Ref: labs.course_id > courses.id
 Ref: labs.lab_group_id > lab_groups.id
-
-Table lab_group_users {
-  id int pk
-  lab_group_id int 
-  student_id int 
-  created_at datetime
-  updated_at datetime
-}
-Ref: lab_group_users.student_id > student_profiles.id
-Ref: lab_group_users.lab_group_id > lab_groups.id
 
 Table business_sessions {
   id int pk
@@ -128,11 +121,11 @@ Ref: business_sessions_cohorts.business_session_id > business_sessions.id
 
 Table courses_deliverables {
   id int pk
-  course_id int 
-  type varchar 
+  type enum 
   name varchar 
   max_score int 
   course_weight int 
+  course_id int 
   due_date datetime
   created_at datetime
   updated_at datetime
@@ -141,39 +134,45 @@ Ref: courses_deliverables.course_id > courses.id
 
 Table submissions {
   id int pk
-  deliverable_id int 
-  student_id int 
-  submission_type varchar 
+  submission_type enum 
   submission_path varchar 
   raw_score numeric 
+  deliverable_id int 
+  graded_by int
   override_score numeric 
+  overriden_by int
   override_note text 
+  overrided_at datetime
   created_at datetime
   updated_at datetime
+  student_id int 
 }
 Ref: submissions.student_id > student_profiles.id
 Ref: submissions.deliverable_id > courses_deliverables.id
+Ref: submissions.graded_by > staff_profiles.id
+Ref: submissions.overriden_by > staff_profiles.id
+
 
 Table engagements {
   id int pk
-  instructor_id int 
-  type varchar 
   starts_at datetime
   ends_at datetime
   scheduled_hours numeric 
+  staff_id int 
   created_at datetime
   updated_at datetime
   engageable_id int 
+  engageable_type varchar 
 }
-Ref: engagements.instructor_id > staff_profiles.id
+Ref: engagements.staff_id > staff_profiles.id
 Ref: engagements.engageable_id > courses.id
 Ref: engagements.engageable_id > labs.id
 Ref: engagements.engageable_id > business_sessions.id
 
 Table attendance_records {
-  id int pk
   student_id int 
   engagement_id int 
+  id int pk
   arrived_at datetime
   left_at datetime
   created_at datetime
@@ -184,14 +183,17 @@ Ref: attendance_records.engagement_id > engagements.id
 
 Table excuse_requests {
   id int pk
-  attendance_id int 
   reason text 
   attachment_path varchar 
-  status varchar 
   created_at datetime
   updated_at datetime
+  reviewed_by int
+  reviewed_at datetime
+  attendance_id int 
+  status enum 
 }
 Ref: excuse_requests.attendance_id > attendance_records.id
+Ref: excuse_requests.reviewed_by > staff_profiles.id
 
 Table announcements {
   id int pk
@@ -199,8 +201,35 @@ Table announcements {
   author_id int
   title varchar 
   body text 
+  published_at datetime
   created_at datetime
   updated_at datetime
 }
 Ref: announcements.cohort_id > cohorts.id
 Ref: announcements.author_id > staff_profiles.id
+
+
+Table cohorts_admins {
+  id int pk
+  cohort_id int
+  staff_id int
+  created_at datetime
+  updated_at datetime
+}
+Ref: cohorts_admins.cohort_id > cohorts_copy.id
+Ref: cohorts_admins.staff_id > staff_profiles.id
+
+
+Table billing_records {
+  id int pk
+  staff_id int
+  delivered_hours int
+  total_amount int
+  forwarded_at datetime
+  created_at datetime
+  updated_at datetime
+  engagement_id int
+}
+Ref: billing_records.engagement_id > engagements.id
+Ref: billing_records.staff_id > staff_profiles.id
+

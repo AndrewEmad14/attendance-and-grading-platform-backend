@@ -1,11 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
+
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CohortController;
 use App\Http\Controllers\Api\LabGroupController;
 use App\Http\Controllers\Api\EngagementController;
 use App\Http\Controllers\Api\BusinessSessionController;
+use App\Http\Controllers\Api\CourseController;
 
 
 Route::get('/', function () {
@@ -14,9 +17,17 @@ Route::get('/', function () {
 
 
   Route::middleware('auth:sanctum')->group(function () {
+
     Route::prefix('tracks/{track}')->group(function () {
       Route::post('cohorts', [CohortController::class, 'store']);
     });
+
+    Route::get('/cohorts/{cohortId}/courses',  [CourseController::class, 'index']);
+    Route::post('/cohorts/{cohortId}/courses', [CourseController::class, 'store']);
+    Route::get('/courses/{course}',            [CourseController::class, 'show']);
+    Route::patch('/courses/{course}',          [CourseController::class, 'update']);
+    Route::delete('/courses/{course}',         [CourseController::class, 'destroy']);
+
 
     Route::prefix('cohorts/{cohort}')->group(function () {
       Route::get('lab-groups', [LabGroupController::class, 'index']);
