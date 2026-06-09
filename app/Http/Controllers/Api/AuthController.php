@@ -19,7 +19,7 @@ class AuthController extends Controller
             return response()->json(['access_token' => $token], 200);
         }
 
-        return response()->json(['message' => "Unauthoried"], 401);
+        return response()->json(['message' => "Unauthorized"], 401);
     }
     public function me(Request $request)
     {

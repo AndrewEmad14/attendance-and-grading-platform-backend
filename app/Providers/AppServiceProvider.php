@@ -3,7 +3,10 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-
+use Illuminate\Support\Str;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -19,6 +22,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        RateLimiter::for('login', function (Request $request) {
+            $email = Str::lower($request->input('email'));
+            
+            return Limit::perMinute(5)
+                ->by($request->ip() . '|' . $email)
+                ->response(function () {
+                    return response()->json([
+                        'message' => 'Too many login attempts. Please try again in 60 seconds.'
+                    ], 429);
+                });
+        });
+
     }
 }
