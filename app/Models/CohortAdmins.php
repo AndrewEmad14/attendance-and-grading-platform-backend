@@ -5,24 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class LabGroup extends Model
+class CohortAdmins extends Model
 {
   use HasFactory;
 
-  protected $fillable = ['name', 'cohort_id'];
+  protected $table = 'cohorts_admins';
+
+  protected $fillable = ['cohort_id', 'staff_id'];
 
   public function cohort()
   {
     return $this->belongsTo(Cohort::class);
   }
 
-  public function students()
+  public function staff()
   {
-    return $this->hasMany(StudentProfile::class);
-  }
-
-  public function labs()
-  {
-    return $this->hasMany(Lab::class);
+    return $this->belongsTo(StaffProfile::class);
   }
 }

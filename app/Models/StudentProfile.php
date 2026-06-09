@@ -12,6 +12,7 @@ class StudentProfile extends Model
   protected $fillable = [
     'user_id',
     'cohort_id',
+    'lab_group_id',
     'notes',
     'attendance_balance',
   ];
@@ -35,9 +36,9 @@ class StudentProfile extends Model
     return $this->belongsToMany(Tag::class, 'students_tags', 'student_id', 'tag_id');
   }
 
-  public function labGroups()
+  public function labGroup()
   {
-    return $this->belongsToMany(LabGroup::class, 'lab_group_users', 'student_id', 'lab_group_id');
+    return $this->belongsTo(LabGroup::class);
   }
 
   public function attendanceRecords()

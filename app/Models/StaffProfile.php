@@ -13,10 +13,12 @@ class StaffProfile extends Model
     'user_id',
     'compensation_type',
     'hourly_rate',
+    'fixed_salary',
   ];
 
   protected $casts = [
-    'hourly_rate' => 'decimal:2',
+    'hourly_rate' => 'integer',
+    'fixed_salary' => 'integer',
   ];
 
   public function user()
@@ -27,5 +29,30 @@ class StaffProfile extends Model
   public function engagements()
   {
     return $this->hasMany(Engagement::class, 'staff_id');
+  }
+
+  public function managedCohorts()
+  {
+    return $this->belongsToMany(Cohort::class, 'cohorts_admins', 'staff_id', 'cohort_id');
+  }
+
+  public function overridedSubmissions()
+  {
+    return $this->hasMany(Submission::class, 'overriden_by');
+  }
+
+  public function gradedSubmissions()
+  {
+    return $this->hasMany(Submission::class, 'graded_by');
+  }
+
+  public function reviewedExcuseRequests()
+  {
+    return $this->hasMany(ExcuseRequest::class, 'reviewed_by');
+  }
+
+  public function billingRecords()
+  {
+    return $this->hasMany(BillingRecord::class, 'staff_id');
   }
 }

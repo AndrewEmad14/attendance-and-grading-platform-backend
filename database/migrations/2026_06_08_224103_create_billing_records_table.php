@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('engagements', function (Blueprint $table) {
+        Schema::create('billing_records', function (Blueprint $table) {
             $table->id();
-            $table->morphs('engageable');
+            $table->foreignId('engagement_id')->constrained('engagements')->onDelete('cascade');
             $table->foreignId('staff_id')->constrained('staff_profiles')->onDelete('cascade');
-            $table->timestamp('starts_at')->nullable();
-            $table->timestamp('ends_at')->nullable();
-            $table->integer('scheduled_hours');
+            $table->integer('delivered_hours');
+            $table->integer('total_amount');
+            $table->dateTime('forwarded_at')->nullable(); // null till we send it to accounting
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('engagements');
+        Schema::dropIfExists('billing_records');
     }
 };

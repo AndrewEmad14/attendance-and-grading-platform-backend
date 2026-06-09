@@ -19,6 +19,7 @@ use App\Models\ExcuseRequest;
 use App\Models\Submission;
 use App\Models\Announcement;
 use App\Models\User;
+use App\Models\BillingRecord;
 
 class DatabaseSeeder extends Seeder
 {
@@ -34,17 +35,23 @@ class DatabaseSeeder extends Seeder
             $cohorts = $cohorts->concat(Cohort::factory(3)->create(['track_id' => $track->id, 'is_active' => false]));
         }
 
-        // 3. Student profiles (30 per cohort)
-        $students = collect();
+        // 3. Lab groups (2 per cohort) - created before students so student profiles can reference them
+        $labGroups = collect();
         foreach ($cohorts as $cohort) {
-            $students = $students->concat(StudentProfile::factory(30)->create(['cohort_id' => $cohort->id]));
+            $labGroups = $labGroups->concat(LabGroup::factory(2)->create(['cohort_id' => $cohort->id]));
         }
 
-        // // 4. Staff profiles (10)
-        // $staff = StaffProfile::factory(10)->create();
-        // $staffIds = $staff->pluck('id')->toArray();
+        // 4. Student profiles (30 per cohort)
+        $students = collect();
+        foreach ($cohorts as $cohort) {
+            $cohortLabGroups = $labGroups->where('cohort_id', $cohort->id);
+            $students = $students->concat(StudentProfile::factory(30)->create([
+                'cohort_id' => $cohort->id,
+                'lab_group_id' => $cohortLabGroups->random()->id
+            ]));
+        }
 
-        // 4. Create staff profiles with correct roles
+        // 5. Create staff profiles with correct roles
         $staff = collect();
 
         // One branch_manager
@@ -63,28 +70,38 @@ class DatabaseSeeder extends Seeder
             $staff->push(StaffProfile::factory()->create(['user_id' => $user->id]));
         }
 
-        // 5. Tags (10)
+        // 6. Assign track admins to active cohorts (LC-2)
+        $trackAdminStaff = $staff->filter(function ($staffProfile) {
+            return $staffProfile->user->role === 'track_admin';
+        }); // Should give 2 staff profiles
+
+        foreach ($cohorts as $cohort) {
+            if ($cohort->is_active) {
+                // Assign all track admins to each active cohort
+                $cohort->trackAdmins()->attach($trackAdminStaff->pluck('id')->toArray());
+            } else {
+                // Optionally assign only one track admin to inactive cohorts (or none)
+                // Uncomment next line if you want to assign the first track admin to all cohorts
+                // $cohort->trackAdmins()->attach($trackAdminStaff->first()->id);
+            }
+        }
+
+        // 7. Tags (10)
         $tags = Tag::factory(10)->create();
         foreach ($students as $student) {
             $student->tags()->attach($tags->random(rand(1, 3))->pluck('id'));
         }
 
-        // 6. Lab groups (2 per cohort)
-        $labGroups = collect();
-        foreach ($cohorts as $cohort) {
-            $labGroups = $labGroups->concat(LabGroup::factory(2)->create(['cohort_id' => $cohort->id]));
-        }
-
-        // 7. Courses (3 per cohort)
+        // 8. Courses (3 per cohort)
         $courses = collect();
         foreach ($cohorts as $cohort) {
             $courses = $courses->concat(Course::factory(3)->create(['cohort_id' => $cohort->id]));
         }
 
-        // 8. Business sessions (5)
+        // 9. Business sessions (5)
         $businessSessions = BusinessSession::factory(5)->create();
 
-        // 9. Labs (2 per lab group)
+        // 10. Labs (2 per lab group)
         $labs = collect();
         foreach ($labGroups as $labGroup) {
             $course = $courses->where('cohort_id', $labGroup->cohort_id)->random();
@@ -92,12 +109,6 @@ class DatabaseSeeder extends Seeder
                 'lab_group_id' => $labGroup->id,
                 'course_id' => $course->id,
             ]));
-        }
-
-        // 10. Assign students to lab groups (each student to 1 lab group of their cohort)
-        foreach ($students as $student) {
-            $labGroup = $labGroups->where('cohort_id', $student->cohort_id)->random();
-            $student->labGroups()->attach($labGroup->id);
         }
 
         // 11. Course deliverables (4 per course)
@@ -108,12 +119,24 @@ class DatabaseSeeder extends Seeder
 
         // 12. Submissions (for 60% of student–deliverable pairs)
         $studentIds = $students->pluck('id')->toArray();
+        $staffIds = $staff->pluck('id')->toArray();
         foreach ($deliverables as $deliverable) {
             $randomStudents = collect($studentIds)->random(min(10, count($studentIds)));
             foreach ($randomStudents as $studentId) {
+                $isGraded = rand(0, 1);
+                $isOverridden = $isGraded && (rand(0, 9) === 0);
+
+                $gradedBy = $isGraded ? collect($staffIds)->random() : null;
+                $overridenBy = $isOverridden ? collect($staffIds)->random() : null;
+
                 Submission::factory()->create([
                     'deliverable_id' => $deliverable->id,
                     'student_id' => $studentId,
+                    'graded_by' => $gradedBy,
+                    'override_score' => $isOverridden ? rand(0, 100) : null,
+                    'overriden_by' => $overridenBy,
+                    'override_note' => $isOverridden ? 'Grade adjusted after review.' : null,
+                    'overrided_at' => $isOverridden ? now() : null,
                 ]);
             }
         }
@@ -132,33 +155,40 @@ class DatabaseSeeder extends Seeder
             Engagement::factory()->forEngageable($bs)->create(['staff_id' => $staff->random()->id]);
         }
 
-        // 14. Attendance records – BULK INSERT (fast)
+        // 14. Attendance records – MEMORY SAFE BULK INSERT
         $engagements = Engagement::all();
-        $engagementIds = $engagements->pluck('id')->toArray();
         $studentIds = $students->pluck('id')->toArray();
         $studentCount = count($studentIds);
         $attendanceData = [];
 
-        foreach ($engagementIds as $engagementId) {
+        foreach ($engagements as $engagement) {
             $presentCount = rand(ceil($studentCount * 0.6), $studentCount);
+
             // Pick random student IDs
             $presentKeys = (array) array_rand($studentIds, $presentCount);
             $presentStudentIds = array_map(fn($key) => $studentIds[$key], $presentKeys);
+
             foreach ($presentStudentIds as $studentId) {
                 $attendanceData[] = [
-                    'engagement_id' => $engagementId,
+                    'engagement_id' => $engagement->id,
                     'student_id' => $studentId,
                     'arrived_at' => now()->subDays(rand(0, 30))->subHours(rand(1, 8))->toDateTimeString(),
                     'left_at' => now()->subDays(rand(0, 30))->toDateTimeString(),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
+
+                // Flush to Supabase immediately when we hit 1,000 records to save memory
+                if (count($attendanceData) >= 1000) {
+                    DB::table('attendance_records')->insert($attendanceData);
+                    $attendanceData = []; // Wipe the array to free up RAM
+                }
             }
         }
 
-        // Insert in chunks to avoid memory overload
-        foreach (array_chunk($attendanceData, 500) as $chunk) {
-            DB::table('attendance_records')->insert($chunk);
+        // Insert any leftover records remaining in the array
+        if (!empty($attendanceData)) {
+            DB::table('attendance_records')->insert($attendanceData);
         }
 
         // 15. Excuse requests (10% of attendance records)
@@ -184,6 +214,16 @@ class DatabaseSeeder extends Seeder
         foreach ($cohorts as $cohort) {
             Announcement::factory(2)->forCohort($cohort->id)->create([
                 'staff_id' => $staff->random()->id,
+            ]);
+        }
+
+        // 18. Billing records
+        foreach ($engagements as $engagement) {
+            BillingRecord::factory()->create([
+                'engagement_id' => $engagement->id,
+                'staff_id' => $engagement->staff_id,
+                'delivered_hours' => $engagement->scheduled_hours,
+                'total_amount' => $engagement->scheduled_hours * 150, // e.g. 150 per hour
             ]);
         }
     }
