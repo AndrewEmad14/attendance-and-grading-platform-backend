@@ -21,7 +21,7 @@ class AttachStudentToLabGroupRequest extends FormRequest
                 'integer',
                 'exists:student_profiles,id',
             ],
-        ];  
+        ];
     }
 
     public function after(): array
@@ -49,7 +49,7 @@ class AttachStudentToLabGroupRequest extends FormRequest
                         );
                     }
                 }
-            }
+            },
         ];
     }
 }

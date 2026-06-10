@@ -2,10 +2,10 @@
 
 namespace App\Models\Views;
 
+use App\Models\Cohort;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
-use App\Models\Cohort;
 
 /**
  * Read-only model for v_at_risk_students.
@@ -16,50 +16,51 @@ use App\Models\Cohort;
  *
  * Used in Track Admin, Instructor, and Branch Manager dashboards.
  *
- * @property int  $student_id
- * @property int  $cohort_id
+ * @property int $student_id
+ * @property int $cohort_id
  * @property bool $at_risk_attendance
  * @property bool $at_risk_grade
  */
 class AtRiskStudent extends Model
 {
-  protected $table = 'v_at_risk_students';
-  public    $timestamps = false;
+    protected $table = 'v_at_risk_students';
 
-  protected $casts = [
-    'at_risk_attendance' => 'boolean',
-    'at_risk_grade'      => 'boolean',
-  ];
+    public $timestamps = false;
 
-  // ── Relationships ────────────────────────────────────────────────
+    protected $casts = [
+        'at_risk_attendance' => 'boolean',
+        'at_risk_grade' => 'boolean',
+    ];
 
-  public function student(): BelongsTo
-  {
-    return $this->belongsTo(User::class, 'student_id');
-  }
+    // ── Relationships ────────────────────────────────────────────────
 
-  public function cohort(): BelongsTo
-  {
-    return $this->belongsTo(Cohort::class, 'cohort_id');
-  }
+    public function student(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'student_id');
+    }
+
+    public function cohort(): BelongsTo
+    {
+        return $this->belongsTo(Cohort::class, 'cohort_id');
+    }
 
     // ── Common scopes ────────────────────────────────────────────────
 
-  /** All at-risk students in a cohort. */
-  public function scopeForCohort($query, int $cohortId)
-  {
-    return $query->where('cohort_id', $cohortId);
-  }
+    /** All at-risk students in a cohort. */
+    public function scopeForCohort($query, int $cohortId)
+    {
+        return $query->where('cohort_id', $cohortId);
+    }
 
-  /** Only students at risk due to low attendance. */
-  public function scopeAttendanceRisk($query)
-  {
-    return $query->where('at_risk_attendance', true);
-  }
+    /** Only students at risk due to low attendance. */
+    public function scopeAttendanceRisk($query)
+    {
+        return $query->where('at_risk_attendance', true);
+    }
 
-  /** Only students at risk due to a failing course grade. */
-  public function scopeGradeRisk($query)
-  {
-    return $query->where('at_risk_grade', true);
-  }
+    /** Only students at risk due to a failing course grade. */
+    public function scopeGradeRisk($query)
+    {
+        return $query->where('at_risk_grade', true);
+    }
 }

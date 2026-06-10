@@ -23,7 +23,7 @@ class AttachTagRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tag_id' => 'required|integer|exists:tags,id'
+            'tag_id' => 'required|integer|exists:tags,id',
         ];
     }
 }

@@ -3,23 +3,22 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreLabGroupRequest;
 use App\Http\Requests\AttachStudentToLabGroupRequest;
-use App\Http\Resources\LabGroupResource;
+use App\Http\Requests\StoreLabGroupRequest;
 use App\Http\Resources\CohortStudentResource;
+use App\Http\Resources\LabGroupResource;
 use App\Models\Cohort;
 use App\Models\LabGroup;
 use App\Models\StudentProfile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 
 class LabGroupController extends Controller
 {
     public function index(Request $request, Cohort $cohort): JsonResponse
     {
         $user = $request->user();
-        
+
         if ($user->role === 'student') {
             $query = $cohort->labGroups()->where('id', $user->studentProfile?->lab_group_id);
         } elseif ($user->role === 'instructor') {
@@ -76,7 +75,7 @@ class LabGroupController extends Controller
         $student->labGroup()->associate($labGroup)->save();
 
         return response()->json([
-            'message' => 'Student linked to the lab group assignment matrix successfully.'
+            'message' => 'Student linked to the lab group assignment matrix successfully.',
         ], 201);
     }
 

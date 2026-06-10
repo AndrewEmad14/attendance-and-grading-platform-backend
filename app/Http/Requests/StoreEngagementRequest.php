@@ -2,11 +2,12 @@
 
 namespace App\Http\Requests;
 
+use App\Models\BusinessSession;
+use App\Models\Course;
+use App\Models\Engagement;
+use App\Models\Lab;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use App\Models\Course;
-use App\Models\Lab;
-use App\Models\BusinessSession;
 
 class StoreEngagementRequest extends FormRequest
 {
@@ -16,25 +17,25 @@ class StoreEngagementRequest extends FormRequest
         $engageableId = $this->input('engageable_id');
 
         $morphMap = [
-            'lecture'          => \App\Models\Course::class,
-            'lab'              => \App\Models\Lab::class,
-            'business_session' => \App\Models\BusinessSession::class,
+            'lecture' => Course::class,
+            'lab' => Lab::class,
+            'business_session' => BusinessSession::class,
         ];
 
         $engageableType = $morphMap[$type] ?? null;
-        $contextEntity = ($engageableType && $engageableId) 
-            ? $engageableType::find($engageableId) 
+        $contextEntity = ($engageableType && $engageableId)
+            ? $engageableType::find($engageableId)
             : null;
 
         // Pass the matching course, lab, or business session entity directly to the policy
-        return $this->user()->can('create', [\App\Models\Engagement::class, $contextEntity]);
+        return $this->user()->can('create', [Engagement::class, $contextEntity]);
     }
 
     protected function prepareForValidation(): void
     {
         $morphMap = [
-            'lecture'          => Course::class,
-            'lab'              => Lab::class,
+            'lecture' => Course::class,
+            'lab' => Lab::class,
             'business_session' => BusinessSession::class,
         ];
 
@@ -98,8 +99,9 @@ class StoreEngagementRequest extends FormRequest
                 if ($engageableType && $engageableId) {
                     $entity = $engageableType::find($engageableId);
 
-                    if (!$entity) {
+                    if (! $entity) {
                         $this->validator->errors()->add('engageable_id', 'The selected entity does not exist.');
+
                         return;
                     }
 
@@ -108,7 +110,7 @@ class StoreEngagementRequest extends FormRequest
                         $this->validator->errors()->add('engageable_id', 'The selected course/lab belongs to an alternate track cohort configuration.');
                     }
                 }
-            }
+            },
         ];
     }
 }

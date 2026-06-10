@@ -7,28 +7,28 @@ use Illuminate\Database\Eloquent\Model;
 
 class ExcuseRequest extends Model
 {
-  use HasFactory;
+    use HasFactory;
 
-  protected $fillable = [
-    'attendance_id',
-    'reason',
-    'attachment_path',
-    'status',
-    'reviewed_by',
-    'reviewed_at'
-  ];
+    protected $fillable = [
+        'attendance_id',
+        'reason',
+        'attachment_path',
+        'status',
+        'reviewed_by',
+        'reviewed_at',
+    ];
 
-  protected $casts = [
-    'status' => 'string',
-  ];
+    protected $casts = [
+        'status' => 'string',
+    ];
 
-  public function attendanceRecord()
-  {
-    return $this->belongsTo(AttendanceRecord::class, 'attendance_id');
-  }
+    public function attendanceRecord()
+    {
+        return $this->belongsTo(AttendanceRecord::class, 'attendance_id');
+    }
 
-  public function reviewer()
-  {
-    return $this->belongsTo(StaffProfile::class, 'reviewed_by');
-  }
+    public function reviewer()
+    {
+        return $this->belongsTo(StaffProfile::class, 'reviewed_by');
+    }
 }

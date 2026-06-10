@@ -7,15 +7,15 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class TrackFactory extends Factory
 {
-  protected $model = Track::class;
+    protected $model = Track::class;
 
-  public function definition()
-  {
-    static $counter = 0;
-    $counter++;
+    public function definition()
+    {
+        static $counter = 0;
+        $counter++;
 
-    return [
-      'name' => 'Track ' . $counter . ' - ' . $this->faker->word(),
-    ];
-  }
+        return [
+            'name' => 'Track '.$counter.' - '.$this->faker->word(),
+        ];
+    }
 }

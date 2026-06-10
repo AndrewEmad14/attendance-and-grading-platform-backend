@@ -5,7 +5,6 @@ namespace App\Http\Requests;
 use App\Models\Cohort;
 use App\Models\Track;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\ValidationException;
 
 class StoreCohortRequest extends FormRequest
 {
@@ -55,12 +54,12 @@ class StoreCohortRequest extends FormRequest
 
                     if ($activeExists && $this->input('is_active') === true) {
                         $this->validator->errors()->add(
-                            'track_id', 
+                            'track_id',
                             'The selected track currently has an active cohort.'
                         );
                     }
                 }
-            }
+            },
         ];
     }
 }

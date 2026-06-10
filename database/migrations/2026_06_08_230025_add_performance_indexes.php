@@ -33,9 +33,9 @@ return new class extends Migration
 
         // engagements — account window check (ENG-5/SEC-2) and polymorphic lookup
         Schema::table('engagements', function (Blueprint $table) {
-            $table->index('staff_id',                       'idx_engagements_instructor');
-            $table->index(['engageable_type', 'engageable_id'],  'idx_engagements_engageable');
-            $table->index(['starts_at', 'ends_at'],              'idx_engagements_window');
+            $table->index('staff_id', 'idx_engagements_instructor');
+            $table->index(['engageable_type', 'engageable_id'], 'idx_engagements_engageable');
+            $table->index(['starts_at', 'ends_at'], 'idx_engagements_window');
         });
 
         // submissions — grading queries always filter by student + deliverable;

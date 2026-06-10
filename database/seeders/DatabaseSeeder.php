@@ -2,24 +2,24 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use App\Models\Track;
-use App\Models\Cohort;
-use App\Models\StudentProfile;
-use App\Models\StaffProfile;
-use App\Models\Tag;
-use App\Models\LabGroup;
-use App\Models\Course;
+use App\Models\Announcement;
+use App\Models\BillingRecord;
 use App\Models\BusinessSession;
-use App\Models\Lab;
+use App\Models\Cohort;
+use App\Models\Course;
 use App\Models\CourseDeliverable;
 use App\Models\Engagement;
 use App\Models\ExcuseRequest;
+use App\Models\Lab;
+use App\Models\LabGroup;
+use App\Models\StaffProfile;
+use App\Models\StudentProfile;
 use App\Models\Submission;
-use App\Models\Announcement;
+use App\Models\Tag;
+use App\Models\Track;
 use App\Models\User;
-use App\Models\BillingRecord;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -47,7 +47,7 @@ class DatabaseSeeder extends Seeder
             $cohortLabGroups = $labGroups->where('cohort_id', $cohort->id);
             $students = $students->concat(StudentProfile::factory(30)->create([
                 'cohort_id' => $cohort->id,
-                'lab_group_id' => $cohortLabGroups->random()->id
+                'lab_group_id' => $cohortLabGroups->random()->id,
             ]));
         }
 
@@ -166,7 +166,7 @@ class DatabaseSeeder extends Seeder
 
             // Pick random student IDs
             $presentKeys = (array) array_rand($studentIds, $presentCount);
-            $presentStudentIds = array_map(fn($key) => $studentIds[$key], $presentKeys);
+            $presentStudentIds = array_map(fn ($key) => $studentIds[$key], $presentKeys);
 
             foreach ($presentStudentIds as $studentId) {
                 $attendanceData[] = [
@@ -187,13 +187,13 @@ class DatabaseSeeder extends Seeder
         }
 
         // Insert any leftover records remaining in the array
-        if (!empty($attendanceData)) {
+        if (! empty($attendanceData)) {
             DB::table('attendance_records')->insert($attendanceData);
         }
 
         // 15. Excuse requests (10% of attendance records)
         $attendanceRecords = DB::table('attendance_records')->pluck('id')->toArray();
-        $excuseCount = (int)(count($attendanceRecords) * 0.1);
+        $excuseCount = (int) (count($attendanceRecords) * 0.1);
         $selectedIds = (array) array_rand($attendanceRecords, $excuseCount);
         foreach ($selectedIds as $attendanceId) {
             ExcuseRequest::factory()->create(['attendance_id' => $attendanceId]);

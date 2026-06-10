@@ -2,18 +2,18 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Str;
+use App\Models\Course;
+use App\Models\Submission;
+use App\Models\Tag;
+use App\Policies\CoursePolicy;
+use App\Policies\SubmissionPolicy;
+use App\Policies\TagPolicy;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\RateLimiter;
-
-use App\Models\Submission;
-use App\Policies\SubmissionPolicy;
 use Illuminate\Support\Facades\Gate;
-use App\Models\Tag;
-use App\Policies\TagPolicy;
-
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -32,18 +32,18 @@ class AppServiceProvider extends ServiceProvider
     {
         RateLimiter::for('login', function (Request $request) {
             $email = Str::lower($request->input('email'));
-            
+
             return Limit::perMinute(5)
-                ->by($request->ip() . '|' . $email)
+                ->by($request->ip().'|'.$email)
                 ->response(function () {
                     return response()->json([
-                        'message' => 'Too many login attempts. Please try again in 60 seconds.'
+                        'message' => 'Too many login attempts. Please try again in 60 seconds.',
                     ], 429);
                 });
         });
 
         Gate::policy(Tag::class, TagPolicy::class);
         Gate::policy(Submission::class, SubmissionPolicy::class);
-        Gate::policy(\App\Models\Course::class, \App\Policies\CoursePolicy::class);
+        Gate::policy(Course::class, CoursePolicy::class);
     }
 }

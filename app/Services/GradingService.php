@@ -16,7 +16,7 @@ class GradingService // grading logic
 
         $deliverable = $submission->deliverable;
 
-        if (!$deliverable || $deliverable->max_score == 0) {
+        if (! $deliverable || $deliverable->max_score == 0) {
             return 0;
         }
 
@@ -33,11 +33,11 @@ class GradingService // grading logic
     }
 
     public function applyOverride(Submission $submission, float $newScore, string $note, int $overriddenBy): Submission
-    { //save overidden data
-        $submission->override_score  = $newScore;
-        $submission->override_note   = $note;
-        $submission->overridden_by   = $overriddenBy;
-        $submission->overridden_at   = now();
+    { // save overidden data
+        $submission->override_score = $newScore;
+        $submission->override_note = $note;
+        $submission->overridden_by = $overriddenBy;
+        $submission->overridden_at = now();
         $submission->save();
 
         return $submission;
