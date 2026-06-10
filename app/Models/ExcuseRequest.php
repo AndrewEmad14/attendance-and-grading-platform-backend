@@ -4,10 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ExcuseRequest extends Model
 {
   use HasFactory;
+  const STATUS_PENDING  = 'pending';
+  const STATUS_APPROVED = 'approved';
+  const STATUS_REJECTED = 'rejected';
 
   protected $fillable = [
     'attendance_id',
@@ -15,11 +19,11 @@ class ExcuseRequest extends Model
     'attachment_path',
     'status',
     'reviewed_by',
-    'reviewed_at'
+    'reviewed_at',
   ];
 
   protected $casts = [
-    'status' => 'string',
+    'reviewed_at' => 'datetime',
   ];
 
   public function attendanceRecord()
@@ -30,5 +34,24 @@ class ExcuseRequest extends Model
   public function reviewer()
   {
     return $this->belongsTo(StaffProfile::class, 'reviewed_by');
+  }
+  public function isPending(): bool
+  {
+    return $this->status === self::STATUS_PENDING;
+  }
+
+  public function isApproved(): bool
+  {
+    return $this->status === self::STATUS_APPROVED;
+  }
+
+  public function isRejected(): bool
+  {
+    return $this->status === self::STATUS_REJECTED;
+  }
+
+  public function getStudentAttribute(): ?StudentProfile
+  {
+    return $this->attendanceRecord?->student;
   }
 }

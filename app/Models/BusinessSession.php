@@ -13,7 +13,12 @@ class BusinessSession extends Model
 
   public function cohorts()
   {
-    return $this->belongsToMany(Cohort::class, 'business_sessions_cohorts');
+    return $this->belongsToMany(
+      Cohort::class,
+      'business_sessions_cohorts',
+      'business_session_id',
+      'cohort_id'
+    );
   }
 
   // Polymorphic engagements (business sessions)

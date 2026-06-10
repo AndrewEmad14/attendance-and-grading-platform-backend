@@ -2,16 +2,19 @@
 
 namespace App\Models;
 
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
-
-    protected $table = 'users';
+    const ROLE_BRANCH_MANAGER = 'branch_manager';
+    const ROLE_TRACK_ADMIN = 'track_admin';
+    const ROLE_INSTRUCTOR = 'instructor';
+    const ROLE_STUDENT = 'student';
 
     protected $fillable = [
         'name',
@@ -19,6 +22,8 @@ class User extends Authenticatable
         'password_hash',
         'role',
         'expires_at',
+        'remember_token',
+        'email_verified_at',
     ];
 
     protected $hidden = [
@@ -28,8 +33,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'expires_at' => 'datetime',
-        'role' => 'string',
+        'expires_at'        => 'datetime',
     ];
 
     public function getAuthPasswordName(): string
@@ -45,14 +49,14 @@ class User extends Authenticatable
             : $value;
     }
 
-    public function studentProfile()
+    public function studentProfile(): HasOne
     {
-        return $this->hasOne(StudentProfile::class);
+        return $this->hasOne(StudentProfile::class, 'user_id');
     }
 
-    public function staffProfile()
+    public function staffProfile(): HasOne
     {
-        return $this->hasOne(StaffProfile::class);
+        return $this->hasOne(StaffProfile::class, 'user_id');
     }
 
     public function taughtEngagements()
@@ -60,12 +64,42 @@ class User extends Authenticatable
         return $this->hasMany(Engagement::class, 'staff_id');
     }
 
-    public function tags(){
+    public function tags()
+    {
         return $this->belongsToMany(
-        Tag::class,
-        'students_tags',
-        'student_id',
-        'tag_id'
+            Tag::class,
+            'students_tags',
+            'student_id',
+            'tag_id'
         );
+    }
+
+    public function isBranchManager(): bool
+    {
+        return $this->role === self::ROLE_BRANCH_MANAGER;
+    }
+
+    public function isTrackAdmin(): bool
+    {
+        return $this->role === self::ROLE_TRACK_ADMIN;
+    }
+
+    public function isInstructor(): bool
+    {
+        return $this->role === self::ROLE_INSTRUCTOR;
+    }
+
+    public function isStudent(): bool
+    {
+        return $this->role === self::ROLE_STUDENT;
+    }
+
+    public function isStaff(): bool
+    {
+        return in_array($this->role, [
+            self::ROLE_BRANCH_MANAGER,
+            self::ROLE_TRACK_ADMIN,
+            self::ROLE_INSTRUCTOR,
+        ]);
     }
 }

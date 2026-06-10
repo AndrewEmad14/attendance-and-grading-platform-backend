@@ -37,11 +37,21 @@ class Cohort extends Model
 
   public function businessSessions()
   {
-    return $this->belongsToMany(BusinessSession::class, 'business_sessions_cohorts');
+    return $this->belongsToMany(
+      BusinessSession::class,
+      'business_sessions_cohorts',
+      'cohort_id',
+      'business_session_id'
+    );
   }
 
   public function trackAdmins()
   {
     return $this->belongsToMany(StaffProfile::class, 'cohorts_admins', 'cohort_id', 'staff_id');
+  }
+
+  public function announcements()
+  {
+    return $this->hasMany(Announcement::class, 'cohort_id');
   }
 }

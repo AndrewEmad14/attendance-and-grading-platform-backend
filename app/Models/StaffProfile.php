@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class StaffProfile extends Model
 {
@@ -21,19 +23,20 @@ class StaffProfile extends Model
     'fixed_salary' => 'integer',
   ];
 
-  public function user()
+  public function user(): BelongsTo
   {
-    return $this->belongsTo(User::class);
+    return $this->belongsTo(User::class, 'user_id');
   }
 
-  public function engagements()
+  public function engagements(): HasMany
   {
     return $this->hasMany(Engagement::class, 'staff_id');
   }
 
   public function managedCohorts()
   {
-    return $this->belongsToMany(Cohort::class, 'cohorts_admins', 'staff_id', 'cohort_id');
+    // return $this->belongsToMany(Cohort::class, 'cohorts_admins', 'staff_id', 'cohort_id');
+    return $this->hasMany(CohortAdmin::class, 'staff_id');
   }
 
   public function overriddenSubmissions()

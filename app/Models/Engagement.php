@@ -8,10 +8,16 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Models\Course;
 use App\Models\Lab;
 use App\Models\BusinessSession;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Engagement extends Model
 {
   use HasFactory;
+  const TYPE_COURSE = 'App\\Models\\Course';
+  const TYPE_LAB = 'App\\Models\\Lab';
+  const TYPE_BUSINESS_SESSION = 'App\\Models\\BusinessSession';
 
   protected $fillable = [
     'engageable_id',
@@ -29,24 +35,24 @@ class Engagement extends Model
   ];
 
   // Polymorphic relation
-  public function engageable() // course,lab,meeting
+  public function engageable(): MorphTo // course,lab,meeting
   {
     return $this->morphTo();
   }
 
-  public function staff()
+  public function staff(): BelongsTo
   {
     return $this->belongsTo(StaffProfile::class, 'staff_id');
   }
 
-  public function attendanceRecords()
+  public function attendanceRecords(): HasMany
   {
     return $this->hasMany(AttendanceRecord::class);
   }
 
-  public function billingRecord()
+  public function billingRecord(): HasMany
   {
-    return $this->hasOne(BillingRecord::class);
+    return $this->hasMany(BillingRecord::class, 'engagement_id');
   }
 
   /**
@@ -67,5 +73,29 @@ class Engagement extends Model
         });
       });
     });
+  }
+
+  public function isLecture(): bool
+  {
+    return $this->engageable_type === self::TYPE_COURSE;
+  }
+
+  public function isLab(): bool
+  {
+    return $this->engageable_type === self::TYPE_LAB;
+  }
+
+  public function isBusinessSession(): bool
+  {
+    return $this->engageable_type === self::TYPE_BUSINESS_SESSION;
+  }
+
+  public function type(): string
+  {
+    return match ($this->engageable_type) {
+      self::TYPE_COURSE => 'lecture',
+      self::TYPE_LAB => 'lab',
+      self::TYPE_BUSINESS_SESSION => 'business_session',
+    };
   }
 }

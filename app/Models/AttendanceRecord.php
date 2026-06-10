@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class AttendanceRecord extends Model
 {
@@ -21,18 +23,29 @@ class AttendanceRecord extends Model
     'left_at' => 'datetime',
   ];
 
-  public function engagement()
-  {
-    return $this->belongsTo(Engagement::class);
-  }
 
-  public function student()
+  public function student(): BelongsTo
   {
     return $this->belongsTo(StudentProfile::class, 'student_id');
   }
 
-  public function excuseRequest()
+  public function engagement(): BelongsTo
+  {
+    return $this->belongsTo(Engagement::class, 'engagement_id');
+  }
+
+  public function excuseRequest(): HasOne
   {
     return $this->hasOne(ExcuseRequest::class, 'attendance_id');
+  }
+
+  public function isCheckedIn(): bool
+  {
+    return $this->arrived_at !== null && $this->left_at === null;
+  }
+
+  public function isComplete(): bool
+  {
+    return $this->arrived_at !== null && $this->left_at !== null;
   }
 }
