@@ -44,5 +44,6 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::policy(Tag::class, TagPolicy::class);
         Gate::policy(Submission::class, SubmissionPolicy::class);
+        Gate::policy(\App\Models\Course::class, \App\Policies\CoursePolicy::class);
     }
 }

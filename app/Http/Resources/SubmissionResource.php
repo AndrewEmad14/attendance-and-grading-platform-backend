@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Services\GradingService;
-
+use App\Models\StaffProfile;
 
 class SubmissionResource extends JsonResource
 {
@@ -33,14 +33,14 @@ class SubmissionResource extends JsonResource
                 fn() => $gradingService->computeNormalizedScore($this->resource)
             ),
             'is_overridden'     => !is_null($this->override_score), // true when override exists
-            'graded_by'         => $this->whenLoaded('gradedBy', fn() => [
-                'id'   => $this->gradedBy->id,
-                'name' => $this->gradedBy->name,
-            ]),
-            'overridden_by'     => $this->whenLoaded('overriddenBy', fn() => [
-                'id'   => $this->overriddenBy->id,
-                'name' => $this->overriddenBy->name,
-            ]),
+            'graded_by'         => $this->graded_by ? [
+                'id'   => $this->graded_by,
+                'name' => StaffProfile::find($this->graded_by)?->user->name,
+            ] : null,
+            'overridden_by'     => $this->overridden_by ? [
+                'id'   => $this->overridden_by,
+                'name' => StaffProfile::find($this->overridden_by)?->user->name,
+            ] : null,
             'overridden_at'     => $this->overridden_at,
         ];
     }

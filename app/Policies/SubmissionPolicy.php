@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Submission;
 use App\Models\User;
+use App\Models\StudentProfile;
 use Illuminate\Support\Facades\DB;
 
 class SubmissionPolicy
@@ -29,13 +30,12 @@ class SubmissionPolicy
                 ->pluck('engageable_id');
 
             // check if submission's student belongs to one of those labs
-            return DB::table('lab_group_users')
+            return StudentProfile::where('id', $submission->student_id)
                 ->whereIn('lab_group_id', function ($query) use ($instructorLabIds) {
                     $query->select('lab_group_id')
                           ->from('labs')
                           ->whereIn('id', $instructorLabIds);
                 })
-                ->where('user_id', $submission->student_id)
                 ->exists();
         }
 
