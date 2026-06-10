@@ -234,26 +234,26 @@ class DatabaseSeeder extends Seeder
                 'email' => 'branch@example.com',
                 'password' => 'password123',
                 'role' => 'branch_manager',
-                'name' => 'Test Branch Manager'
+                'name' => 'Test Branch Manager',
             ],
             [
                 'email' => 'admin@example.com',
                 'password' => 'password123',
                 'role' => 'track_admin',
-                'name' => 'Test Track Admin'
+                'name' => 'Test Track Admin',
             ],
             [
                 'email' => 'instructor@example.com',
                 'password' => 'password123',
                 'role' => 'instructor',
-                'name' => 'Test Instructor'
+                'name' => 'Test Instructor',
             ],
             [
                 'email' => 'student@example.com',
                 'password' => 'password123',
                 'role' => 'student',
-                'name' => 'Test Student'
-            ]
+                'name' => 'Test Student',
+            ],
         ];
 
         echo "\n========================================\n";
@@ -265,7 +265,7 @@ class DatabaseSeeder extends Seeder
                 'email' => $testUser['email'],
                 'password_hash' => $testUser['password'],
                 'role' => $testUser['role'],
-                'name' => $testUser['name']
+                'name' => $testUser['name'],
             ]);
 
             // Generate personal access token
