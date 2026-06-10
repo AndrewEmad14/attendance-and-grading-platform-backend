@@ -1,0 +1,29 @@
+info:
+  name: UpdateAttendance
+  type: http
+  seq: 5
+
+http:
+  method: PATCH
+  url: "{{baseurl}}/attendance/1"
+  body:
+    type: json
+    data: |
+      {
+        "arrived_at": "2024-10-01T09:05:00Z",
+        "left_at": "2024-10-01T12:00:00Z"
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+runtime:
+  variables:
+    - name: token
+      value: 7|BCgoFsRrf8pr0w5mCmcn6eMFJGp0dSEt96v4yUoR1070ba6d
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

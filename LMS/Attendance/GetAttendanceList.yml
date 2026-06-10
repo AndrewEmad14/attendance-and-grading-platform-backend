@@ -1,0 +1,22 @@
+info:
+  name: GetAttendanceList
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseurl}}/attendance"
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+runtime:
+  variables:
+    - name: token
+      value: 7|BCgoFsRrf8pr0w5mCmcn6eMFJGp0dSEt96v4yUoR1070ba6d
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
