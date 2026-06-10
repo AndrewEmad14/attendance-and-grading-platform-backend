@@ -14,6 +14,15 @@ use Illuminate\Support\Facades\Gate;
 use App\Models\Tag;
 use App\Policies\TagPolicy;
 
+use App\Models\AttendanceRecord;
+use App\Models\Cohort;
+use App\Models\ExcuseRequest;
+use App\Models\StudentProfile;
+use App\Policies\AttendancePolicy;
+use App\Policies\CohortPolicy;
+use App\Policies\ExcuseRequestPolicy;
+use App\Policies\StudentProfilePolicy;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -32,7 +41,7 @@ class AppServiceProvider extends ServiceProvider
     {
         RateLimiter::for('login', function (Request $request) {
             $email = Str::lower($request->input('email'));
-            
+
             return Limit::perMinute(5)
                 ->by($request->ip() . '|' . $email)
                 ->response(function () {
@@ -44,5 +53,9 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::policy(Tag::class, TagPolicy::class);
         Gate::policy(Submission::class, SubmissionPolicy::class);
+        Gate::policy(AttendanceRecord::class, AttendancePolicy::class);
+        Gate::policy(ExcuseRequest::class, ExcuseRequestPolicy::class);
+        Gate::policy(StudentProfile::class, StudentProfilePolicy::class);
+        Gate::policy(Cohort::class, CohortPolicy::class);
     }
 }

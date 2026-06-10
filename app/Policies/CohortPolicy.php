@@ -4,9 +4,11 @@ namespace App\Policies;
 
 use App\Models\Cohort;
 use App\Models\User;
+use App\Services\AccessService;
 
 class CohortPolicy
 {
+    public function __construct(private AccessService $accessService) {}
     public function viewAny(User $user): bool
     {
         return true;
@@ -46,5 +48,20 @@ class CohortPolicy
     public function delete(User $user, Cohort $cohort): bool
     {
         return $user->role === 'branch_manager';
+    }
+
+    public function viewAtRisk(User $user, Cohort $cohort): bool
+    {
+        if ($user->isBranchManager()) {
+            return true;
+        }
+
+        if ($user->isTrackAdmin()) {
+            return $cohort->admins()
+                ->where('staff_id', $user->staffProfile->id)
+                ->exists();
+        }
+
+        return false;
     }
 }
