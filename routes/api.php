@@ -2,6 +2,7 @@
 
 use App\Enums\Role;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BranchAnalyticsController;
 use App\Http\Controllers\Api\BusinessSessionController;
 use App\Http\Controllers\Api\CohortController;
 use App\Http\Controllers\Api\CourseController;
@@ -46,6 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::patch('/students/{studentId}/notes', [NoteController::class, 'append']);
 
+    Route::get('/analytics/branch', BranchAnalyticsController::class);
     Route::get('/analytics/cohorts/{cohortId}', [GradingAnalyticsController::class, 'cohortGrades']);
     Route::get('/analytics/cohorts/{cohortId}/at-risk', [GradingAnalyticsController::class, 'atRiskStudents']);
     Route::get('/analytics/lab-groups/{labGroupId}', [GradingAnalyticsController::class, 'labGroupGrades']);
