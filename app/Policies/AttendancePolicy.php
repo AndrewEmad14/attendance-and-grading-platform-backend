@@ -10,11 +10,6 @@ class AttendancePolicy
 {
   public function __construct(private AccessService $accessService) {}
 
-  public function viewAny(User $user): bool
-  {
-    return in_array($user->role, ['branch_manager', 'track_admin', 'instructor']);
-  }
-
   public function view(User $user, AttendanceRecord $record): bool
   {
     return $this->accessService->canAccessStudent($user, $record->student);
