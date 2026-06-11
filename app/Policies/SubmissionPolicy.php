@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\CourseDeliverable;
+use App\Models\StaffProfile;
 use App\Models\StudentProfile;
 use App\Models\Submission;
 use App\Models\User;
@@ -49,6 +50,60 @@ class SubmissionPolicy
 
         return false;
     }
+
+    /**
+     * Who may list submissions for a deliverable (ACC-2 / ACC-3).
+     * Track admin: any. Instructor: only if they teach a lab in this
+     * deliverable's course. Student: no — they use their own tracker.
+     *
+     * Coarse gate only: the per-group narrowing (instructor sees only
+     * their own group's rows) happens in the index query, not here.
+     */
+    public function viewAny(User $user, ?CourseDeliverable $deliverable = null): bool
+    {
+        if ($user->role === 'track_admin') {
+            return true;
+        }
+
+        if ($user->role === 'instructor' && $deliverable !== null) {
+            $staffId = StaffProfile::where('user_id', $user->id)->value('id');
+
+            if ($staffId === null) {
+                return false;
+            }
+
+            return DB::table('engagements')
+                ->where('engageable_type', 'lab')
+                ->where('staff_id', $staffId)
+                ->whereIn('engageable_id', function ($query) use ($deliverable) {
+                    $query->select('id')
+                        ->from('labs')
+                        ->where('course_id', $deliverable->course_id);
+                })
+                ->exists();
+        }
+
+        return false;
+    }
+
+    /**
+     * Who may read a given student's submission tracker (ACC-4).
+     * The student themselves, or a track admin.
+     */
+    public function viewStudentTracker(User $user, StudentProfile $student): bool
+    {
+        if ($user->role === 'track_admin') {
+            return true;
+        }
+
+        if ($user->role === 'student') {
+            $ownId = StudentProfile::where('user_id', $user->id)->value('id');
+            return $ownId !== null && $ownId === $student->id;
+        }
+
+        return false;
+    }
+
     public function grade(User $user, Submission $submission): bool
     {
         if ($user->role === 'track_admin') {
