@@ -38,20 +38,15 @@ class SubmissionController extends Controller
             ], 403);
         }
 
-        $this->gradingService->applyGrade($submission, $request->raw_score, auth()->id());
+        $this->gradingService->applyGrade($submission, $request->raw_score, auth()->user()->staffProfile->id);
 
-        return new SubmissionResource($submission->fresh()->load(['deliverable', 'gradedBy']));
+        return new SubmissionResource($submission->fresh()->load('deliverable'));
     }
-
 
     // overrides an instructor grade — raw_score never touched, audit trail preserved
     public function override(OverrideSubmissionRequest $request, Submission $submission)
     {
-        // dd(auth()->user()->role, $submission->id);
-        // $this->authorize('override', $submission);
-        if (auth()->user()->role !== 'track_admin') {
-    return response()->json(['message' => 'Forbidden'], 403);
-}
+        $this->authorize('override', $submission);
         $submission->load('deliverable');
 
         // cannot override an ungraded submission
@@ -72,11 +67,11 @@ class SubmissionController extends Controller
             $submission,
             $request->new_score,
             $request->override_note,
-            auth()->id()
+            auth()->user()->staffProfile->id
         );
 
         return new SubmissionResource(
-            $submission->fresh()->load(['deliverable', 'gradedBy', 'overriddenBy'])
+            $submission->fresh()->load('deliverable')
         );
     }
 }

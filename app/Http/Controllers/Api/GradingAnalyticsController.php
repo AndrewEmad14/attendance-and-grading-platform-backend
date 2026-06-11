@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\LabGroup;
+use App\Models\StudentProfile;
 use Illuminate\Support\Facades\DB;
 
 class GradingAnalyticsController extends Controller
@@ -79,9 +80,8 @@ class GradingAnalyticsController extends Controller
         $labGroups = LabGroup::where('cohort_id', $cohortId)->get();
         $consistency = [];
         foreach ($labGroups as $group) {
-            $groupStudentIds = DB::table('lab_group_users')
-                ->where('lab_group_id', $group->id)
-                ->pluck('student_id');
+            $groupStudentIds = StudentProfile::where('lab_group_id', $group->id)
+                ->pluck('id');
 
             $scores = [];
             foreach ($courseGrades as $studentId => $courseScores) {
@@ -99,6 +99,7 @@ class GradingAnalyticsController extends Controller
 
         // count students with at least one tag
         $taggedCount = DB::table('students_tags')
+            ->whereIn('student_id', StudentProfile::where('cohort_id', $cohortId)->pluck('id'))
             ->distinct('student_id')
             ->count('student_id');
 
@@ -118,9 +119,8 @@ class GradingAnalyticsController extends Controller
         }
 
         // get all students in this lab group
-        $studentIds = DB::table('lab_group_users')
-            ->where('lab_group_id', $labGroupId)
-            ->pluck('student_id');
+        $studentIds = StudentProfile::where('lab_group_id', $labGroupId)
+            ->pluck('id');
 
         // get their submissions with deliverables
         $submissions = DB::table('submissions')
