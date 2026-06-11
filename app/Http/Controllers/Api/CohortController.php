@@ -26,12 +26,24 @@ class CohortController extends Controller
         }
 
         if ($user->role === 'track_admin') {
-            $query->whereHas('admins', function ($q) use ($user) {
-                $q->where('staff_id', $user->staffProfile->id);
+            $query->whereHas('trackAdmins', function ($q) use ($user) {
+                $q->where('staff_profiles.id', $user->staffProfile->id);
             });
         } elseif ($user->role === 'instructor') {
-            $query->whereHas('engagements', function ($q) use ($user) {
-                $q->where('staff_id', $user->staffProfile->id);
+            $staffId = $user->staffProfile->id;
+            $query->where(function ($q) use ($staffId) {
+                // Check if instructor has lectures in this cohort
+                $q->whereHas('courses.engagements', function ($sub) use ($staffId) {
+                    $sub->where('staff_id', $staffId);
+                })
+                // Check if instructor has labs in this cohort
+                    ->orWhereHas('labGroups.labs.engagements', function ($sub) use ($staffId) {
+                        $sub->where('staff_id', $staffId);
+                    })
+                // Check if instructor has business sessions linked to this cohort
+                    ->orWhereHas('businessSessions.engagements', function ($sub) use ($staffId) {
+                        $sub->where('staff_id', $staffId);
+                    });
             });
         } elseif ($user->role === 'student') {
             $query->where('id', $user->studentProfile->cohort_id);
@@ -42,8 +54,8 @@ class CohortController extends Controller
         }
 
         if ($request->boolean('include_meta')) {
-            $query->withCount('students')
-                ->with(['admins.user']);
+            $query->withCount('studentProfiles as students_count')
+                ->with(['trackAdmins.user']);
         }
 
         $query->with(['track']);

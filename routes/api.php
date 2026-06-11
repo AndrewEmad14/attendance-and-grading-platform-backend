@@ -27,6 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('tracks/{track}')->group(function () {
         Route::post('cohorts', [CohortController::class, 'store']);
         Route::get('cohorts', [CohortController::class, 'index']);
+        Route::patch('cohorts/{cohort}', [CohortController::class, 'update']);
     });
     Route::get('cohorts', [CohortController::class, 'index']);
 
@@ -75,15 +76,12 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::prefix('business-sessions')->group(function () {
-
         Route::get('', [BusinessSessionController::class, 'index']);
         Route::post('', [BusinessSessionController::class, 'store']);
         Route::get('{businessSession}', [BusinessSessionController::class, 'show']);
 
         Route::post('{businessSession}/cohorts', [BusinessSessionController::class, 'enrollCohort']);
         Route::delete('{businessSession}/cohorts/{cohortId}', [BusinessSessionController::class, 'removeCohort']);
-
-        Route::patch('cohorts/{cohort}', [CohortController::class, 'update']);
     });
 });
 
