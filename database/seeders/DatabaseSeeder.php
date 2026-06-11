@@ -165,29 +165,13 @@ class DatabaseSeeder extends Seeder
             $presentCount = rand(ceil($studentCount * 0.6), $studentCount);
             $presentKeys = (array) array_rand($studentIds, $presentCount);
             $presentStudentIds = array_map(fn($key) => $studentIds[$key], $presentKeys);
-            $absentStudentIds = array_diff($studentIds, $presentStudentIds);
+
             foreach ($presentStudentIds as $studentId) {
                 $attendanceData[] = [
                     'engagement_id' => $engagement->id,
                     'student_id' => $studentId,
                     'arrived_at' => now()->subDays(rand(0, 30))->subHours(rand(1, 8))->toDateTimeString(),
                     'left_at' => now()->subDays(rand(0, 30))->toDateTimeString(),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-
-                if (count($attendanceData) >= 1000) {
-                    DB::table('attendance_records')->insert($attendanceData);
-                    $attendanceData = [];
-                }
-            }
-
-            foreach ($absentStudentIds as $studentId) {
-                $attendanceData[] = [
-                    'engagement_id' => $engagement->id,
-                    'student_id' => $studentId,
-                    'arrived_at' => null,
-                    'left_at' => null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
