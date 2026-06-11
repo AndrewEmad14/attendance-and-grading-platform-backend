@@ -37,4 +37,14 @@ class ExcuseRequestPolicy
     if ($user->role !== 'track_admin') return false;
     return $this->accessService->canAccessStudent($user, $excuseRequest->student);
   }
+
+  public function approve(User $user, ExcuseRequest $excuseRequest): bool
+  {
+    return $this->update($user, $excuseRequest);
+  }
+
+  public function reject(User $user, ExcuseRequest $excuseRequest): bool
+  {
+    return $this->update($user, $excuseRequest);
+  }
 }

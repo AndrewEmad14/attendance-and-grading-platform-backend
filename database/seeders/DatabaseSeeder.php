@@ -47,27 +47,36 @@ class DatabaseSeeder extends Seeder
         $students = collect();
         foreach ($cohorts as $cohort) {
             $cohortLabGroups = $labGroups->where('cohort_id', $cohort->id);
-            $students = $students->concat(StudentProfile::factory(30)->create([
-                'cohort_id' => $cohort->id,
-                'lab_group_id' => $cohortLabGroups->random()->id,
-                'attendance_balance' => 250,
-            ]));
+
+            for ($i = 0; $i < 30; $i++) {
+                // Create the User first
+                $user = User::factory()->student()->create();
+
+                // Create the Profile linked to that User
+                $students->push(StudentProfile::factory()->create([
+                    'user_id'      => $user->id, // <--- Add this
+                    'cohort_id'    => $cohort->id,
+                    'lab_group_id' => $cohortLabGroups->random()->id,
+                    'attendance_balance' => 250,
+                ]));
+            }
         }
 
         // 5. Staff profiles
         $staff = collect();
+        $roles = [
+            'branch_manager' => 1,
+            'track_admin'    => 2,
+            'instructor'     => 7
+        ];
 
-        $branchManagerUser = User::factory()->branchManager()->create();
-        $staff->push(StaffProfile::factory()->create(['user_id' => $branchManagerUser->id]));
+        foreach ($roles as $role => $count) {
+            // Create users by setting the 'role' attribute directly in state()
+            $users = User::factory($count)->state(['role' => $role])->create();
 
-        $trackAdminUsers = User::factory(2)->trackAdmin()->create();
-        foreach ($trackAdminUsers as $user) {
-            $staff->push(StaffProfile::factory()->create(['user_id' => $user->id]));
-        }
-
-        $instructorUsers = User::factory(7)->instructor()->create();
-        foreach ($instructorUsers as $user) {
-            $staff->push(StaffProfile::factory()->create(['user_id' => $user->id]));
+            foreach ($users as $user) {
+                $staff->push(StaffProfile::factory()->create(['user_id' => $user->id]));
+            }
         }
 
         // 6. Assign track admins to active cohorts
@@ -251,71 +260,45 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // 19. TEST USERS WITH HARDCODED CREDENTIALS & TOKENS
-        // These are for quick testing of authentication and API endpoints
-        $testUsers = [
-            [
-                'email' => 'branch@example.com',
-                'password' => 'password123',
-                'role' => 'branch_manager',
-                'name' => 'Test Branch Manager',
-            ],
-            [
-                'email' => 'admin@example.com',
-                'password' => 'password123',
-                'role' => 'track_admin',
-                'name' => 'Test Track Admin',
-            ],
-            [
-                'email' => 'instructor@example.com',
-                'password' => 'password123',
-                'role' => 'instructor',
-                'name' => 'Test Instructor',
-            ],
-            [
-                'email' => 'student@example.com',
-                'password' => 'password123',
-                'role' => 'student',
-                'name' => 'Test Student',
-            ],
-        ];
-
-        echo "\n========================================\n";
-        echo "TEST USERS & TOKENS\n";
-        echo "========================================\n\n";
-
-        foreach ($testUsers as $testUser) {
-            $user = User::factory()->create([
-                'email' => $testUser['email'],
-                'password_hash' => $testUser['password'],
-                'role' => $testUser['role'],
-                'name' => $testUser['name'],
-            ]);
-
-            // Generate personal access token
-            $token = $user->createToken('test-token')->plainTextToken;
-
-            // Display in console
-            echo "Role: {$testUser['role']}\n";
-            echo "Email: {$testUser['email']}\n";
-            echo "Password: {$testUser['password']}\n";
-            echo "Token: {$token}\n";
-            echo "---\n\n";
-
-            // Create staff profile if applicable
-            if (in_array($testUser['role'], ['branch_manager', 'track_admin', 'instructor'])) {
-                StaffProfile::factory()->create(['user_id' => $user->id]);
-            }
-
-            // Create student profile if applicable
-            if ($testUser['role'] === 'student') {
-                StudentProfile::factory()->create(['user_id' => $user->id]);
-            }
-        }
-
-        echo "========================================\n\n";
+        // 20. Output credentials
+        $this->outputCredentials($staff, $students);
     }
 
+    private function outputCredentials(Collection $staff, Collection $students)
+    {
+        echo "\n" . str_repeat("=", 50) . "\nGENERATED USERS, TOKENS & ACCESS MAP\n" . str_repeat("=", 50) . "\n\n";
+
+        $testData = [
+            ['email' => 'branch@example.com', 'role' => 'branch_manager', 'name' => 'Branch Manager'],
+            ['email' => 'admin@example.com', 'role' => 'track_admin', 'name' => 'Track Admin'],
+            ['email' => 'instructor@example.com', 'role' => 'instructor', 'name' => 'Instructor'],
+            ['email' => 'student@example.com', 'role' => 'student', 'name' => 'Test Student']
+        ];
+
+        foreach ($testData as $data) {
+            $user = User::factory()->create(['email' => $data['email'], 'role' => $data['role'], 'name' => $data['name']]);
+            $token = $user->createToken('test-token')->plainTextToken;
+
+            echo "ROLE: {$data['role']} | NAME: {$data['name']} | USER ID: {$user->id}\n";
+            echo "TOKEN: {$token}\n";
+
+            if ($data['role'] === 'student') {
+                $profile = StudentProfile::factory()->create(['user_id' => $user->id]);
+                echo "STUDENT PROFILE ID: {$profile->id}\n";
+            } else {
+                $profile = StaffProfile::factory()->create(['user_id' => $user->id]);
+                echo "STAFF PROFILE ID: {$profile->id}\n";
+
+                // Show sample of 3 students for this staff
+                echo "ACCESSIBLE STUDENTS (Sample):\n";
+                $accessible = $students->take(3);
+                foreach ($accessible as $st) {
+                    echo "  - NAME: {$st->user->name} | STUDENT ID: {$st->id} | USER ID: {$st->user->id}\n";
+                }
+            }
+            echo str_repeat("-", 50) . "\n";
+        }
+    }
     /**
      * Determines which students are EXPECTED to attend an engagement.
      */

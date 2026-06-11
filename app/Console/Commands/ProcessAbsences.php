@@ -9,7 +9,6 @@ use App\Models\BusinessSession;
 use App\Models\Course;
 use App\Models\Lab;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 
 class ProcessAbsences extends Command
 {
@@ -18,19 +17,19 @@ class ProcessAbsences extends Command
 
   public function handle(): void
   {
-    Log::info('=== Attendance Absence Processing Started ===');
+    $this->logWithTime('=== Attendance Absence Processing Started ===');
 
     $engagements = Engagement::where('ends_at', '<=', now())
       ->whereNull('absences_processed_at')
       ->get();
 
-    Log::info("Found {$engagements->count()} unprocessed engagements that have ended.");
+    $this->logWithTime("Found {$engagements->count()} unprocessed engagements that have ended.");
 
     $engagements->each(function (Engagement $engagement) {
-      Log::info("Processing Engagement ID: {$engagement->id} ({$engagement->engageable_type})");
+      $this->logWithTime("Processing Engagement ID: {$engagement->id} ({$engagement->engageable_type})");
 
       $studentIds = $this->getExpectedStudentIds($engagement);
-      Log::info("Expected students count: " . count($studentIds));
+      $this->logWithTime("Expected students count: " . count($studentIds));
 
       foreach ($studentIds as $studentId) {
         $attended = $engagement->attendanceRecords()
@@ -39,7 +38,7 @@ class ProcessAbsences extends Command
           ->exists();
 
         if ($attended) {
-          Log::info("Student ID {$studentId} attended. Skipping.");
+          $this->logWithTime("Student ID {$studentId} attended. Skipping.", 'line');
           continue;
         }
 
@@ -52,14 +51,29 @@ class ProcessAbsences extends Command
 
         StudentProfile::where('id', $studentId)->decrement('attendance_balance', $deduction);
 
-        Log::warning("Deducted {$deduction} points from Student ID {$studentId}. Reason: {$reason}");
+        $this->logWithTime("Deducted {$deduction} points from Student ID {$studentId}. Reason: {$reason}", 'warn');
       }
 
       $engagement->update(['absences_processed_at' => now()]);
-      Log::info("Engagement ID: {$engagement->id} marked as processed.");
+      $this->logWithTime("Engagement ID: {$engagement->id} marked as processed.");
     });
 
-    Log::info('=== Attendance Absence Processing Completed ===');
+    $this->logWithTime("=== Attendance Absence Processing Completed ===\n");
+  }
+
+  /**
+   * Format and output log messages with the current timestamp.
+   */
+  private function logWithTime(string $message, string $level = 'info'): void
+  {
+    $timestamp = '[' . now()->toDateTimeString() . ']';
+    $formattedMessage = "{$timestamp} {$message}";
+
+    match ($level) {
+      'warn' => $this->warn($formattedMessage),
+      'line' => $this->line($formattedMessage),
+      default => $this->info($formattedMessage),
+    };
   }
 
   private function getExpectedStudentIds(Engagement $engagement): array
