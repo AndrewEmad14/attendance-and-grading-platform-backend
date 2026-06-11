@@ -1,4 +1,5 @@
 <?php
+
 // app/Mail/AccountDeactivatedNotification.php
 
 namespace App\Mail;

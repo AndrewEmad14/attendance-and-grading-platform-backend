@@ -2,23 +2,23 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Str;
-use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Auth\Notifications\ResetPassword;
 use App\Models\Course;
 use App\Models\Submission;
 use App\Models\Tag;
 use App\Policies\CoursePolicy;
 use App\Policies\SubmissionPolicy;
 use App\Policies\TagPolicy;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
@@ -47,11 +47,11 @@ class AppServiceProvider extends ServiceProvider
                     ], 429);
                 });
         });
-        
+
         Gate::policy(Tag::class, TagPolicy::class);
         Gate::policy(Submission::class, SubmissionPolicy::class);
         ResetPassword::createUrlUsing(function ($user, string $token) {
-        return env('FRONTEND_URL') . '/reset-password?token=' . $token . '&email=' . urlencode($user->email);
+            return env('FRONTEND_URL').'/reset-password?token='.$token.'&email='.urlencode($user->email);
         });
         Gate::policy(Course::class, CoursePolicy::class);
     }

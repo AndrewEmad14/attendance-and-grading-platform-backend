@@ -1,4 +1,5 @@
 <?php
+
 // app/Mail/EmailChangedNotification.php
 
 namespace App\Mail;
@@ -15,7 +16,7 @@ class EmailChangedNotification extends Mailable
     use Queueable, SerializesModels;
 
     public function __construct(
-        public User   $user,
+        public User $user,
         public string $oldEmail,
     ) {}
 

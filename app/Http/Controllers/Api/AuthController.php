@@ -3,19 +3,19 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Http\Requests\ForgetPasswordRequest;
 use App\Http\Requests\ResetPasswordRequest;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Password;
+
 class AuthController extends Controller
 {
     public function login(Request $request)
     {
         $creds = $request->only('email', 'password');
 
-        if (!auth()->attempt($creds)) {
+        if (! auth()->attempt($creds)) {
             return response()->json(['message' => 'Invalid credentials'], 401)->setStatusCode(401);
         }
 
@@ -24,6 +24,7 @@ class AuthController extends Controller
         // blocks the login if the account is expired
         if ($user->expires_at && now()->isAfter($user->expires_at)) {
             auth()->logout();
+
             return response()->json(['message' => 'Account expired'], 403)->setStatusCode(403);
         }
 
@@ -48,16 +49,17 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-        
+
         return response()->json(['message' => 'Logged out successfully'])->setStatusCode(200);
     }
 
     public function logoutAll(Request $request)
     {
         $request->user()->tokens()->delete();
-        
+
         return response()->json(['message' => 'Logged out from all devices successfully'])->setStatusCode(200);
     }
+
     public function forgotPassword(ForgetPasswordRequest $request)
     {
 
@@ -70,7 +72,6 @@ class AuthController extends Controller
 
     public function resetPassword(ResetPasswordRequest $request)
     {
-        
 
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),

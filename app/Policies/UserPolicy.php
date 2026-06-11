@@ -2,12 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\User;
-use Illuminate\Auth\Access\Response;
 use App\Enums\Role;
+use App\Models\User;
+
 class UserPolicy
 {
-
     public function view(User $requester, User $target): bool
     {
         // branch manager can view anyone
@@ -17,7 +16,7 @@ class UserPolicy
 
         // track admin cannot view branch managers or other track admins
         if ($requester->role === Role::TRACK_ADMIN) {
-            return !in_array($target->role, [
+            return ! in_array($target->role, [
                 Role::BRANCH_MANAGER,
                 Role::TRACK_ADMIN,
             ]);
@@ -56,6 +55,7 @@ class UserPolicy
 
         return false;
     }
+
     public function delete(User $requester, User $target): bool
     {
         // branch manager can deactivate anyone

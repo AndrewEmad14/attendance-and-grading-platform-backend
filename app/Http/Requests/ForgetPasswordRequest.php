@@ -22,8 +22,8 @@ class ForgetPasswordRequest extends FormRequest
     {
         return [
             'email.required' => 'Email is required.',
-            'email.email'    => 'Email must be a valid email address with a real domain.',
-            'email.max'      => 'Email cannot exceed 255 characters.',
+            'email.email' => 'Email must be a valid email address with a real domain.',
+            'email.max' => 'Email cannot exceed 255 characters.',
         ];
     }
 }

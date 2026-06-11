@@ -96,8 +96,8 @@ Route::prefix('auth')->group(function () {
         Route::post('logout-all', [AuthController::class, 'logoutAll']);
     });
 });
-  
-  Route::group(['prefix' => 'users', 'middleware' => ['auth:sanctum', 'role:'.Role::BRANCH_MANAGER.','.Role::TRACK_ADMIN]], function () {
+
+Route::group(['prefix' => 'users', 'middleware' => ['auth:sanctum', 'role:'.Role::BRANCH_MANAGER.','.Role::TRACK_ADMIN]], function () {
     Route::get('students', [UserController::class, 'listStudents']);
     Route::get('instructors', [UserController::class, 'listInstructors']);
     Route::get('track-admins', [UserController::class, 'listTrackAdmins'])->middleware('role:'.Role::BRANCH_MANAGER);
