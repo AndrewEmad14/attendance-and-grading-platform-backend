@@ -2,13 +2,53 @@
 
 namespace App\Policies;
 
+use App\Models\CourseDeliverable;
 use App\Models\StudentProfile;
 use App\Models\Submission;
 use App\Models\User;
+use App\Models\Views\SubmissionGrader;
 use Illuminate\Support\Facades\DB;
 
 class SubmissionPolicy
 {
+    /**
+     * Who may submit to a deliverable (POR-4).
+     * Students only, and only for a deliverable in their own cohort.
+     */
+    public function create(User $user, ?CourseDeliverable $deliverable = null): bool
+    {
+        if ($user->role !== 'student' || $deliverable === null) {
+            return false;
+        }
+
+        $student = StudentProfile::where('user_id', $user->id)->first();
+
+        return $student !== null
+            && $deliverable->course
+            && $deliverable->course->cohort_id === $student->cohort_id;
+    }
+
+    /**
+     * Who may view a submission (ACC-3 / ACC-4).
+     * Owner (student), the assigned grader (instructor), or any track admin.
+     */
+    public function view(User $user, Submission $submission): bool
+    {
+        if ($user->role === 'track_admin') {
+            return true;
+        }
+
+        if ($user->role === 'student') {
+            $student = StudentProfile::where('user_id', $user->id)->first();
+            return $student !== null && $submission->student_id === $student->id;
+        }
+
+        if ($user->role === 'instructor') {
+            return SubmissionGrader::authorizedFor($submission->id, $user->id);
+        }
+
+        return false;
+    }
     public function grade(User $user, Submission $submission): bool
     {
         if ($user->role === 'track_admin') {
