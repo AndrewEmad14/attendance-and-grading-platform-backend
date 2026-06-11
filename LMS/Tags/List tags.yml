@@ -6,9 +6,7 @@ info:
 http:
   method: GET
   url: "{{baseurl}}/tags"
-  auth:
-    type: bearer
-    token: 4|qZhC2g9KzLWRIRrqqS1ywzuluaUqIn7X8GQXYwfYd0b69bdf
+  auth: inherit
 
 settings:
   encodeUrl: true
