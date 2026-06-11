@@ -13,7 +13,6 @@ use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\NoteController;
 use App\Http\Controllers\Api\GradingAnalyticsController;
 use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\Api\AtRiskController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\AttendanceLedgerController;
 use App\Http\Controllers\Api\ExcuseRequestController;
@@ -84,22 +83,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('cohorts/{cohort}', [CohortController::class, 'update']);
   });
 
-  // Attendance
-  Route::get('/attendance', [AttendanceController::class, 'index']);
-  Route::get('/attendance/{attendance}', [AttendanceController::class, 'show']);
-  Route::post('/attendance', [AttendanceController::class, 'store']);
-  Route::patch('/attendance/{attendance}', [AttendanceController::class, 'update']);
+  Route::prefix('attendance')->group(function () {
+    Route::get('', [AttendanceController::class, 'index']);
+    Route::get('/{attendance}', [AttendanceController::class, 'show']);
+    Route::post('', [AttendanceController::class, 'store']);
+    Route::patch('/{attendance}', [AttendanceController::class, 'update']);
+  });
 
   Route::get('/students/{student}/attendance-ledger', [AttendanceLedgerController::class, 'show']);
-  Route::get('/analytics/cohorts/{cohort}/at-risk', [AtRiskController::class, 'index']);
 
-  // Excuses
-  Route::get('/excuse-requests', [ExcuseRequestController::class, 'index']);
-  Route::get('/excuse-requests/{excuseRequest}', [ExcuseRequestController::class, 'show']);
-  Route::post('/excuse-requests', [ExcuseRequestController::class, 'store']);
-  Route::patch('/excuse-requests/{excuseRequest}', [ExcuseRequestController::class, 'update']);
-  Route::post('/excuse-requests/{excuseRequest}/approve', [ExcuseRequestController::class, 'approve']);
-  Route::post('/excuse-requests/{excuseRequest}/reject', [ExcuseRequestController::class, 'reject']);
+  Route::prefix('excuse-requests')->group(function () {
+    Route::get('', [ExcuseRequestController::class, 'index']);
+    Route::get('/{excuseRequest}', [ExcuseRequestController::class, 'show']);
+    Route::post('', [ExcuseRequestController::class, 'store']);
+    Route::patch('/{excuseRequest}', [ExcuseRequestController::class, 'update']);
+    Route::post('/{excuseRequest}/approve', [ExcuseRequestController::class, 'approve']);
+    Route::post('/{excuseRequest}/reject', [ExcuseRequestController::class, 'reject']);
+  });
 });
 
 Route::prefix('auth')->group(function () {
