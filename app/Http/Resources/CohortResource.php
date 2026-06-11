@@ -20,7 +20,16 @@ class CohortResource extends JsonResource
             // Conditional
             'track' => new TrackResource($this->whenLoaded('track')),
             'students_count' => $this->whenCounted('students'),
-            'admins' => TrackAdminResource::collection($this->whenLoaded('admins')),
+            'admins' => $this->whenLoaded('trackAdmins', function () {
+                return $this->trackAdmins->map(function ($staff) {
+                    return [
+                        'staff_profile_id' => $staff->id,
+                        'user_id' => $staff->user_id,
+                        'name' => $staff->user?->name,
+                        'email' => $staff->user?->email,
+                    ];
+                });
+            }),
         ];
     }
 }
