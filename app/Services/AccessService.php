@@ -8,10 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class AccessService
 {
-  /**
-   * Service to check if a user can access a specific student
-   * Used in policies for single-record (show, update) authorization.
-   */
+  // takes a user & student and returns if user can access the student (show/update)
   public function canAccessStudent(User $user, StudentProfile $student): bool
   {
     return match ($user->role) {
@@ -34,14 +31,8 @@ class AccessService
     };
   }
 
-  /**
-   * given a query builder, add WHERE clauses so it only returns records the user is allowed to see.
-   * Used in services for collection endpoints.
-   *
-   * The $through parameter is the dot-notation path from the query's root
-   * model to the StudentProfile relation.
-   */
-  public function scopedToUser(Builder $query, User $user, string $through = 'student'): Builder
+  // appends suitable where clause depending on user role to the query
+  public function scopedToUser(Builder $query, User $user): Builder
   {
     $staffId = fn() => $user->staffProfile->id;
 
@@ -49,17 +40,17 @@ class AccessService
       'branch_manager' => $query,
 
       'track_admin' => $query->whereHas(
-        "{$through}.cohort.trackAdmins",
+        'student.cohort.trackAdmins',
         fn($q) => $q->where('staff_profiles.id', $staffId())
       ),
 
       'instructor' => $query->whereHas(
-        "{$through}.labGroup.labs.engagements",
+        'student.labGroup.labs.engagements',
         fn($q) => $q->where('staff_id', $staffId())
       ),
 
       'student' => $query->whereHas(
-        $through,
+        'student',
         fn($q) => $q->where('id', $user->studentProfile->id)
       ),
 
