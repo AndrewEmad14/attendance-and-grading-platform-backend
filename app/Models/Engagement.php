@@ -5,10 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Engagement extends Model
 {
     use HasFactory;
+
+    const TYPE_COURSE = Course::class;
+
+    const TYPE_LAB = Lab::class;
+
+    const TYPE_BUSINESS_SESSION = BusinessSession::class;
 
     protected $fillable = [
         'engageable_id',
@@ -17,6 +26,7 @@ class Engagement extends Model
         'starts_at',
         'ends_at',
         'scheduled_hours',
+        'absences_processed_at',
     ];
 
     protected $casts = [
@@ -26,29 +36,27 @@ class Engagement extends Model
     ];
 
     // Polymorphic relation
-    public function engageable() // course,lab,meeting
+    public function engageable(): MorphTo // course,lab,meeting
     {
         return $this->morphTo();
     }
 
-    public function staff()
+    public function staff(): BelongsTo
     {
         return $this->belongsTo(StaffProfile::class, 'staff_id');
     }
 
-    public function attendanceRecords()
+    public function attendanceRecords(): HasMany
     {
         return $this->hasMany(AttendanceRecord::class);
     }
 
-    public function billingRecord()
+    public function billingRecord(): HasMany
     {
-        return $this->hasOne(BillingRecord::class);
+        return $this->hasMany(BillingRecord::class, 'engagement_id');
     }
 
-    /**
-     * Scope a query to only include engagements linked to a specific cohort.
-     */
+    // Scope a query to only include engagements linked to a specific cohort
     public function scopeForCohort(Builder $query, int $cohortId): Builder
     {
         return $query->where(function ($q) use ($cohortId) {
@@ -64,5 +72,29 @@ class Engagement extends Model
                 });
             });
         });
+    }
+
+    public function isLecture(): bool
+    {
+        return $this->engageable_type === self::TYPE_COURSE;
+    }
+
+    public function isLab(): bool
+    {
+        return $this->engageable_type === self::TYPE_LAB;
+    }
+
+    public function isBusinessSession(): bool
+    {
+        return $this->engageable_type === self::TYPE_BUSINESS_SESSION;
+    }
+
+    public function type(): string
+    {
+        return match ($this->engageable_type) {
+            self::TYPE_COURSE => 'lecture',
+            self::TYPE_LAB => 'lab',
+            self::TYPE_BUSINESS_SESSION => 'business_session',
+        };
     }
 }

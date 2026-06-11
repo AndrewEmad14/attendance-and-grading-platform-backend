@@ -1,0 +1,23 @@
+info:
+  name: GetAttendanceLedger
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseurl}}/students/1/attendance-ledger"
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+runtime:
+  variables:
+    - name: token
+      value: 1|WzfOgBkvFSFGKICY2jBn52wlHJlQdtsdmtLwtDBjccf295e1
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+​

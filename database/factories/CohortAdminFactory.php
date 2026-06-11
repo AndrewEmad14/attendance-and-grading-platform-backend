@@ -3,13 +3,13 @@
 namespace Database\Factories;
 
 use App\Models\Cohort;
-use App\Models\CohortAdmins;
+use App\Models\CohortAdmin;
 use App\Models\StaffProfile;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CohortAdminFactory extends Factory
 {
-    protected $model = CohortAdmins::class;
+    protected $model = CohortAdmin::class;
 
     public function definition(): array
     {

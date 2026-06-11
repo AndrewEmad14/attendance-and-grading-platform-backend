@@ -1,0 +1,17 @@
+info:
+  name: RejectExcuseRequest
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{baseurl}}/excuse-requests/1/reject"
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

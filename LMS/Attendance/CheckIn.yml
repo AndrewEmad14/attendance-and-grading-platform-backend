@@ -1,0 +1,28 @@
+info:
+  name: CheckIn
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseurl}}/attendance"
+  body:
+    type: json
+    data: |
+      {
+        "engagement_id": 1
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+runtime:
+  variables:
+    - name: token
+      value: 4|OityXKbLGTjgVwAzt0hpymLbFb7UT46nUYtjmqDd5f5aa697
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
