@@ -19,10 +19,10 @@ class CheckAccountExpiry
 
         if ($user && $user->expires_at && $user->expires_at->isPast()) {
             $user->tokens()->delete(); // invalidate all tokens
+
             return response()->json(['message' => 'Account expired'], 403);
         }
 
         return $next($request);
     }
 }
-

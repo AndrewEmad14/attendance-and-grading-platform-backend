@@ -11,7 +11,6 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Password;
 class AuthController extends Controller
 {
-    
     public function login(Request $request)
     {
         $creds = $request->only('email', 'password');
@@ -28,30 +27,31 @@ class AuthController extends Controller
             return response()->json(['message' => 'Account expired'], 403)->setStatusCode(403);
         }
 
-    
-
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'access_token' => $token,
-            'role'         => $user->role,
-            'expires_at'   => $user->expires_at,
+            'role' => $user->role,
+            'expires_at' => $user->expires_at,
             'user' => [
-                'id'   => $user->id,
+                'id' => $user->id,
                 'name' => $user->name,
             ],
         ], 200)->setStatusCode(200);
     }
+
     public function me(Request $request)
     {
         return response()->json($request->user())->setStatusCode(200);
     }
+
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
         
         return response()->json(['message' => 'Logged out successfully'])->setStatusCode(200);
     }
+
     public function logoutAll(Request $request)
     {
         $request->user()->tokens()->delete();

@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Track extends Model
 {
-  use HasFactory;
+    use HasFactory;
 
-  protected $fillable = ['name'];
+    protected $fillable = ['name'];
 
-  public function cohorts()
-  {
-    return $this->hasMany(Cohort::class);
-  }
+    public function cohorts()
+    {
+        return $this->hasMany(Cohort::class);
+    }
 }

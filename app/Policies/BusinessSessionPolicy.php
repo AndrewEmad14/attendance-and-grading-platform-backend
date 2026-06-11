@@ -2,9 +2,9 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\BusinessSession;
 use App\Models\Cohort;
+use App\Models\User;
 
 class BusinessSessionPolicy
 {

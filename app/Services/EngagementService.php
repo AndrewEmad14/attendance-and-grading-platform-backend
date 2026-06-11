@@ -2,13 +2,11 @@
 
 namespace App\Services;
 
-use App\Models\Engagement;
-use App\Models\Course;
-use App\Models\Lab;
 use App\Models\BusinessSession;
+use App\Models\Course;
+use App\Models\Engagement;
+use App\Models\Lab;
 use InvalidArgumentException;
-
-use Illuminate\Support\Facades\Log;
 
 class EngagementService
 {
@@ -21,19 +19,17 @@ class EngagementService
         ];
 
         $typeKey = $data['type'];
-        
-        if (!isset($morphMap[$typeKey])) {
+
+        if (! isset($morphMap[$typeKey])) {
             throw new InvalidArgumentException('Unsupported engagement type provided.');
         }
-
 
         $modelClass = $morphMap[$typeKey];
         $parentModel = $modelClass::find($data['engageable_id']);
 
-
-        if (!$parentModel) {
+        if (! $parentModel) {
             throw ValidationException::withMessages([
-                'engageable_id' => [sprintf('The requested %s entity could not be retrieved from storage.', $typeKey)]
+                'engageable_id' => [sprintf('The requested %s entity could not be retrieved from storage.', $typeKey)],
             ]);
         }
 
@@ -46,6 +42,7 @@ class EngagementService
         ]);
 
         $parentModel->engagements()->save($engagement);
+
         return $engagement;
     }
 }

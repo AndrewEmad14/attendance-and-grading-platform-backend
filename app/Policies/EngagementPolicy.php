@@ -2,10 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\User;
-use App\Models\Engagement;
+use App\Models\BusinessSession;
 use App\Models\Course;
+use App\Models\Engagement;
 use App\Models\Lab;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
 class EngagementPolicy
@@ -24,8 +25,8 @@ class EngagementPolicy
             }
 
             // Fallback authorization for multi-track cross-boundary Business Sessions
-            if ($contextEntity instanceof \App\Models\BusinessSession) {
-                return true; 
+            if ($contextEntity instanceof BusinessSession) {
+                return true;
             }
         }
 

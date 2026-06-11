@@ -14,7 +14,7 @@ class BillingRecord extends Model
         'staff_id',
         'delivered_hours',
         'total_amount',
-        'forwarded_at'
+        'forwarded_at',
     ];
 
     public function engagement()

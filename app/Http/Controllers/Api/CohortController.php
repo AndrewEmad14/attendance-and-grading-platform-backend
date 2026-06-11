@@ -56,9 +56,9 @@ class CohortController extends Controller
     public function store(StoreCohortRequest $request, Track $track): JsonResponse
     {
         $validated = $request->validated();
-        
+
         $validated['track_id'] = $track->id;
-        if (!isset($validated['is_active'])) {
+        if (! isset($validated['is_active'])) {
             $validated['is_active'] = true;
         }
 
