@@ -1,7 +1,7 @@
 <?php
 // app/Http/Requests/Api/ResetPasswordRequest.php
 
-namespace App\Http\Requests\Api;
+namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 

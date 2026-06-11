@@ -87,8 +87,8 @@ Route::patch('/test-notes/{studentId}', [NoteController::class, 'append']);
 
   Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:login');
-    Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword']);
-    Route::post('auth/reset-password', [AuthController::class, 'resetPassword']);
+    Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('reset-password', [AuthController::class, 'resetPassword']);
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('me', [AuthController::class, 'me']);
         Route::post('logout', [AuthController::class, 'logout']);
