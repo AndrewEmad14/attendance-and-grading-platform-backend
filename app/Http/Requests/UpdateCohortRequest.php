@@ -10,6 +10,7 @@ class UpdateCohortRequest extends FormRequest
     public function authorize(): bool
     {
         $cohort = $this->route('cohort');
+
         return $cohort instanceof Cohort && $this->user()->can('update', $cohort);
     }
 
@@ -42,7 +43,7 @@ class UpdateCohortRequest extends FormRequest
                         );
                     }
                 }
-            }
+            },
         ];
     }
 }

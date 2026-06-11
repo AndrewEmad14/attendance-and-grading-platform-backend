@@ -19,7 +19,7 @@ return new class extends Migration
         DB::statement("
             CREATE VIEW v_student_scores AS
             SELECT
-                sub.student_id,
+                sp.user_id                         AS student_id,
                 cd.course_id,
                 cd.id                              AS deliverable_id,
                 cd.type,
@@ -48,6 +48,7 @@ return new class extends Migration
                 END AS component_score
 
             FROM submissions          sub
+            JOIN student_profiles     sp ON sp.id = sub.student_id
             JOIN courses_deliverables cd ON cd.id = sub.deliverable_id
         ");
 
@@ -60,7 +61,7 @@ return new class extends Migration
         // ----------------------------------------------------------------
         DB::statement('DROP VIEW IF EXISTS v_student_totals CASCADE');
 
-        DB::statement("
+        DB::statement('
             CREATE VIEW v_student_totals AS
             SELECT
                 sp.user_id                                                   AS student_id,
@@ -71,7 +72,7 @@ return new class extends Migration
             FROM student_profiles  sp
             LEFT JOIN v_student_scores vs ON vs.student_id = sp.user_id
             GROUP BY sp.user_id, sp.cohort_id, sp.attendance_balance
-        ");
+        ');
 
         // ----------------------------------------------------------------
         // v_at_risk_students
@@ -82,23 +83,31 @@ return new class extends Migration
         // ----------------------------------------------------------------
         DB::statement('DROP VIEW IF EXISTS v_at_risk_students CASCADE');
 
-        DB::statement("
+        DB::statement('
             CREATE VIEW v_at_risk_students AS
             SELECT
                 sp.user_id  AS student_id,
                 sp.cohort_id,
                 (sp.attendance_balance < 150)        AS at_risk_attendance,
-                (failing.student_id IS NOT NULL)     AS at_risk_grade
+                (EXISTS (
+                    SELECT 1
+                    FROM courses c
+                    LEFT JOIN v_student_scores vs ON vs.student_id = sp.user_id AND vs.course_id = c.id
+                    WHERE c.cohort_id = sp.cohort_id
+                    GROUP BY c.id
+                    HAVING COALESCE(SUM(vs.component_score), 0) < 60
+                )) AS at_risk_grade
             FROM student_profiles sp
-            LEFT JOIN (
-                SELECT student_id
-                FROM v_student_scores
-                GROUP BY student_id, course_id
-                HAVING SUM(component_score) < 60
-            ) failing ON failing.student_id = sp.user_id
             WHERE sp.attendance_balance < 150
-               OR failing.student_id IS NOT NULL
-        ");
+               OR EXISTS (
+                    SELECT 1
+                    FROM courses c
+                    LEFT JOIN v_student_scores vs ON vs.student_id = sp.user_id AND vs.course_id = c.id
+                    WHERE c.cohort_id = sp.cohort_id
+                    GROUP BY c.id
+                    HAVING COALESCE(SUM(vs.component_score), 0) < 60
+               )
+        ');
 
         // ----------------------------------------------------------------
         // v_instructor_lab_submissions
@@ -136,7 +145,7 @@ return new class extends Migration
             JOIN labs              l   ON l.id           = e.engageable_id
                                       AND e.engageable_type = 'lab'
             JOIN student_profiles  sp  ON sp.lab_group_id = l.lab_group_id
-            JOIN submissions       sub ON sub.student_id  = sp.user_id
+            JOIN submissions       sub ON sub.student_id  = sp.id
             JOIN courses_deliverables cd ON cd.id         = sub.deliverable_id
                                         AND cd.type       = 'lab'
         ");
@@ -173,7 +182,7 @@ return new class extends Migration
             FROM submissions       sub
             JOIN courses_deliverables cd ON cd.id          = sub.deliverable_id
                                         AND cd.type        = 'lab'
-            JOIN student_profiles  sp  ON sp.user_id       = sub.student_id
+            JOIN student_profiles  sp  ON sp.id            = sub.student_id
             JOIN labs              l   ON l.lab_group_id   = sp.lab_group_id
             JOIN engagements       e   ON e.engageable_id  = l.id
                                       AND e.engageable_type = 'lab'

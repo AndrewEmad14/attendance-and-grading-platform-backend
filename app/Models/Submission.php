@@ -6,52 +6,51 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-
 class Submission extends Model
 {
-  use HasFactory;
+    use HasFactory;
 
-  protected $fillable = [
-    'deliverable_id', //laravel proj
-    'student_id',
-    'submission_type', //github_link
-    'submission_path', //the link
-    'raw_score',
-    'override_score',
-    'override_note',
-    'graded_by',
-    'overridden_by',
-    'overridden_at'
-  ];
+    protected $fillable = [
+        'deliverable_id', // laravel proj
+        'student_id',
+        'submission_type', // github_link
+        'submission_path', // the link
+        'raw_score',
+        'override_score',
+        'override_note',
+        'graded_by',
+        'overridden_by',
+        'overridden_at',
+    ];
 
-  protected $casts = [
-    'raw_score' => 'float', //decimal ret. str
-    'override_score' => 'float',
-    'overridden_at' => 'datetime'
-  ];
+    protected $casts = [
+        'raw_score' => 'float', // decimal ret. str
+        'override_score' => 'float',
+        'overridden_at' => 'datetime',
+    ];
 
-  public function deliverable()
-  {
-    return $this->belongsTo(CourseDeliverable::class, 'deliverable_id');
-  }
+    public function deliverable()
+    {
+        return $this->belongsTo(CourseDeliverable::class, 'deliverable_id');
+    }
 
-  public function student()
-  {
-    return $this->belongsTo(StudentProfile::class, 'student_id');
-  }
+    public function student()
+    {
+        return $this->belongsTo(StudentProfile::class, 'student_id');
+    }
 
-  public function effectiveRawScore(): ?float // if there is overridden score take it else the raw one
-  {
-    return $this->override_score ?? $this->raw_score;
-  }
+    public function effectiveRawScore(): ?float // if there is overridden score take it else the raw one
+    {
+        return $this->override_score ?? $this->raw_score;
+    }
 
-  public function gradedBy(): BelongsTo // user who graded submission (restriction on who is allowed in gradepolicy)
-  {
-    return $this->belongsTo(User::class, 'graded_by');
-  }
+    public function gradedBy(): BelongsTo // user who graded submission (restriction on who is allowed in gradepolicy)
+    {
+        return $this->belongsTo(User::class, 'graded_by');
+    }
 
-  public function overriddenBy(): BelongsTo // user overridden grade (track admin in policy)
-  {
-    return $this->belongsTo(User::class, 'overridden_by');
-  }
+    public function overriddenBy(): BelongsTo // user overridden grade (track admin in policy)
+    {
+        return $this->belongsTo(User::class, 'overridden_by');
+    }
 }

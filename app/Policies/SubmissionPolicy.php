@@ -2,21 +2,25 @@
 
 namespace App\Policies;
 
+use App\Models\StudentProfile;
 use App\Models\Submission;
 use App\Models\User;
-use App\Models\StudentProfile;
 use Illuminate\Support\Facades\DB;
 
 class SubmissionPolicy
 {
     public function grade(User $user, Submission $submission): bool
     {
-        if ($user->role === 'track_admin') return true; //admin can grade anything
+        if ($user->role === 'track_admin') {
+            return true;
+        } // admin can grade anything
 
         if ($user->role === 'instructor') {
             $deliverable = $submission->deliverable;
 
-            if (in_array($deliverable->type, ['exam', 'project'])) return false; // instructor grade only labs
+            if (in_array($deliverable->type, ['exam', 'project'])) {
+                return false;
+            } // instructor grade only labs
 
             // get all lab ids for this course that this instructor is assigned to
             $instructorLabIds = DB::table('engagements')
@@ -24,8 +28,8 @@ class SubmissionPolicy
                 ->where('instructor_id', $user->id)
                 ->whereIn('engageable_id', function ($query) use ($deliverable) {
                     $query->select('id')
-                          ->from('labs')
-                          ->where('course_id', $deliverable->course_id);
+                        ->from('labs')
+                        ->where('course_id', $deliverable->course_id);
                 })
                 ->pluck('engageable_id');
 
@@ -33,13 +37,13 @@ class SubmissionPolicy
             return StudentProfile::where('id', $submission->student_id)
                 ->whereIn('lab_group_id', function ($query) use ($instructorLabIds) {
                     $query->select('lab_group_id')
-                          ->from('labs')
-                          ->whereIn('id', $instructorLabIds);
+                        ->from('labs')
+                        ->whereIn('id', $instructorLabIds);
                 })
                 ->exists();
         }
 
-        return false; //anyone else
+        return false; // anyone else
     }
 
     // only admin can override grade

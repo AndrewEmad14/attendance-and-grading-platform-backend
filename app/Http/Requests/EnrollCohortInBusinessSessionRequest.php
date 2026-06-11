@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\BusinessSession;
+use App\Models\Cohort;
 use Illuminate\Foundation\Http\FormRequest;
 
 class EnrollCohortInBusinessSessionRequest extends FormRequest
@@ -11,10 +12,10 @@ class EnrollCohortInBusinessSessionRequest extends FormRequest
     {
         $businessSession = $this->route('businessSession');
         $cohortId = $this->input('cohort_id');
-        
-        $targetCohort = $cohortId ? \App\Models\Cohort::find($cohortId) : null;
 
-        if (!$businessSession instanceof \App\Models\BusinessSession) {
+        $targetCohort = $cohortId ? Cohort::find($cohortId) : null;
+
+        if (! $businessSession instanceof BusinessSession) {
             return false;
         }
 
@@ -50,7 +51,7 @@ class EnrollCohortInBusinessSessionRequest extends FormRequest
                         );
                     }
                 }
-            }
+            },
         ];
     }
 }

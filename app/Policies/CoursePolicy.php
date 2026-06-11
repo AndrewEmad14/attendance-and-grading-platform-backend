@@ -4,14 +4,13 @@ namespace App\Policies;
 
 use App\Models\Course;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class CoursePolicy
 {
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool //who can list cousres
+    public function viewAny(User $user): bool // who can list cousres
     {
         return in_array($user->role, ['track_admin', 'branch_manager', 'instructor', 'student']);
     }
@@ -19,7 +18,7 @@ class CoursePolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Course $course): bool //who can view specific course
+    public function view(User $user, Course $course): bool // who can view specific course
     {
         return in_array($user->role, ['track_admin', 'branch_manager', 'instructor', 'student']);
     }
@@ -27,7 +26,7 @@ class CoursePolicy
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool //who can create courses
+    public function create(User $user): bool // who can create courses
     {
         return $user->role === 'track_admin';
     }

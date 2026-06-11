@@ -1,104 +1,104 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Enums\Role;
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\CohortController;
-use App\Http\Controllers\Api\LabGroupController;
-use App\Http\Controllers\Api\EngagementController;
+use App\Http\Controllers\Api\BranchAnalyticsController;
 use App\Http\Controllers\Api\BusinessSessionController;
+use App\Http\Controllers\Api\CohortController;
 use App\Http\Controllers\Api\CourseController;
+use App\Http\Controllers\Api\EngagementController;
+use App\Http\Controllers\Api\GradingAnalyticsController;
+use App\Http\Controllers\Api\LabGroupController;
+use App\Http\Controllers\Api\NoteController;
 use App\Http\Controllers\Api\SubmissionController;
 use App\Http\Controllers\Api\TagController;
-use App\Http\Controllers\Api\NoteController;
-use App\Http\Controllers\Api\GradingAnalyticsController;
 use App\Http\Controllers\Api\UserController;
-//$table->enum('role', ['branch_manager', 'track_admin', 'instructor', 'student']);
+use Illuminate\Support\Facades\Route;
 
+// $table->enum('role', ['branch_manager', 'track_admin', 'instructor', 'student']);
 
 Route::get('/', function () {
-  return response()->json(['message' => 'API is running']);
-  });
+    return response()->json(['message' => 'API is running']);
+});
 
 Route::patch('/test-notes/{studentId}', [NoteController::class, 'append']);
-  Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('tracks/{track}')->group(function () {
-      Route::post('cohorts', [CohortController::class, 'store']);
-      Route::get('cohorts', [CohortController::class, 'index']);
+        Route::post('cohorts', [CohortController::class, 'store']);
+        Route::get('cohorts', [CohortController::class, 'index']);
     });
     Route::get('cohorts', [CohortController::class, 'index']);
 
-    Route::get('/cohorts/{cohortId}/courses',  [CourseController::class, 'index']);
+    Route::get('/cohorts/{cohortId}/courses', [CourseController::class, 'index']);
     Route::post('/cohorts/{cohortId}/courses', [CourseController::class, 'store']);
-    Route::get('/courses/{course}',            [CourseController::class, 'show']);
-    Route::patch('/courses/{course}',          [CourseController::class, 'update']);
-    Route::delete('/courses/{course}',         [CourseController::class, 'destroy']);
+    Route::get('/courses/{course}', [CourseController::class, 'show']);
+    Route::patch('/courses/{course}', [CourseController::class, 'update']);
+    Route::delete('/courses/{course}', [CourseController::class, 'destroy']);
 
     Route::patch('/submissions/{submission}', [SubmissionController::class, 'grade']);
     Route::post('/submissions/{submission}/override', [SubmissionController::class, 'override']);
 
-
-    Route::get('/tags',[TagController::class, 'index']);
-    Route::post('/tags',[TagController::class, 'store']);
+    Route::get('/tags', [TagController::class, 'index']);
+    Route::post('/tags', [TagController::class, 'store']);
     Route::get('/students/{studentId}/tags', [TagController::class, 'studentTags']);
-    Route::post('/students/{studentId}/tags',  [TagController::class, 'attach']);
-    Route::delete('/students/{studentId}/tags/{tagId}',[TagController::class, 'detach']);
-
+    Route::post('/students/{studentId}/tags', [TagController::class, 'attach']);
+    Route::delete('/students/{studentId}/tags/{tagId}', [TagController::class, 'detach']);
 
     Route::patch('/students/{studentId}/notes', [NoteController::class, 'append']);
 
-
-    Route::get('/analytics/cohorts/{cohortId}',  [GradingAnalyticsController::class, 'cohortGrades']);
+    Route::get('/analytics/branch', BranchAnalyticsController::class);
+    Route::get('/analytics/cohorts/{cohortId}', [GradingAnalyticsController::class, 'cohortGrades']);
+    Route::get('/analytics/cohorts/{cohortId}/at-risk', [GradingAnalyticsController::class, 'atRiskStudents']);
     Route::get('/analytics/lab-groups/{labGroupId}', [GradingAnalyticsController::class, 'labGroupGrades']);
 
     Route::prefix('cohorts/{cohort}')->group(function () {
-      Route::get('lab-groups', [LabGroupController::class, 'index']);
-      Route::post('lab-groups', [LabGroupController::class, 'store']);
-      Route::get('students', [LabGroupController::class, 'cohortStudents']);
+        Route::get('lab-groups', [LabGroupController::class, 'index']);
+        Route::post('lab-groups', [LabGroupController::class, 'store']);
+        Route::get('students', [LabGroupController::class, 'cohortStudents']);
     });
 
     Route::prefix('lab-groups/{labGroup}')->group(function () {
-      Route::post('students', [LabGroupController::class, 'attachStudent']);
-      Route::delete('students/{studentId}', [LabGroupController::class, 'detachStudent']);
-      Route::delete('', [LabGroupController::class, 'destroy']);
+        Route::post('students', [LabGroupController::class, 'attachStudent']);
+        Route::delete('students/{studentId}', [LabGroupController::class, 'detachStudent']);
+        Route::delete('', [LabGroupController::class, 'destroy']);
     });
 
     Route::prefix('engagements')->group(function () {
-      Route::get('', [EngagementController::class, 'index']);
-      Route::post('', [EngagementController::class, 'store']);
-      Route::get('{engagement}', [EngagementController::class, 'show']);
-      Route::patch('{engagement}', [EngagementController::class, 'update']);
-      Route::delete('{engagement}', [EngagementController::class, 'destroy']);
+        Route::get('', [EngagementController::class, 'index']);
+        Route::post('', [EngagementController::class, 'store']);
+        Route::get('{engagement}', [EngagementController::class, 'show']);
+        Route::patch('{engagement}', [EngagementController::class, 'update']);
+        Route::delete('{engagement}', [EngagementController::class, 'destroy']);
     });
 
     Route::prefix('business-sessions')->group(function () {
 
-      Route::get('', [BusinessSessionController::class, 'index']);
-      Route::post('', [BusinessSessionController::class, 'store']);
-      Route::get('{businessSession}', [BusinessSessionController::class, 'show']);
-      
-      Route::post('{businessSession}/cohorts', [BusinessSessionController::class, 'enrollCohort']);
-      Route::delete('{businessSession}/cohorts/{cohortId}', [BusinessSessionController::class, 'removeCohort']);
+        Route::get('', [BusinessSessionController::class, 'index']);
+        Route::post('', [BusinessSessionController::class, 'store']);
+        Route::get('{businessSession}', [BusinessSessionController::class, 'show']);
 
-      Route::patch('cohorts/{cohort}', [CohortController::class, 'update']);
+        Route::post('{businessSession}/cohorts', [BusinessSessionController::class, 'enrollCohort']);
+        Route::delete('{businessSession}/cohorts/{cohortId}', [BusinessSessionController::class, 'removeCohort']);
+
+        Route::patch('cohorts/{cohort}', [CohortController::class, 'update']);
     });
-  });
+});
 
-  Route::prefix('auth')->group(function () {
+Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:login');
-    
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('me', [AuthController::class, 'me']);
         Route::post('logout', [AuthController::class, 'logout']);
         Route::post('logout-all', [AuthController::class, 'logoutAll']);
     });
 });
-  
-  Route::group(['prefix' => 'users','middleware' => ['auth:sanctum','role:'.Role::BRANCH_MANAGER.','.Role::TRACK_ADMIN]], function () {
+
+Route::group(['prefix' => 'users', 'middleware' => ['auth:sanctum', 'role:'.Role::BRANCH_MANAGER.','.Role::TRACK_ADMIN]], function () {
     Route::get('', [UserController::class, 'index']);
     Route::post('', [UserController::class, 'register']);
     Route::get('{user}', [UserController::class, 'show']);
     Route::patch('{user}', [UserController::class, 'update']);
     Route::delete('{user}', [UserController::class, 'destroy']);
-  });
+});

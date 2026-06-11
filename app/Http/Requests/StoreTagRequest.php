@@ -23,7 +23,7 @@ class StoreTagRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tag' => 'required|string|max:100|unique:tags,tag'
+            'tag' => 'required|string|max:100|unique:tags,tag',
         ];
     }
 }

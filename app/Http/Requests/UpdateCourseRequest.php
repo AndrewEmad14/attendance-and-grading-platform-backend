@@ -23,13 +23,13 @@ class UpdateCourseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'                         => 'sometimes|string|max:255',
-            'deliverables'                 => 'sometimes|array',
-            'deliverables.*.name'          => 'required_with:deliverables|string|max:255',
-            'deliverables.*.type'          => 'required_with:deliverables|in:lab,exam,project',
-            'deliverables.*.max_score'     => 'required_with:deliverables|integer|min:1',
+            'name' => 'sometimes|string|max:255',
+            'deliverables' => 'sometimes|array',
+            'deliverables.*.name' => 'required_with:deliverables|string|max:255',
+            'deliverables.*.type' => 'required_with:deliverables|in:lab,exam,project',
+            'deliverables.*.max_score' => 'required_with:deliverables|integer|min:1',
             'deliverables.*.course_weight' => 'required_with:deliverables|integer|min:1|max:100',
-            'deliverables.*.due_date'      => 'required_with:deliverables|date',
+            'deliverables.*.due_date' => 'required_with:deliverables|date',
         ];
     }
 
@@ -38,7 +38,7 @@ class UpdateCourseRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $deliverables = $this->input('deliverables', []);
-            if (!empty($deliverables)) {
+            if (! empty($deliverables)) {
                 $sum = array_sum(array_column($deliverables, 'course_weight'));
                 if ($sum !== 100) {
                     $validator->errors()->add('deliverables', "Component weights must sum to 100. Current sum: {$sum}.");

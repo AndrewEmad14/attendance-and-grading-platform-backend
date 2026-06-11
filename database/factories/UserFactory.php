@@ -26,14 +26,14 @@ class UserFactory extends Factory
 
     public function unverified()
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
     }
 
     public function role(string $role)
     {
-        return $this->state(fn(array $attributes) => ['role' => $role]);
+        return $this->state(fn (array $attributes) => ['role' => $role]);
     }
 
     public function branchManager()

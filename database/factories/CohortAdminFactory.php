@@ -15,7 +15,7 @@ class CohortAdminFactory extends Factory
     {
         return [
             'cohort_id' => Cohort::factory(),
-            'staff_id'  => StaffProfile::factory(),
+            'staff_id' => StaffProfile::factory(),
         ];
     }
 
@@ -24,7 +24,7 @@ class CohortAdminFactory extends Factory
      */
     public function forCohort(Cohort $cohort): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'cohort_id' => $cohort->id,
         ]);
     }
@@ -34,7 +34,7 @@ class CohortAdminFactory extends Factory
      */
     public function forStaff(StaffProfile $staff): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'staff_id' => $staff->id,
         ]);
     }
