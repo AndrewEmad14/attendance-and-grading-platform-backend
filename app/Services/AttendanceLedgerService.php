@@ -90,9 +90,9 @@ class AttendanceLedgerService
   {
     // lecture engagements belonging to the student's cohort's courses
     $lectureEngagements = Engagement::with('engageable')
-      ->where('engageable_type', Course::class)
-      ->whereHas(
+      ->whereHasMorph(
         'engageable',
+        [Course::class],
         fn($q) =>
         $q->where('cohort_id', $student->cohort_id)
       )
@@ -100,9 +100,9 @@ class AttendanceLedgerService
 
     // labs that belong to the student's lab group
     $labEngagements = Engagement::with('engageable')
-      ->where('engageable_type', Lab::class)
-      ->whereHas(
+      ->whereHasMorph(
         'engageable',
+        [Lab::class],
         fn($q) =>
         $q->where('lab_group_id', $student->lab_group_id)
       )
@@ -110,11 +110,15 @@ class AttendanceLedgerService
 
     // business sessions linked to the student's cohort
     $businessEngagements = Engagement::with('engageable')
-      ->where('engageable_type', BusinessSession::class)
-      ->whereHas(
-        'engageable.cohorts',
+      ->whereHasMorph(
+        'engageable',
+        [BusinessSession::class],
         fn($q) =>
-        $q->where('cohorts.id', $student->cohort_id)
+        $q->whereHas(
+          'cohorts',
+          fn($c) =>
+          $c->where('cohorts.id', $student->cohort_id)
+        )
       )
       ->get();
 

@@ -14,7 +14,7 @@ class StoreExcuseRequest extends FormRequest
   public function rules(): array
   {
     return [
-      'attendance_id' => ['required', 'integer', 'exists:attendance_records,id'],
+      'engagement_id' => ['required', 'integer', 'exists:engagements,id'],
       'reason' => ['required', 'string', 'max:1000'],
       'attachment' => [
         'nullable',

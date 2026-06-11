@@ -163,11 +163,9 @@ class DatabaseSeeder extends Seeder
 
         foreach ($engagements as $engagement) {
             $presentCount = rand(ceil($studentCount * 0.6), $studentCount);
-
-            // Pick random student IDs
             $presentKeys = (array) array_rand($studentIds, $presentCount);
             $presentStudentIds = array_map(fn($key) => $studentIds[$key], $presentKeys);
-
+            $absentStudentIds = array_diff($studentIds, $presentStudentIds);
             foreach ($presentStudentIds as $studentId) {
                 $attendanceData[] = [
                     'engagement_id' => $engagement->id,
@@ -178,10 +176,25 @@ class DatabaseSeeder extends Seeder
                     'updated_at' => now(),
                 ];
 
-                // Flush to Supabase immediately when we hit 1,000 records to save memory
                 if (count($attendanceData) >= 1000) {
                     DB::table('attendance_records')->insert($attendanceData);
-                    $attendanceData = []; // Wipe the array to free up RAM
+                    $attendanceData = [];
+                }
+            }
+
+            foreach ($absentStudentIds as $studentId) {
+                $attendanceData[] = [
+                    'engagement_id' => $engagement->id,
+                    'student_id' => $studentId,
+                    'arrived_at' => null,
+                    'left_at' => null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+
+                if (count($attendanceData) >= 1000) {
+                    DB::table('attendance_records')->insert($attendanceData);
+                    $attendanceData = [];
                 }
             }
         }

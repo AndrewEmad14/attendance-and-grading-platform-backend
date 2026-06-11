@@ -22,18 +22,24 @@ class ExcuseService
     return $query->latest()->paginate($perPage);
   }
 
-  public function store(User $student, array $data, ?string $attachment): ExcuseRequest
+  public function store(User $user, array $data, ?string $attachment): ExcuseRequest
   {
-    $record = AttendanceRecord::findOrFail($data['attendance_id']);
-    if ($record->student_id !== $student->studentProfile->id) {
-      abort(403, 'This action is unauthorized.');
-    } else if ($record->excuseRequest()->exists()) {
+    $record = AttendanceRecord::firstOrCreate(
+      [
+        'student_id' => $user->studentProfile->id,
+        'engagement_id' => $data['engagement_id'],
+      ],
+      [
+        'arrived_at' => null,
+      ]
+    );
+    if ($record->excuseRequest()->exists()) {
       abort(422, 'An excuse request already exists for this attendance record.');
     }
     return $record->excuseRequest()->create([
       'reason' => $data['reason'],
       'attachment_path' => $attachment,
-      'status' => 'pending',
+      'status' => ExcuseRequest::STATUS_PENDING,
     ]);
   }
 

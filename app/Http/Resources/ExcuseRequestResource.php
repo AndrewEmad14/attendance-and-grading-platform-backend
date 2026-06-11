@@ -11,8 +11,7 @@ class ExcuseRequestResource extends JsonResource
   {
     return [
       'id' => $this->id,
-      'attendance_id' => $this->attendance_id,
-      'attendance' => $this->whenLoaded('attendance', fn() => [
+      'attendance' => $this->whenLoaded('attendanceRecord', fn() => [
         'id' => $this->attendanceRecord->id,
         'arrived_at' => $this->attendanceRecord->arrived_at?->toISOString(),
         'left_at' => $this->attendanceRecord->left_at?->toISOString(),
