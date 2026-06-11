@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\GradeSubmissionRequest;
 use App\Http\Requests\OverrideSubmissionRequest;
 use App\Http\Requests\StoreSubmissionRequest;
+use App\Http\Resources\CohortStudentResource;
 use App\Http\Resources\SubmissionResource;
 use App\Models\CourseDeliverable;
+use App\Models\StudentProfile;
 use App\Models\Submission;
 use App\Services\GradingService;
 use App\Services\SubmissionService;
@@ -22,6 +24,58 @@ class SubmissionController extends Controller
         private SubmissionService $submissionService,
     ) {}
 
+    // roster of real submissions for a deliverable (ACC-2 / ACC-3)
+    public function index(CourseDeliverable $deliverable)
+    {
+        $this->authorize('viewAny', [Submission::class, $deliverable]);
+
+        $user = auth()->user();
+
+        $query = Submission::query()
+            ->where('deliverable_id', $deliverable->id)
+            ->with(['deliverable', 'gradedBy.user', 'overriddenBy.user', 'student.user']);
+
+        // ACC-3: instructor sees only their own lab group's students
+        if ($user->role === 'instructor') {
+            $studentIds = $this->submissionService
+                ->studentIdsForInstructor($deliverable, $user);
+
+            $query->whereIn('student_id', $studentIds);
+        }
+        // track_admin: no narrowing — full roster (ACC-2)
+
+        $submissions = $query
+            ->orderBy('created_at', 'desc')
+            ->paginate(min((int) request('per_page', 15), 100));
+
+        return SubmissionResource::collection($submissions);
+    }
+
+    // roster students with NO submission for this deliverable (the gaps)
+    public function missing(CourseDeliverable $deliverable)
+    {
+        $this->authorize('viewAny', [Submission::class, $deliverable]);
+
+        $user = auth()->user();
+
+        // who is the roster for this deliverable, scoped by role?
+        $rosterIds = $this->submissionService->rosterIdsForDeliverable($deliverable, $user);
+
+        // who already submitted?
+        $submittedIds = Submission::where('deliverable_id', $deliverable->id)
+            ->whereIn('student_id', $rosterIds)
+            ->pluck('student_id');
+
+        // the gaps: roster minus submitted
+        $missing = StudentProfile::query()
+            ->whereIn('id', $rosterIds)
+            ->whereNotIn('id', $submittedIds)
+            ->with('user')
+            ->orderBy('id')
+            ->paginate(min((int) request('per_page', 15), 100));
+
+        return CohortStudentResource::collection($missing);
+    }
     // student submits to a deliverable — url or file (POR-4)
     public function store(StoreSubmissionRequest $request, CourseDeliverable $deliverable)
     {
