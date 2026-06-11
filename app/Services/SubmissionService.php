@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Submission;
 use App\Models\CourseDeliverable;
 use App\Models\StudentProfile;
+use App\Models\Submission;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -36,8 +36,8 @@ class SubmissionService
                 : $this->storeFile($deliverable, $student, $file);
 
             return Submission::create([
-                'deliverable_id'  => $deliverable->id,
-                'student_id'      => $student->id,
+                'deliverable_id' => $deliverable->id,
+                'student_id' => $student->id,
                 'submission_type' => $data['submission_type'],
                 'submission_path' => $path,
             ]);
@@ -57,7 +57,7 @@ class SubmissionService
         return Storage::putFileAs(
             "submissions/{$deliverable->id}",
             $file,
-            "{$student->id}_" . $file->hashName()
+            "{$student->id}_".$file->hashName()
         );
     }
 }

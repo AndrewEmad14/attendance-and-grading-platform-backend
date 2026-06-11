@@ -3,10 +3,8 @@
 namespace App\Policies;
 
 use App\Models\StudentProfile;
-use App\Models\CourseDeliverable;
 use App\Models\Submission;
 use App\Models\User;
-use App\Models\Views\SubmissionGrader;
 use Illuminate\Support\Facades\DB;
 
 class SubmissionPolicy

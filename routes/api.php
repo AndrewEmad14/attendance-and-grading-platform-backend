@@ -37,7 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/courses/{course}', [CourseController::class, 'destroy']);
 
     Route::post('/deliverables/{deliverable}/submissions', [SubmissionController::class, 'store'])
-    ->middleware('role:'.Role::STUDENT);
+        ->middleware('role:'.Role::STUDENT);
     Route::patch('/submissions/{submission}', [SubmissionController::class, 'grade']);
     Route::post('/submissions/{submission}/override', [SubmissionController::class, 'override']);
 

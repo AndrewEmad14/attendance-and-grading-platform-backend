@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Models\CourseDeliverable;
+use App\Models\Submission;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreSubmissionRequest extends FormRequest
@@ -18,7 +18,7 @@ class StoreSubmissionRequest extends FormRequest
     {
         $deliverable = $this->route('deliverable');
 
-        return $this->user()?->can('create', [\App\Models\Submission::class, $deliverable]) ?? false;
+        return $this->user()?->can('create', [Submission::class, $deliverable]) ?? false;
     }
 
     /**
@@ -56,14 +56,14 @@ class StoreSubmissionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'submission_type.in'       => 'Submission type must be either "url" or "file".',
-            'url.required_if'          => 'A URL is required when submitting by link.',
-            'url.prohibited_unless'    => 'A URL may only be provided when the submission type is "url".',
-            'file.required_if'         => 'A file is required when submitting by upload.',
-            'file.prohibited_unless'   => 'A file may only be provided when the submission type is "file".',
-            'file.max'                 => 'The file may not be larger than 25 MB.',
-            'file.mimes'               => 'The file must be a PDF, ZIP, or image (jpg, jpeg, png).',
-            'file.mimetypes'           => 'The file must be a PDF, ZIP, or image (jpg, jpeg, png).',
+            'submission_type.in' => 'Submission type must be either "url" or "file".',
+            'url.required_if' => 'A URL is required when submitting by link.',
+            'url.prohibited_unless' => 'A URL may only be provided when the submission type is "url".',
+            'file.required_if' => 'A file is required when submitting by upload.',
+            'file.prohibited_unless' => 'A file may only be provided when the submission type is "file".',
+            'file.max' => 'The file may not be larger than 25 MB.',
+            'file.mimes' => 'The file must be a PDF, ZIP, or image (jpg, jpeg, png).',
+            'file.mimetypes' => 'The file must be a PDF, ZIP, or image (jpg, jpeg, png).',
         ];
     }
 }
