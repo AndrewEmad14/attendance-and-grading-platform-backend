@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class AttendanceRecord extends Model
 {
@@ -32,11 +31,6 @@ class AttendanceRecord extends Model
   public function engagement(): BelongsTo
   {
     return $this->belongsTo(Engagement::class, 'engagement_id');
-  }
-
-  public function excuseRequest(): HasOne
-  {
-    return $this->hasOne(ExcuseRequest::class, 'attendance_id');
   }
 
   public function isCheckedIn(): bool

@@ -14,8 +14,8 @@ class ExcuseService
   public function index(User $user, int $perPage = 20): LengthAwarePaginator
   {
     $query = ExcuseRequest::query()->with([
-      'attendanceRecord.student.user',
-      'attendanceRecord.engagement',
+      'student.user',
+      'engagement',
       'reviewer.user',
     ]);
     $this->accessService->scopedToUser($query, $user);
@@ -24,19 +24,14 @@ class ExcuseService
 
   public function store(User $user, array $data, ?string $attachment): ExcuseRequest
   {
-    $record = AttendanceRecord::firstOrCreate(
-      [
-        'student_id' => $user->studentProfile->id,
-        'engagement_id' => $data['engagement_id'],
-      ],
-      [
-        'arrived_at' => null,
-      ]
-    );
-    if ($record->excuseRequest()->exists()) {
-      abort(422, 'An excuse request already exists for this attendance record.');
+    $studentId = $user->studentProfile->id;
+    $engagementId = $data['engagement_id'];
+    if (ExcuseRequest::where('student_id', $studentId)->where('engagement_id', $engagementId)->exists()) {
+      abort(422, 'An excuse request already exists for this engagement.');
     }
-    return $record->excuseRequest()->create([
+    return ExcuseRequest::create([
+      'student_id' => $studentId,
+      'engagement_id' => $engagementId,
       'reason' => $data['reason'],
       'attachment_path' => $attachment,
       'status' => ExcuseRequest::STATUS_PENDING,
@@ -62,6 +57,9 @@ class ExcuseService
       'reviewed_by' => $reviewer->staffProfile->id,
       'reviewed_at' => now(),
     ]);
+    if ($status === 'approved') {
+      $excuseRequest->student->increment('attendance_balance', 20);
+    }
     return $excuseRequest->refresh();
   }
 }

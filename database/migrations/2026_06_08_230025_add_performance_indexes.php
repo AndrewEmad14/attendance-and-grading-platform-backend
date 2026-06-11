@@ -52,7 +52,8 @@ return new class extends Migration
 
         // excuse_requests — Track Admin approval queue filters by status
         Schema::table('excuse_requests', function (Blueprint $table) {
-            $table->index(['attendance_id', 'status'], 'idx_excuse_student_status');
+            $table->index(['student_id', 'status'], 'idx_excuse_student_status');
+            $table->unique(['student_id', 'engagement_id'], 'uq_excuse_student_engagement');
         });
 
         // billing_records — forwarded_at=null means "not yet sent"; queried every billing run
@@ -113,6 +114,7 @@ return new class extends Migration
 
         Schema::table('excuse_requests', function (Blueprint $table) {
             $table->dropIndex('idx_excuse_student_status');
+            $table->dropUnique('uq_excuse_student_engagement');
         });
 
         Schema::table('billing_records', function (Blueprint $table) {

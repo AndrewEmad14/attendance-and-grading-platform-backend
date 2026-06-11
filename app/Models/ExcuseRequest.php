@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ExcuseRequest extends Model
 {
@@ -14,7 +14,8 @@ class ExcuseRequest extends Model
   const STATUS_REJECTED = 'rejected';
 
   protected $fillable = [
-    'attendance_id',
+    'engagement_id',
+    'student_id',
     'reason',
     'attachment_path',
     'status',
@@ -26,9 +27,14 @@ class ExcuseRequest extends Model
     'reviewed_at' => 'datetime',
   ];
 
-  public function attendanceRecord()
+  public function engagement(): BelongsTo
   {
-    return $this->belongsTo(AttendanceRecord::class, 'attendance_id');
+    return $this->belongsTo(Engagement::class);
+  }
+
+  public function student(): BelongsTo
+  {
+    return $this->belongsTo(StudentProfile::class, 'student_id');
   }
 
   public function reviewer()
@@ -48,17 +54,5 @@ class ExcuseRequest extends Model
   public function isRejected(): bool
   {
     return $this->status === self::STATUS_REJECTED;
-  }
-
-  public function student(): HasOneThrough
-  {
-    return $this->hasOneThrough(
-      StudentProfile::class,
-      AttendanceRecord::class,
-      'id', // attendance_records.id matched against excuse_requests.attendance_id
-      'id', // student_profiles.id matched against attendance_records.student_id
-      'attendance_id', // excuse_requests.attendance_id
-      'student_id' // attendance_records.student_id
-    );
   }
 }

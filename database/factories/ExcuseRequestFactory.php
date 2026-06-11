@@ -3,7 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\ExcuseRequest;
-use App\Models\AttendanceRecord;
+use App\Models\StudentProfile;
+use App\Models\Engagement;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ExcuseRequestFactory extends Factory
@@ -13,7 +14,8 @@ class ExcuseRequestFactory extends Factory
   public function definition()
   {
     return [
-      'attendance_id' => AttendanceRecord::factory(),
+      'student_id' => StudentProfile::inRandomOrder()->first()->id,
+      'engagement_id' => Engagement::inRandomOrder()->first()->id,
       'reason' => $this->faker->paragraph(),
       'attachment_path' => $this->faker->filePath(),
       'status' => $this->faker->randomElement(['pending', 'approved', 'rejected']),

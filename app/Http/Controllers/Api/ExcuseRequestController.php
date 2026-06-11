@@ -38,7 +38,7 @@ class ExcuseRequestController extends Controller
   {
     $this->authorize('create', ExcuseRequest::class);
     $excuseRequest = $this->excuseService->store(
-      student: $request->user(),
+      user: $request->user(),
       data: $request->validated(),
       attachment: $request->file('attachment'),
     );
