@@ -8,6 +8,7 @@ use App\Models\Tag;
 use App\Policies\CoursePolicy;
 use App\Policies\SubmissionPolicy;
 use App\Policies\TagPolicy;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -44,6 +45,9 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::policy(Tag::class, TagPolicy::class);
         Gate::policy(Submission::class, SubmissionPolicy::class);
+        ResetPassword::createUrlUsing(function ($user, string $token) {
+            return env('FRONTEND_URL').'/reset-password?token='.$token.'&email='.urlencode($user->email);
+        });
         Gate::policy(Course::class, CoursePolicy::class);
     }
 }
