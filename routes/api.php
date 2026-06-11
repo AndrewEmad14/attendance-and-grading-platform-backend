@@ -35,6 +35,8 @@ Route::patch('/test-notes/{studentId}', [NoteController::class, 'append']);
     Route::patch('/courses/{course}',          [CourseController::class, 'update']);
     Route::delete('/courses/{course}',         [CourseController::class, 'destroy']);
 
+    Route::post('/deliverables/{deliverable}/submissions', [SubmissionController::class, 'store'])
+    ->middleware('role:'.Role::STUDENT);
     Route::patch('/submissions/{submission}', [SubmissionController::class, 'grade']);
     Route::post('/submissions/{submission}/override', [SubmissionController::class, 'override']);
 
@@ -77,7 +79,7 @@ Route::patch('/test-notes/{studentId}', [NoteController::class, 'append']);
       Route::get('', [BusinessSessionController::class, 'index']);
       Route::post('', [BusinessSessionController::class, 'store']);
       Route::get('{businessSession}', [BusinessSessionController::class, 'show']);
-      
+
       Route::post('{businessSession}/cohorts', [BusinessSessionController::class, 'enrollCohort']);
       Route::delete('{businessSession}/cohorts/{cohortId}', [BusinessSessionController::class, 'removeCohort']);
 
@@ -87,14 +89,14 @@ Route::patch('/test-notes/{studentId}', [NoteController::class, 'append']);
 
   Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:login');
-    
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('me', [AuthController::class, 'me']);
         Route::post('logout', [AuthController::class, 'logout']);
         Route::post('logout-all', [AuthController::class, 'logoutAll']);
     });
 });
-  
+
   Route::group(['prefix' => 'users','middleware' => ['auth:sanctum','role:'.Role::BRANCH_MANAGER.','.Role::TRACK_ADMIN]], function () {
     Route::get('', [UserController::class, 'index']);
     Route::post('', [UserController::class, 'register']);

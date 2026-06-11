@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GradeSubmissionRequest;
+use App\Http\Requests\StoreSubmissionRequest;
 use App\Http\Resources\SubmissionResource;
+use App\Models\CourseDeliverable;
 use App\Models\Submission;
 use App\Services\GradingService;
+use App\Services\SubmissionService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Http\Requests\OverrideSubmissionRequest;
 use App\Policies\SubmissionPolicy;
@@ -15,7 +18,29 @@ class SubmissionController extends Controller
 {
     use AuthorizesRequests;
 
-    public function __construct(private GradingService $gradingService) {}
+    public function __construct(
+        private GradingService $gradingService,
+        private SubmissionService $submissionService,
+    ) {}
+
+    // student submits to a deliverable — url or file (POR-4)
+    public function store(StoreSubmissionRequest $request, CourseDeliverable $deliverable)
+    {
+        // authorization handled in StoreSubmissionRequest::authorize() via the create policy
+
+        $student = $request->user()->studentProfile;
+
+        $submission = $this->submissionService->submit(
+            $deliverable,
+            $student,
+            $request->safe()->only(['submission_type', 'url']),
+            $request->file('file'),
+        );
+
+        return (new SubmissionResource($submission->load('deliverable')))
+            ->response()
+            ->setStatusCode(201);
+    }
 
     // grades a submission — normalizes score on the fly via GradingService
     public function grade(GradeSubmissionRequest $request, Submission $submission)
