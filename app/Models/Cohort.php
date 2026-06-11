@@ -44,4 +44,14 @@ class Cohort extends Model
     {
         return $this->belongsToMany(StaffProfile::class, 'cohorts_admins', 'cohort_id', 'staff_id');
     }
+
+    public function engagements()
+    {
+        return $this->hasManyThrough(
+            Engagement::class,
+            Course::class,
+            'cohort_id', // Foreign key on the courses table
+            'engageable_id' // Foreign key on the engagements table
+        )->where('engagements.engageable_type', Course::class);
+    }
 }

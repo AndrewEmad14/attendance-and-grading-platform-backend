@@ -7,6 +7,7 @@ use App\Http\Requests\StoreEngagementRequest;
 use App\Http\Requests\UpdateEngagementRequest;
 use App\Http\Resources\EngagementResource;
 use App\Models\Engagement;
+use \App\Models\Lab;
 use App\Services\EngagementService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,8 +26,11 @@ class EngagementController extends Controller
         $user = $request->user();
 
         $query = Engagement::with([
-            'engageable',
-            'engageable.labGroup',
+            'engageable' => function ($morphTo) {
+                $morphTo->morphWith([
+                    Lab::class => ['labGroup'],
+                ]);
+            }
         ]);
 
         if ($user->role === 'instructor') {
