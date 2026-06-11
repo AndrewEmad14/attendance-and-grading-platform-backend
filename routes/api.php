@@ -38,6 +38,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/deliverables/{deliverable}/submissions', [SubmissionController::class, 'store'])
         ->middleware('role:'.Role::STUDENT);
+    Route::get('/deliverables/{deliverable}/submissions', [SubmissionController::class, 'index']);
+    Route::get('/deliverables/{deliverable}/missing', [SubmissionController::class, 'missing']);
+    Route::get('/students/{studentId}/submissions', [SubmissionController::class, 'studentSubmissions']);
+    Route::get('/submissions/{submission}/download', [SubmissionController::class, 'download']);
     Route::patch('/submissions/{submission}', [SubmissionController::class, 'grade']);
     Route::post('/submissions/{submission}/override', [SubmissionController::class, 'override']);
 
