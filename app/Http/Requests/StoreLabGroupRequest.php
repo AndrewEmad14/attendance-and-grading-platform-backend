@@ -40,6 +40,7 @@ class StoreLabGroupRequest extends FormRequest
                             'cohort_id',
                             'Cannot create new lab groups once courses have been configured for this cohort.'
                         );
+
                         return;
                     }
 
@@ -54,7 +55,7 @@ class StoreLabGroupRequest extends FormRequest
                         );
                     }
                 }
-            }
+            },
         ];
     }
 }

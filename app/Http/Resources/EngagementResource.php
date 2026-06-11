@@ -2,11 +2,11 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Models\BusinessSession;
 use App\Models\Course;
 use App\Models\Lab;
-use App\Models\BusinessSession;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 class EngagementResource extends JsonResource
 {
@@ -39,7 +39,7 @@ class EngagementResource extends JsonResource
             'scheduled_hours' => $this->scheduled_hours,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
-            
+
             // UI Aggregation Layer fields
             'display_title' => $title,
             'display_context' => $subtitle,

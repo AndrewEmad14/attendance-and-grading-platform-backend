@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class BusinessSessionFactory extends Factory
 {
-  protected $model = BusinessSession::class;
+    protected $model = BusinessSession::class;
 
-  public function definition()
-  {
-    return [
-      'name' => $this->faker->company() . ' Session',
-    ];
-  }
+    public function definition()
+    {
+        return [
+            'name' => $this->faker->company().' Session',
+        ];
+    }
 }

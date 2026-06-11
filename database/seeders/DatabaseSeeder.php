@@ -12,15 +12,15 @@ use App\Models\StaffProfile;
 use App\Models\Tag;
 use App\Models\LabGroup;
 use App\Models\Course;
+use App\Models\Announcement;
+use App\Models\BillingRecord;
 use App\Models\BusinessSession;
-use App\Models\Lab;
 use App\Models\CourseDeliverable;
 use App\Models\Engagement;
 use App\Models\ExcuseRequest;
+use App\Models\Lab;
 use App\Models\Submission;
-use App\Models\Announcement;
 use App\Models\User;
-use App\Models\BillingRecord;
 use App\Models\AttendanceRecord;
 
 class DatabaseSeeder extends Seeder
@@ -250,6 +250,70 @@ class DatabaseSeeder extends Seeder
                 'total_amount' => $engagement->scheduled_hours * 150,
             ]);
         }
+
+        // 19. TEST USERS WITH HARDCODED CREDENTIALS & TOKENS
+        // These are for quick testing of authentication and API endpoints
+        $testUsers = [
+            [
+                'email' => 'branch@example.com',
+                'password' => 'password123',
+                'role' => 'branch_manager',
+                'name' => 'Test Branch Manager',
+            ],
+            [
+                'email' => 'admin@example.com',
+                'password' => 'password123',
+                'role' => 'track_admin',
+                'name' => 'Test Track Admin',
+            ],
+            [
+                'email' => 'instructor@example.com',
+                'password' => 'password123',
+                'role' => 'instructor',
+                'name' => 'Test Instructor',
+            ],
+            [
+                'email' => 'student@example.com',
+                'password' => 'password123',
+                'role' => 'student',
+                'name' => 'Test Student',
+            ],
+        ];
+
+        echo "\n========================================\n";
+        echo "TEST USERS & TOKENS\n";
+        echo "========================================\n\n";
+
+        foreach ($testUsers as $testUser) {
+            $user = User::factory()->create([
+                'email' => $testUser['email'],
+                'password_hash' => $testUser['password'],
+                'role' => $testUser['role'],
+                'name' => $testUser['name'],
+            ]);
+
+            // Generate personal access token
+            $token = $user->createToken('test-token')->plainTextToken;
+
+            // Display in console
+            echo "Role: {$testUser['role']}\n";
+            echo "Email: {$testUser['email']}\n";
+            echo "Password: {$testUser['password']}\n";
+            echo "Token: {$token}\n";
+            echo "---\n\n";
+
+            // Create staff profile if applicable
+            if (in_array($testUser['role'], ['branch_manager', 'track_admin', 'instructor'])) {
+                StaffProfile::factory()->create(['user_id' => $user->id]);
+            }
+
+            // Create student profile if applicable
+            if ($testUser['role'] === 'student') {
+                StudentProfile::factory()->create(['user_id' => $user->id]);
+            }
+        }
+
+        echo "========================================\n\n";
     }
 
     /**

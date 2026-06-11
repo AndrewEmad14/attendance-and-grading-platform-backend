@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreBusinessSessionRequest;
 use App\Http\Requests\EnrollCohortInBusinessSessionRequest;
+use App\Http\Requests\StoreBusinessSessionRequest;
 use App\Http\Resources\BusinessSessionResource;
 use App\Models\BusinessSession;
 use Illuminate\Http\JsonResponse;
@@ -47,7 +47,7 @@ class BusinessSessionController extends Controller
         $businessSession->cohorts()->attach($request->input('cohort_id'));
 
         return response()->json([
-            'message' => 'Cohort successfully registered to the specified business session event context.'
+            'message' => 'Cohort successfully registered to the specified business session event context.',
         ], 201);
     }
 

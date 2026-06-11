@@ -2,17 +2,16 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Str;
+use App\Models\Course;
+use App\Models\Submission;
+use App\Models\Tag;
+use App\Policies\CoursePolicy;
+use App\Policies\SubmissionPolicy;
+use App\Policies\TagPolicy;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\RateLimiter;
-
-use App\Models\Submission;
-use App\Policies\SubmissionPolicy;
 use Illuminate\Support\Facades\Gate;
-use App\Models\Tag;
-use App\Policies\TagPolicy;
 
 use App\Models\AttendanceRecord;
 use App\Models\Cohort;
@@ -21,6 +20,9 @@ use App\Policies\AttendancePolicy;
 use App\Policies\CohortPolicy;
 use App\Policies\ExcuseRequestPolicy;
 
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -44,7 +46,7 @@ class AppServiceProvider extends ServiceProvider
                 ->by($request->ip() . '|' . $email)
                 ->response(function () {
                     return response()->json([
-                        'message' => 'Too many login attempts. Please try again in 60 seconds.'
+                        'message' => 'Too many login attempts. Please try again in 60 seconds.',
                     ], 429);
                 });
         });
@@ -54,5 +56,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(AttendanceRecord::class, AttendancePolicy::class);
         Gate::policy(ExcuseRequest::class, ExcuseRequestPolicy::class);
         Gate::policy(Cohort::class, CohortPolicy::class);
+        ResetPassword::createUrlUsing(function ($user, string $token) {
+            return env('FRONTEND_URL') . '/reset-password?token=' . $token . '&email=' . urlencode($user->email);
+        });
+        Gate::policy(Course::class, CoursePolicy::class);
     }
 }

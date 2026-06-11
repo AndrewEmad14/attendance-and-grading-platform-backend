@@ -1,22 +1,22 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Enums\Role;
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\CohortController;
-use App\Http\Controllers\Api\LabGroupController;
-use App\Http\Controllers\Api\EngagementController;
+use App\Http\Controllers\Api\BranchAnalyticsController;
 use App\Http\Controllers\Api\BusinessSessionController;
+use App\Http\Controllers\Api\CohortController;
 use App\Http\Controllers\Api\CourseController;
+use App\Http\Controllers\Api\EngagementController;
+use App\Http\Controllers\Api\GradingAnalyticsController;
+use App\Http\Controllers\Api\LabGroupController;
+use App\Http\Controllers\Api\NoteController;
 use App\Http\Controllers\Api\SubmissionController;
 use App\Http\Controllers\Api\TagController;
-use App\Http\Controllers\Api\NoteController;
-use App\Http\Controllers\Api\GradingAnalyticsController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\AttendanceLedgerController;
 use App\Http\Controllers\Api\ExcuseRequestController;
-//$table->enum('role', ['branch_manager', 'track_admin', 'instructor', 'student']);
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
   return response()->json(['message' => 'API is running']);
@@ -31,24 +31,28 @@ Route::middleware('auth:sanctum')->group(function () {
   });
   Route::get('cohorts', [CohortController::class, 'index']);
 
-  Route::get('/cohorts/{cohortId}/courses',  [CourseController::class, 'index']);
+  Route::get('/cohorts/{cohortId}/courses', [CourseController::class, 'index']);
   Route::post('/cohorts/{cohortId}/courses', [CourseController::class, 'store']);
-  Route::get('/courses/{course}',            [CourseController::class, 'show']);
-  Route::patch('/courses/{course}',          [CourseController::class, 'update']);
-  Route::delete('/courses/{course}',         [CourseController::class, 'destroy']);
+  Route::get('/courses/{course}', [CourseController::class, 'show']);
+  Route::patch('/courses/{course}', [CourseController::class, 'update']);
+  Route::delete('/courses/{course}', [CourseController::class, 'destroy']);
 
+  Route::post('/deliverables/{deliverable}/submissions', [SubmissionController::class, 'store'])
+    ->middleware('role:' . Role::STUDENT);
   Route::patch('/submissions/{submission}', [SubmissionController::class, 'grade']);
   Route::post('/submissions/{submission}/override', [SubmissionController::class, 'override']);
 
   Route::get('/tags', [TagController::class, 'index']);
   Route::post('/tags', [TagController::class, 'store']);
   Route::get('/students/{studentId}/tags', [TagController::class, 'studentTags']);
-  Route::post('/students/{studentId}/tags',  [TagController::class, 'attach']);
+  Route::post('/students/{studentId}/tags', [TagController::class, 'attach']);
   Route::delete('/students/{studentId}/tags/{tagId}', [TagController::class, 'detach']);
 
   Route::patch('/students/{studentId}/notes', [NoteController::class, 'append']);
 
-  Route::get('/analytics/cohorts/{cohortId}',  [GradingAnalyticsController::class, 'cohortGrades']);
+  Route::get('/analytics/branch', BranchAnalyticsController::class);
+  Route::get('/analytics/cohorts/{cohortId}', [GradingAnalyticsController::class, 'cohortGrades']);
+  Route::get('/analytics/cohorts/{cohortId}/at-risk', [GradingAnalyticsController::class, 'atRiskStudents']);
   Route::get('/analytics/lab-groups/{labGroupId}', [GradingAnalyticsController::class, 'labGroupGrades']);
 
   Route::prefix('cohorts/{cohort}')->group(function () {
@@ -104,6 +108,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::prefix('auth')->group(function () {
   Route::post('login', [AuthController::class, 'login'])->middleware('throttle:login');
+  Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+  Route::post('reset-password', [AuthController::class, 'resetPassword']);
 
   Route::middleware('auth:sanctum')->group(function () {
     Route::post('me', [AuthController::class, 'me']);
@@ -113,8 +119,11 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::group(['prefix' => 'users', 'middleware' => ['auth:sanctum', 'role:' . Role::BRANCH_MANAGER . ',' . Role::TRACK_ADMIN]], function () {
-  Route::get('', [UserController::class, 'index']);
-  Route::post('', [UserController::class, 'register']);
+  Route::get('students', [UserController::class, 'listStudents']);
+  Route::get('instructors', [UserController::class, 'listInstructors']);
+  Route::get('track-admins', [UserController::class, 'listTrackAdmins'])->middleware('role:' . Role::BRANCH_MANAGER);
+
+  Route::post('', [UserController::class, 'store']);
   Route::get('{user}', [UserController::class, 'show']);
   Route::patch('{user}', [UserController::class, 'update']);
   Route::delete('{user}', [UserController::class, 'destroy']);

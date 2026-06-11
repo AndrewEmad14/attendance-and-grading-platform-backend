@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class TagFactory extends Factory
 {
-  protected $model = Tag::class;
+    protected $model = Tag::class;
 
-  public function definition()
-  {
-    return [
-      'tag' => $this->faker->unique()->word(),
-    ];
-  }
+    public function definition()
+    {
+        return [
+            'tag' => $this->faker->unique()->word(),
+        ];
+    }
 }

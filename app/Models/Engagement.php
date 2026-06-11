@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
 use App\Models\Course;
 use App\Models\Lab;
 use App\Models\BusinessSession;
+use App\Models\StaffProfile;
+use App\Models\AttendanceRecord;
+use App\Models\BillingRecord;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -15,9 +18,9 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class Engagement extends Model
 {
   use HasFactory;
-  const TYPE_COURSE = 'App\\Models\\Course';
-  const TYPE_LAB = 'App\\Models\\Lab';
-  const TYPE_BUSINESS_SESSION = 'App\\Models\\BusinessSession';
+  const TYPE_COURSE = Course::class;
+  const TYPE_LAB = Lab::class;
+  const TYPE_BUSINESS_SESSION = BusinessSession::class;
 
   protected $fillable = [
     'engageable_id',
@@ -56,9 +59,7 @@ class Engagement extends Model
     return $this->hasMany(BillingRecord::class, 'engagement_id');
   }
 
-  /**
-   * Scope a query to only include engagements linked to a specific cohort.
-   */
+  // Scope a query to only include engagements linked to a specific cohort
   public function scopeForCohort(Builder $query, int $cohortId): Builder
   {
     return $query->where(function ($q) use ($cohortId) {
@@ -75,6 +76,7 @@ class Engagement extends Model
       });
     });
   }
+
 
   public function isLecture(): bool
   {

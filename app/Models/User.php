@@ -7,6 +7,8 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Notifications\ResetPasswordNotification;
+use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
 {
@@ -44,8 +46,8 @@ class User extends Authenticatable
     public function setPasswordHashAttribute($value): void
     {
         $this->attributes['password_hash'] =
-            \Illuminate\Support\Facades\Hash::needsRehash($value)
-            ? \Illuminate\Support\Facades\Hash::make($value)
+            Hash::needsRehash($value)
+            ? Hash::make($value)
             : $value;
     }
 
@@ -101,5 +103,10 @@ class User extends Authenticatable
             self::ROLE_TRACK_ADMIN,
             self::ROLE_INSTRUCTOR,
         ]);
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token, $this->email));
     }
 }

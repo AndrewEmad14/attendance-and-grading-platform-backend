@@ -8,18 +8,17 @@ use App\Http\Requests\UpdateCourseRequest;
 use App\Http\Resources\CourseResource;
 use App\Models\Course;
 use App\Models\CourseDeliverable;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests; 
-
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class CourseController extends Controller
 {
-
     use AuthorizesRequests;
 
     public function index(int $cohortId) // courses+deliverables
     {
         $this->authorize('viewAny', Course::class);
         $courses = Course::where('cohort_id', $cohortId)->with('deliverables')->get();
+
         return CourseResource::collection($courses);
     }
 
@@ -40,6 +39,7 @@ class CourseController extends Controller
     public function show(Course $course)
     {
         $this->authorize('view', $course);
+
         return new CourseResource($course->load('deliverables'));
     }
 
@@ -64,6 +64,7 @@ class CourseController extends Controller
     {
         $this->authorize('delete', $course);
         $course->delete();
+
         return response()->noContent();
     }
 }

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Engagement;
 
 class AttendanceRecord extends Model
 {
@@ -21,7 +22,6 @@ class AttendanceRecord extends Model
     'arrived_at' => 'datetime',
     'left_at' => 'datetime',
   ];
-
 
   public function student(): BelongsTo
   {
