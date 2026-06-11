@@ -20,7 +20,7 @@ http:
 runtime:
   variables:
     - name: token
-      value: 7|BCgoFsRrf8pr0w5mCmcn6eMFJGp0dSEt96v4yUoR1070ba6d
+      value: 1|NbeM1IYNZyHTKuMLI5ulQRsX8Zb8stIwFb53HR1U63155961
 
 settings:
   encodeUrl: true

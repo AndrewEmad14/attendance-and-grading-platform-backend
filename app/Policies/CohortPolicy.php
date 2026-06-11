@@ -9,6 +9,7 @@ use App\Services\AccessService;
 class CohortPolicy
 {
     public function __construct(private AccessService $accessService) {}
+
     public function viewAny(User $user): bool
     {
         return true;

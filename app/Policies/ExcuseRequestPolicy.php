@@ -8,43 +8,52 @@ use App\Services\AccessService;
 
 class ExcuseRequestPolicy
 {
-  public function __construct(private AccessService $accessService) {}
+    public function __construct(private AccessService $accessService) {}
 
-  public function viewAny(User $user): bool
-  {
-    return in_array($user->role, ['branch_manager', 'track_admin', 'student']);
-  }
+    public function viewAny(User $user): bool
+    {
+        return in_array($user->role, ['branch_manager', 'track_admin', 'student']);
+    }
 
-  public function view(User $user, ExcuseRequest $excuseRequest): bool
-  {
-    if ($user->role === 'instructor') return false;
-    return $this->accessService->canAccessStudent($user, $excuseRequest->student);
-  }
+    public function view(User $user, ExcuseRequest $excuseRequest): bool
+    {
+        if ($user->role === 'instructor') {
+            return false;
+        }
 
-  public function create(User $user): bool
-  {
-    return $user->role === 'student';
-  }
+        return $this->accessService->canAccessStudent($user, $excuseRequest->student);
+    }
 
-  public function update(User $user, ExcuseRequest $excuseRequest): bool
-  {
-    if ($user->role !== 'student') return false;
-    return $excuseRequest->isPending() && $this->accessService->canAccessStudent($user, $excuseRequest->student);
-  }
+    public function create(User $user): bool
+    {
+        return $user->role === 'student';
+    }
 
-  public function review(User $user, ExcuseRequest $excuseRequest): bool
-  {
-    if ($user->role !== 'track_admin') return false;
-    return $this->accessService->canAccessStudent($user, $excuseRequest->student);
-  }
+    public function update(User $user, ExcuseRequest $excuseRequest): bool
+    {
+        if ($user->role !== 'student') {
+            return false;
+        }
 
-  public function approve(User $user, ExcuseRequest $excuseRequest): bool
-  {
-    return $this->update($user, $excuseRequest);
-  }
+        return $excuseRequest->isPending() && $this->accessService->canAccessStudent($user, $excuseRequest->student);
+    }
 
-  public function reject(User $user, ExcuseRequest $excuseRequest): bool
-  {
-    return $this->update($user, $excuseRequest);
-  }
+    public function review(User $user, ExcuseRequest $excuseRequest): bool
+    {
+        if ($user->role !== 'track_admin') {
+            return false;
+        }
+
+        return $this->accessService->canAccessStudent($user, $excuseRequest->student);
+    }
+
+    public function approve(User $user, ExcuseRequest $excuseRequest): bool
+    {
+        return $this->update($user, $excuseRequest);
+    }
+
+    public function reject(User $user, ExcuseRequest $excuseRequest): bool
+    {
+        return $this->update($user, $excuseRequest);
+    }
 }

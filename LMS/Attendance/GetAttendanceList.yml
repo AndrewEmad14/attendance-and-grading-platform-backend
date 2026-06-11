@@ -13,11 +13,10 @@ http:
 runtime:
   variables:
     - name: token
-      value: 7|BCgoFsRrf8pr0w5mCmcn6eMFJGp0dSEt96v4yUoR1070ba6d
+      value: 4|OityXKbLGTjgVwAzt0hpymLbFb7UT46nUYtjmqDd5f5aa697
 
 settings:
   encodeUrl: true
   timeout: 0
   followRedirects: true
   maxRedirects: 5
-​

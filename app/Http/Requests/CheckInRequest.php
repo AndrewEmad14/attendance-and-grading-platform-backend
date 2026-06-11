@@ -6,15 +6,15 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class CheckInRequest extends FormRequest
 {
-  public function authorize(): bool
-  {
-    return true;
-  }
+    public function authorize(): bool
+    {
+        return true;
+    }
 
-  public function rules(): array
-  {
-    return [
-      'engagement_id' => ['required', 'integer', 'exists:engagements,id'],
-    ];
-  }
+    public function rules(): array
+    {
+        return [
+            'engagement_id' => ['required', 'integer', 'exists:engagements,id'],
+        ];
+    }
 }

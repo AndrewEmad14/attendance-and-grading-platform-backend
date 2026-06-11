@@ -13,39 +13,43 @@ use Illuminate\Http\Request;
 
 class AttendanceController extends Controller
 {
-  public function __construct(private AttendanceService $attendanceService) {}
+    public function __construct(private AttendanceService $attendanceService) {}
 
-  public function index(Request $request): JsonResponse
-  {
-    $records = $this->attendanceService->index(
-      $request->user(),
-      $request->integer('per_page', 20)
-    );
-    return AttendanceResource::collection($records)->response();
-  }
+    public function index(Request $request): JsonResponse
+    {
+        $records = $this->attendanceService->index(
+            $request->user(),
+            $request->integer('per_page', 20)
+        );
 
-  public function show(AttendanceRecord $attendance): AttendanceResource
-  {
-    $this->authorize('view', $attendance);
-    return new AttendanceResource($attendance->load(['student.user', 'engagement']));
-  }
+        return AttendanceResource::collection($records)->response();
+    }
 
-  public function store(CheckInRequest $request): JsonResponse
-  {
-    $this->authorize('create', AttendanceRecord::class);
-    $record = $this->attendanceService->handleScan(
-      user: $request->user(),
-      engagementId: $request->validated('engagement_id'),
-    );
-    return (new AttendanceResource($record))
-      ->response()
-      ->setStatusCode($record->wasRecentlyCreated ? 201 : 200);
-  }
+    public function show(AttendanceRecord $attendance): AttendanceResource
+    {
+        $this->authorize('view', $attendance);
 
-  public function update(PatchAttendanceRequest $request, AttendanceRecord $attendance): AttendanceResource
-  {
-    $this->authorize('update', $attendance);
-    $updated = $this->attendanceService->correctTimestamps($attendance, $request->validated());
-    return new AttendanceResource($updated);
-  }
+        return new AttendanceResource($attendance->load(['student.user', 'engagement']));
+    }
+
+    public function store(CheckInRequest $request): JsonResponse
+    {
+        $this->authorize('create', AttendanceRecord::class);
+        $record = $this->attendanceService->handleScan(
+            user: $request->user(),
+            engagementId: $request->validated('engagement_id'),
+        );
+
+        return (new AttendanceResource($record))
+            ->response()
+            ->setStatusCode($record->wasRecentlyCreated ? 201 : 200);
+    }
+
+    public function update(PatchAttendanceRequest $request, AttendanceRecord $attendance): AttendanceResource
+    {
+        $this->authorize('update', $attendance);
+        $updated = $this->attendanceService->correctTimestamps($attendance, $request->validated());
+
+        return new AttendanceResource($updated);
+    }
 }

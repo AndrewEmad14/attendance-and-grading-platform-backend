@@ -2,26 +2,26 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Collection;
-use App\Models\Track;
-use App\Models\Cohort;
-use App\Models\StudentProfile;
-use App\Models\StaffProfile;
-use App\Models\Tag;
-use App\Models\LabGroup;
-use App\Models\Course;
 use App\Models\Announcement;
+use App\Models\AttendanceRecord;
 use App\Models\BillingRecord;
 use App\Models\BusinessSession;
+use App\Models\Cohort;
+use App\Models\Course;
 use App\Models\CourseDeliverable;
 use App\Models\Engagement;
 use App\Models\ExcuseRequest;
 use App\Models\Lab;
+use App\Models\LabGroup;
+use App\Models\StaffProfile;
+use App\Models\StudentProfile;
 use App\Models\Submission;
+use App\Models\Tag;
+use App\Models\Track;
 use App\Models\User;
-use App\Models\AttendanceRecord;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -54,9 +54,9 @@ class DatabaseSeeder extends Seeder
             for ($i = 0; $i < 30; $i++) {
                 $user = User::factory()->student()->create();
                 $students->push(StudentProfile::factory()->create([
-                    'user_id'            => $user->id,
-                    'cohort_id'          => $cohort->id,
-                    'lab_group_id'       => $cohortLabGroups[$i % $cohortLabGroups->count()]->id,
+                    'user_id' => $user->id,
+                    'cohort_id' => $cohort->id,
+                    'lab_group_id' => $cohortLabGroups[$i % $cohortLabGroups->count()]->id,
                     'attendance_balance' => 250,
                 ]));
             }
@@ -65,17 +65,17 @@ class DatabaseSeeder extends Seeder
         // 5. Staff — one branch manager, two track admins, seven instructors
         //    Each staff profile is stored with its role accessible via ->user->role
         $branchManagerUser = User::factory()->state(['role' => 'branch_manager'])->create();
-        $branchManager     = StaffProfile::factory()->create(['user_id' => $branchManagerUser->id]);
+        $branchManager = StaffProfile::factory()->create(['user_id' => $branchManagerUser->id]);
 
         $trackAdmins = collect();
         for ($i = 0; $i < 2; $i++) {
-            $user        = User::factory()->state(['role' => 'track_admin'])->create();
+            $user = User::factory()->state(['role' => 'track_admin'])->create();
             $trackAdmins->push(StaffProfile::factory()->create(['user_id' => $user->id]));
         }
 
         $instructors = collect();
         for ($i = 0; $i < 7; $i++) {
-            $user        = User::factory()->state(['role' => 'instructor'])->create();
+            $user = User::factory()->state(['role' => 'instructor'])->create();
             $instructors->push(StaffProfile::factory()->create(['user_id' => $user->id]));
         }
 
@@ -87,8 +87,8 @@ class DatabaseSeeder extends Seeder
         foreach ($cohorts->where('is_active', true) as $cohort) {
             foreach ($trackAdmins as $admin) {
                 DB::table('cohorts_admins')->insert([
-                    'cohort_id'  => $cohort->id,
-                    'staff_id'   => $admin->id,
+                    'cohort_id' => $cohort->id,
+                    'staff_id' => $admin->id,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -116,10 +116,10 @@ class DatabaseSeeder extends Seeder
         $labs = collect();
         foreach ($labGroups as $labGroup) {
             $course = $courses->where('cohort_id', $labGroup->cohort_id)->random();
-            $labs   = $labs->concat(
+            $labs = $labs->concat(
                 Lab::factory(2)->create([
                     'lab_group_id' => $labGroup->id,
-                    'course_id'    => $course->id,
+                    'course_id' => $course->id,
                 ])
             );
         }
@@ -134,22 +134,22 @@ class DatabaseSeeder extends Seeder
 
         // 12. Submissions
         $studentIds = $students->pluck('id')->toArray();
-        $staffIds   = $allStaff->pluck('id')->toArray();
+        $staffIds = $allStaff->pluck('id')->toArray();
 
         foreach ($deliverables as $deliverable) {
             $randomStudents = collect($studentIds)->random(min(10, count($studentIds)));
             foreach ($randomStudents as $studentId) {
-                $isGraded    = (bool) rand(0, 1);
+                $isGraded = (bool) rand(0, 1);
                 $isOverridden = $isGraded && (rand(0, 9) === 0);
 
                 Submission::factory()->create([
                     'deliverable_id' => $deliverable->id,
-                    'student_id'     => $studentId,
-                    'graded_by'      => $isGraded ? collect($staffIds)->random() : null,
+                    'student_id' => $studentId,
+                    'graded_by' => $isGraded ? collect($staffIds)->random() : null,
                     'override_score' => $isOverridden ? rand(0, 100) : null,
-                    'overridden_by'  => $isOverridden ? collect($staffIds)->random() : null,
-                    'override_note'  => $isOverridden ? 'Grade adjusted after review.' : null,
-                    'overridden_at'  => $isOverridden ? now() : null,
+                    'overridden_by' => $isOverridden ? collect($staffIds)->random() : null,
+                    'override_note' => $isOverridden ? 'Grade adjusted after review.' : null,
+                    'overridden_at' => $isOverridden ? now() : null,
                 ]);
             }
         }
@@ -189,9 +189,9 @@ class DatabaseSeeder extends Seeder
             foreach ($cohorts->random(rand(1, 2)) as $cohort) {
                 DB::table('business_sessions_cohorts')->insertOrIgnore([
                     'business_session_id' => $bs->id,
-                    'cohort_id'           => $cohort->id,
-                    'created_at'          => now(),
-                    'updated_at'          => now(),
+                    'cohort_id' => $cohort->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]);
             }
         }
@@ -203,27 +203,31 @@ class DatabaseSeeder extends Seeder
         foreach ($engagements as $engagement) {
             $expectedStudentIds = collect($this->getExpectedStudentIds($engagement, $students));
 
-            if ($expectedStudentIds->isEmpty()) continue;
+            if ($expectedStudentIds->isEmpty()) {
+                continue;
+            }
 
             // 70% present, 30% absent
-            $presentCount      = max(1, (int) round($expectedStudentIds->count() * 0.7));
+            $presentCount = max(1, (int) round($expectedStudentIds->count() * 0.7));
             $presentStudentIds = $expectedStudentIds->random($presentCount);
-            $absentStudentIds  = $expectedStudentIds->diff($presentStudentIds);
+            $absentStudentIds = $expectedStudentIds->diff($presentStudentIds);
 
             foreach ($presentStudentIds as $studentId) {
                 AttendanceRecord::factory()->create([
                     'engagement_id' => $engagement->id,
-                    'student_id'    => $studentId,
-                    'arrived_at'    => now()->subDays(rand(1, 30))->subHours(rand(1, 3)),
-                    'left_at'       => now()->subDays(rand(1, 30)),
+                    'student_id' => $studentId,
+                    'arrived_at' => now()->subDays(rand(1, 30))->subHours(rand(1, 3)),
+                    'left_at' => now()->subDays(rand(1, 30)),
                 ]);
             }
 
             // ~50% of absent students file an excuse
             foreach ($absentStudentIds as $studentId) {
-                if (rand(0, 1) === 0) continue;
+                if (rand(0, 1) === 0) {
+                    continue;
+                }
 
-                $status     = collect([
+                $status = collect([
                     ExcuseRequest::STATUS_APPROVED,
                     ExcuseRequest::STATUS_REJECTED,
                     ExcuseRequest::STATUS_PENDING,
@@ -232,10 +236,10 @@ class DatabaseSeeder extends Seeder
 
                 ExcuseRequest::factory()->create([
                     'engagement_id' => $engagement->id,
-                    'student_id'    => $studentId,
-                    'status'        => $status,
-                    'reviewed_by'   => $isReviewed ? $allStaff->random()->id : null,
-                    'reviewed_at'   => $isReviewed ? now() : null,
+                    'student_id' => $studentId,
+                    'status' => $status,
+                    'reviewed_by' => $isReviewed ? $allStaff->random()->id : null,
+                    'reviewed_at' => $isReviewed ? now() : null,
                 ]);
             }
         }
@@ -244,7 +248,9 @@ class DatabaseSeeder extends Seeder
         foreach ($students as $student) {
             $expectedEngagementIds = $this->getExpectedEngagementIdsForStudent($student, $engagements);
 
-            if (empty($expectedEngagementIds)) continue;
+            if (empty($expectedEngagementIds)) {
+                continue;
+            }
 
             $attendedEngagementIds = AttendanceRecord::where('student_id', $student->id)
                 ->whereNotNull('arrived_at')
@@ -259,7 +265,7 @@ class DatabaseSeeder extends Seeder
                 ->count();
 
             $unexcusedCount = count($absentEngagementIds) - $approvedExcusesCount;
-            $newBalance     = 250 - ($unexcusedCount * 25) - ($approvedExcusesCount * 5);
+            $newBalance = 250 - ($unexcusedCount * 25) - ($approvedExcusesCount * 5);
 
             $student->update(['attendance_balance' => $newBalance]);
         }
@@ -273,10 +279,10 @@ class DatabaseSeeder extends Seeder
         // 19. Billing records
         foreach ($engagements as $engagement) {
             BillingRecord::factory()->create([
-                'engagement_id'   => $engagement->id,
-                'staff_id'        => $engagement->staff_id,
+                'engagement_id' => $engagement->id,
+                'staff_id' => $engagement->staff_id,
                 'delivered_hours' => $engagement->scheduled_hours,
-                'total_amount'    => $engagement->scheduled_hours * 150,
+                'total_amount' => $engagement->scheduled_hours * 150,
             ]);
         }
 
@@ -298,12 +304,12 @@ class DatabaseSeeder extends Seeder
         Collection $labGroups,
         Collection $engagements,
     ): void {
-        echo "\n" . str_repeat('=', 60) . "\n";
+        echo "\n".str_repeat('=', 60)."\n";
         echo "GENERATED TEST USERS, TOKENS & ACCESS MAP\n";
-        echo str_repeat('=', 60) . "\n\n";
+        echo str_repeat('=', 60)."\n\n";
 
         // Branch manager
-        $bmUser  = User::factory()->create(['email' => 'branch@example.com', 'role' => 'branch_manager', 'name' => 'Branch Manager']);
+        $bmUser = User::factory()->create(['email' => 'branch@example.com', 'role' => 'branch_manager', 'name' => 'Branch Manager']);
         $bmStaff = StaffProfile::factory()->create(['user_id' => $bmUser->id]);
         $bmToken = $bmUser->createToken('test-token')->plainTextToken;
         $sampleStudents = $students->take(3);
@@ -316,65 +322,65 @@ class DatabaseSeeder extends Seeder
         foreach ($sampleStudents as $st) {
             echo "  - {$st->user->name} | student_id: {$st->id} | user_id: {$st->user->id}\n";
         }
-        echo str_repeat('-', 60) . "\n";
+        echo str_repeat('-', 60)."\n";
 
         // Track admin — reuse first seeded track admin user so cohorts_admins is already set
         $taStaff = $trackAdmins->first();
-        $taUser  = $taStaff->user;
+        $taUser = $taStaff->user;
         $taUser->update(['email' => 'admin@example.com', 'name' => 'Track Admin']);
         $taToken = $taUser->createToken('test-token')->plainTextToken;
 
         // Students accessible: those in cohorts where this track admin is assigned
-        $adminCohortIds      = DB::table('cohorts_admins')->where('staff_id', $taStaff->id)->pluck('cohort_id');
-        $accessibleStudents  = $students->whereIn('cohort_id', $adminCohortIds->toArray())->take(3);
+        $adminCohortIds = DB::table('cohorts_admins')->where('staff_id', $taStaff->id)->pluck('cohort_id');
+        $accessibleStudents = $students->whereIn('cohort_id', $adminCohortIds->toArray())->take(3);
 
         echo "ROLE: track_admin | NAME: {$taUser->name} | USER ID: {$taUser->id}\n";
         echo "TOKEN: {$taToken}\n";
         echo "STAFF PROFILE ID: {$taStaff->id}\n";
-        echo "ASSIGNED COHORT IDS: " . $adminCohortIds->implode(', ') . "\n";
+        echo 'ASSIGNED COHORT IDS: '.$adminCohortIds->implode(', ')."\n";
         echo "SAMPLE ACCESSIBLE STUDENTS:\n";
         foreach ($accessibleStudents as $st) {
             echo "  - {$st->user->name} | student_id: {$st->id} | cohort_id: {$st->cohort_id}\n";
         }
-        echo str_repeat('-', 60) . "\n";
+        echo str_repeat('-', 60)."\n";
 
         // Instructor — reuse first seeded instructor; find a student reachable via
         // student → lab_group → labs → engagements → staff_id = this instructor
         $instrStaff = $instructors->first();
-        $instrUser  = $instrStaff->user;
+        $instrUser = $instrStaff->user;
         $instrUser->update(['email' => 'instructor@example.com', 'name' => 'Instructor']);
         $instrToken = $instrUser->createToken('test-token')->plainTextToken;
 
-        $instrEngagements  = $engagements->where('staff_id', $instrStaff->id);
-        $instrLabIds       = $instrEngagements
-            ->filter(fn($e) => $e->engageable_type === Engagement::TYPE_LAB)
+        $instrEngagements = $engagements->where('staff_id', $instrStaff->id);
+        $instrLabIds = $instrEngagements
+            ->filter(fn ($e) => $e->engageable_type === Engagement::TYPE_LAB)
             ->pluck('engageable_id');
-        $instrLabGroupIds  = $labGroups->whereIn(
+        $instrLabGroupIds = $labGroups->whereIn(
             'id',
-            \App\Models\Lab::whereIn('id', $instrLabIds)->pluck('lab_group_id')->toArray()
+            Lab::whereIn('id', $instrLabIds)->pluck('lab_group_id')->toArray()
         )->pluck('id');
-        $instrStudents     = $students->whereIn('lab_group_id', $instrLabGroupIds->toArray())->take(3);
+        $instrStudents = $students->whereIn('lab_group_id', $instrLabGroupIds->toArray())->take(3);
 
         echo "ROLE: instructor | NAME: {$instrUser->name} | USER ID: {$instrUser->id}\n";
         echo "TOKEN: {$instrToken}\n";
         echo "STAFF PROFILE ID: {$instrStaff->id}\n";
-        echo "OWNS ENGAGEMENTS ON LAB IDS: " . $instrLabIds->implode(', ') . "\n";
+        echo 'OWNS ENGAGEMENTS ON LAB IDS: '.$instrLabIds->implode(', ')."\n";
         echo "SAMPLE ACCESSIBLE STUDENTS (via lab_group → labs → engagements):\n";
         foreach ($instrStudents as $st) {
             echo "  - {$st->user->name} | student_id: {$st->id} | lab_group_id: {$st->lab_group_id}\n";
         }
-        echo str_repeat('-', 60) . "\n";
+        echo str_repeat('-', 60)."\n";
 
         // Student
-        $stUser    = User::factory()->student()->create(['email' => 'student@example.com', 'name' => 'Test Student']);
+        $stUser = User::factory()->student()->create(['email' => 'student@example.com', 'name' => 'Test Student']);
         $stProfile = StudentProfile::factory()->create(['user_id' => $stUser->id]);
-        $stToken   = $stUser->createToken('test-token')->plainTextToken;
+        $stToken = $stUser->createToken('test-token')->plainTextToken;
 
         echo "ROLE: student | NAME: {$stUser->name} | USER ID: {$stUser->id}\n";
         echo "TOKEN: {$stToken}\n";
         echo "STUDENT PROFILE ID: {$stProfile->id}\n";
         echo "ACCESS: own records only\n";
-        echo str_repeat('-', 60) . "\n";
+        echo str_repeat('-', 60)."\n";
     }
 
     // Helpers
@@ -382,7 +388,9 @@ class DatabaseSeeder extends Seeder
     private function getExpectedStudentIds(Engagement $engagement, Collection $students): array
     {
         $engageable = $engagement->engageable;
-        if (!$engageable) return [];
+        if (! $engageable) {
+            return [];
+        }
 
         return match ($engagement->engageable_type) {
             Engagement::TYPE_COURSE => $students
@@ -416,17 +424,16 @@ class DatabaseSeeder extends Seeder
 
         foreach ($engagements as $engagement) {
             $engageable = $engagement->engageable;
-            if (!$engageable) continue;
+            if (! $engageable) {
+                continue;
+            }
 
             $belongs = match ($engagement->engageable_type) {
-                Engagement::TYPE_COURSE =>
-                $engageable->cohort_id === $student->cohort_id,
+                Engagement::TYPE_COURSE => $engageable->cohort_id === $student->cohort_id,
 
-                Engagement::TYPE_LAB =>
-                $engageable->lab_group_id === $student->lab_group_id,
+                Engagement::TYPE_LAB => $engageable->lab_group_id === $student->lab_group_id,
 
-                Engagement::TYPE_BUSINESS_SESSION =>
-                DB::table('business_sessions_cohorts')
+                Engagement::TYPE_BUSINESS_SESSION => DB::table('business_sessions_cohorts')
                     ->where('business_session_id', $engageable->id)
                     ->where('cohort_id', $student->cohort_id)
                     ->exists(),

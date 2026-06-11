@@ -2,20 +2,24 @@
 
 namespace App\Models;
 
-use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Notifications\ResetPasswordNotification;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
+
     const ROLE_BRANCH_MANAGER = 'branch_manager';
+
     const ROLE_TRACK_ADMIN = 'track_admin';
+
     const ROLE_INSTRUCTOR = 'instructor';
+
     const ROLE_STUDENT = 'student';
 
     protected $fillable = [
@@ -35,7 +39,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'expires_at'        => 'datetime',
+        'expires_at' => 'datetime',
     ];
 
     public function getAuthPasswordName(): string

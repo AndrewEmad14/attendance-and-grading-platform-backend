@@ -8,51 +8,55 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ExcuseRequest extends Model
 {
-  use HasFactory;
-  const STATUS_PENDING  = 'pending';
-  const STATUS_APPROVED = 'approved';
-  const STATUS_REJECTED = 'rejected';
+    use HasFactory;
 
-  protected $fillable = [
-    'engagement_id',
-    'student_id',
-    'reason',
-    'attachment_path',
-    'status',
-    'reviewed_by',
-    'reviewed_at',
-  ];
+    const STATUS_PENDING = 'pending';
 
-  protected $casts = [
-    'reviewed_at' => 'datetime',
-  ];
+    const STATUS_APPROVED = 'approved';
 
-  public function engagement(): BelongsTo
-  {
-    return $this->belongsTo(Engagement::class);
-  }
+    const STATUS_REJECTED = 'rejected';
 
-  public function student(): BelongsTo
-  {
-    return $this->belongsTo(StudentProfile::class, 'student_id');
-  }
+    protected $fillable = [
+        'engagement_id',
+        'student_id',
+        'reason',
+        'attachment_path',
+        'status',
+        'reviewed_by',
+        'reviewed_at',
+    ];
 
-  public function reviewer()
-  {
-    return $this->belongsTo(StaffProfile::class, 'reviewed_by');
-  }
-  public function isPending(): bool
-  {
-    return $this->status === self::STATUS_PENDING;
-  }
+    protected $casts = [
+        'reviewed_at' => 'datetime',
+    ];
 
-  public function isApproved(): bool
-  {
-    return $this->status === self::STATUS_APPROVED;
-  }
+    public function engagement(): BelongsTo
+    {
+        return $this->belongsTo(Engagement::class);
+    }
 
-  public function isRejected(): bool
-  {
-    return $this->status === self::STATUS_REJECTED;
-  }
+    public function student(): BelongsTo
+    {
+        return $this->belongsTo(StudentProfile::class, 'student_id');
+    }
+
+    public function reviewer()
+    {
+        return $this->belongsTo(StaffProfile::class, 'reviewed_by');
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === self::STATUS_PENDING;
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === self::STATUS_APPROVED;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === self::STATUS_REJECTED;
+    }
 }
