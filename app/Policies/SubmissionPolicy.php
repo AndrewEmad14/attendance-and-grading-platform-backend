@@ -2,10 +2,10 @@
 
 namespace App\Policies;
 
+use App\Models\StudentProfile;
 use App\Models\CourseDeliverable;
 use App\Models\Submission;
 use App\Models\User;
-use App\Models\StudentProfile;
 use App\Models\Views\SubmissionGrader;
 use Illuminate\Support\Facades\DB;
 
@@ -13,12 +13,16 @@ class SubmissionPolicy
 {
     public function grade(User $user, Submission $submission): bool
     {
-        if ($user->role === 'track_admin') return true; //admin can grade anything
+        if ($user->role === 'track_admin') {
+            return true;
+        } // admin can grade anything
 
         if ($user->role === 'instructor') {
             $deliverable = $submission->deliverable;
 
-            if (in_array($deliverable->type, ['exam', 'project'])) return false; // instructor grade only labs
+            if (in_array($deliverable->type, ['exam', 'project'])) {
+                return false;
+            } // instructor grade only labs
 
             // get all lab ids for this course that this instructor is assigned to
             $instructorLabIds = DB::table('engagements')
@@ -26,8 +30,8 @@ class SubmissionPolicy
                 ->where('instructor_id', $user->id)
                 ->whereIn('engageable_id', function ($query) use ($deliverable) {
                     $query->select('id')
-                          ->from('labs')
-                          ->where('course_id', $deliverable->course_id);
+                        ->from('labs')
+                        ->where('course_id', $deliverable->course_id);
                 })
                 ->pluck('engageable_id');
 
@@ -35,13 +39,13 @@ class SubmissionPolicy
             return StudentProfile::where('id', $submission->student_id)
                 ->whereIn('lab_group_id', function ($query) use ($instructorLabIds) {
                     $query->select('lab_group_id')
-                          ->from('labs')
-                          ->whereIn('id', $instructorLabIds);
+                        ->from('labs')
+                        ->whereIn('id', $instructorLabIds);
                 })
                 ->exists();
         }
 
-        return false; //anyone else
+        return false; // anyone else
     }
 
     // only admin can override grade
@@ -49,44 +53,4 @@ class SubmissionPolicy
     {
         return $user->role === 'track_admin';
     }
-
-    /**
-     * Who may submit to a deliverable (POR-4).
-     * Students only, and only for a deliverable in their own cohort.
-     */
-    public function create(User $user, ?CourseDeliverable $deliverable = null): bool
-    {
-        if ($user->role !== 'student' || $deliverable === null) {
-            return false;
-        }
-
-        $student = StudentProfile::where('user_id', $user->id)->first();
-
-        return $student !== null
-            && $deliverable->course
-            && $deliverable->course->cohort_id === $student->cohort_id;
-    }
-
-    /**
-     * Who may view a submission (ACC-3 / ACC-4).
-     * Owner (student), the assigned grader (instructor), or any track admin.
-     */
-    public function view(User $user, Submission $submission): bool
-    {
-        if ($user->role === 'track_admin') {
-            return true;
-        }
-
-        if ($user->role === 'student') {
-            $student = StudentProfile::where('user_id', $user->id)->first();
-            return $student !== null && $submission->student_id === $student->id;
-        }
-
-        if ($user->role === 'instructor') {
-            return SubmissionGrader::authorizedFor($submission->id, $user->id);
-        }
-
-        return false;
-    }
-
 }

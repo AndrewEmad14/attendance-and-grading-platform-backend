@@ -7,18 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class BusinessSession extends Model
 {
-  use HasFactory;
+    use HasFactory;
 
-  protected $fillable = ['name'];
+    protected $fillable = ['name'];
 
-  public function cohorts()
-  {
-    return $this->belongsToMany(Cohort::class, 'business_sessions_cohorts');
-  }
+    public function cohorts()
+    {
+        return $this->belongsToMany(Cohort::class, 'business_sessions_cohorts');
+    }
 
-  // Polymorphic engagements (business sessions)
-  public function engagements()
-  {
-    return $this->morphMany(Engagement::class, 'engageable');
-  }
+    // Polymorphic engagements (business sessions)
+    public function engagements()
+    {
+        return $this->morphMany(Engagement::class, 'engageable');
+    }
 }

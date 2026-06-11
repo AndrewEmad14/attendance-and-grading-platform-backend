@@ -1,24 +1,24 @@
 <?php
 
 namespace App\Http\Controllers\Api;
-use Illuminate\Support\Facades\DB;
+
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AttachTagRequest;
 use App\Http\Requests\StoreTagRequest;
 use App\Http\Resources\TagResource;
-use App\Models\Tag;
-use App\Models\User;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Models\StudentProfile;
+use App\Models\Tag;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\DB;
 
 class TagController extends Controller
 {
     use AuthorizesRequests;
 
-    
     public function index()// returns all available tags
     {
         $this->authorize('viewAny', Tag::class);
+
         return TagResource::collection(Tag::all());
     }
 
@@ -27,6 +27,7 @@ class TagController extends Controller
     {
         $this->authorize('create', Tag::class);
         $tag = Tag::create(['tag' => $request->tag]);
+
         return new TagResource($tag);
     }
 
@@ -35,6 +36,7 @@ class TagController extends Controller
     {
         $profile = StudentProfile::where('user_id', $studentId)->firstOrFail();
         $tagIds = DB::table('students_tags')->where('student_id', $profile->id)->pluck('tag_id');
+
         return TagResource::collection(Tag::whereIn('id', $tagIds)->get());
     }
 
@@ -45,8 +47,9 @@ class TagController extends Controller
         $profile = StudentProfile::where('user_id', $studentId)->firstOrFail();
         DB::table('students_tags')->insertOrIgnore([
             'student_id' => $profile->id,
-            'tag_id'     => $request->tag_id,
+            'tag_id' => $request->tag_id,
         ]);
+
         return TagResource::collection(Tag::whereIn('id',
             DB::table('students_tags')->where('student_id', $profile->id)->pluck('tag_id')
         )->get());
@@ -58,6 +61,7 @@ class TagController extends Controller
         $this->authorize('deletefromStudent', Tag::class);
         $profile = StudentProfile::where('user_id', $studentId)->firstOrFail();
         DB::table('students_tags')->where('student_id', $profile->id)->where('tag_id', $tagId)->delete();
+
         return response()->noContent();
     }
 }

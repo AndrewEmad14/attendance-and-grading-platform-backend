@@ -11,7 +11,7 @@ class UpdateEngagementRequest extends FormRequest
     {
         $engagement = $this->route('engagement');
 
-        if (!$engagement instanceof \App\Models\Engagement) {
+        if (! $engagement instanceof Engagement) {
             return false;
         }
 
@@ -49,7 +49,7 @@ class UpdateEngagementRequest extends FormRequest
         return [
             function () {
                 $engagement = $this->route('engagement');
-                if (!$engagement instanceof Engagement) {
+                if (! $engagement instanceof Engagement) {
                     return;
                 }
 
@@ -62,7 +62,7 @@ class UpdateEngagementRequest extends FormRequest
                         'The termination date boundary must follow the initiation date window chronologically.'
                     );
                 }
-            }
+            },
         ];
     }
 }

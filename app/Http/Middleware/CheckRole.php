@@ -16,7 +16,7 @@ class CheckRole
     // app/Http/Middleware/CheckRole.php
     public function handle(Request $request, Closure $next, string ...$roles)
     {
-        if (!in_array($request->user()->role, $roles)) {
+        if (! in_array($request->user()->role, $roles)) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 

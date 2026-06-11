@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Tag;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class TagPolicy
 {
@@ -29,13 +28,13 @@ class TagPolicy
      */
     public function create(User $user): bool
     {
-        return $user->role === 'track_admin';//only admin who create tags
+        return $user->role === 'track_admin'; // only admin who create tags
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function attachToStudent(User $user): bool //admin&instructor who can attach to student a tag
+    public function attachToStudent(User $user): bool // admin&instructor who can attach to student a tag
     {
         return in_array($user->role, ['track_admin', 'instructor']);
     }
@@ -43,7 +42,7 @@ class TagPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function deletefromStudent(User $user, $model=null): bool
+    public function deletefromStudent(User $user, $model = null): bool
     {
         return $user->role === 'track_admin';
     }

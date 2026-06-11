@@ -23,7 +23,7 @@ class GradeSubmissionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'raw_score' => 'required|numeric|min:0'
+            'raw_score' => 'required|numeric|min:0',
         ];
     }
 }

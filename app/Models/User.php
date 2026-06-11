@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Notifications\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -40,8 +42,8 @@ class User extends Authenticatable
     public function setPasswordHashAttribute($value): void
     {
         $this->attributes['password_hash'] =
-            \Illuminate\Support\Facades\Hash::needsRehash($value)
-            ? \Illuminate\Support\Facades\Hash::make($value)
+            Hash::needsRehash($value)
+            ? Hash::make($value)
             : $value;
     }
 
@@ -60,12 +62,18 @@ class User extends Authenticatable
         return $this->hasMany(Engagement::class, 'staff_id');
     }
 
-    public function tags(){
+    public function tags()
+    {
         return $this->belongsToMany(
-        Tag::class,
-        'students_tags',
-        'student_id',
-        'tag_id'
+            Tag::class,
+            'students_tags',
+            'student_id',
+            'tag_id'
         );
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token, $this->email));
     }
 }
