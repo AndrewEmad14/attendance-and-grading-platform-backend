@@ -23,7 +23,7 @@ class StudentProfileFactory extends Factory
                 ])->id;
             },
             'notes' => $this->faker->sentence(),
-            'attendance_balance' => 250
+            'attendance_balance' => 250,
         ];
     }
 }

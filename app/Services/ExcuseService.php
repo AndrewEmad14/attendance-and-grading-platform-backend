@@ -50,7 +50,7 @@ class ExcuseService
         $excuseRequest->update(array_filter([
             'reason' => $data['reason'] ?? null,
             'attachment_path' => $attachmentPath,
-        ], fn($v) => ! is_null($v)));
+        ], fn ($v) => ! is_null($v)));
 
         return $excuseRequest->refresh();
     }
