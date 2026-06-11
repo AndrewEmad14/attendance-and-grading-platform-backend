@@ -7,6 +7,7 @@ use App\Models\BusinessSession;
 use App\Models\Engagement;
 use App\Models\Lab;
 use App\Models\StudentProfile;
+use App\Models\ExcuseRequest;
 use Illuminate\Support\Collection;
 
 class AttendanceLedgerService
@@ -23,10 +24,14 @@ class AttendanceLedgerService
     // Load all three sets of engagements this student should attend.
     $engagements = $this->fetchEngagementsForStudent($student);
 
-    // Index attendance records by engagement_id for O(1) lookup.
+    // Index attendance records by engagement_id for O(1) lookup
     $attendanceByEngagement = $student
       ->attendanceRecords()
-      ->with('excuseRequest')
+      ->get()
+      ->keyBy('engagement_id');
+
+    // Index excuse requests by engagement_id for O(1) lookup
+    $excuseByEngagement = ExcuseRequest::where('student_id', $student->id)
       ->get()
       ->keyBy('engagement_id');
 
@@ -51,25 +56,23 @@ class AttendanceLedgerService
           'running_balance' => $runningBalance,
         ];
       } else {
-        $excuse = $attendance?->excuseRequest;
+        $excuse = $excuseByEngagement->get($engagement->id);
         $deduction = self::UNEXCUSED_DEDUCTION;
-
         if ($excuse && $excuse->status === 'approved') {
           $deduction = self::EXCUSED_DEDUCTION;
         }
-
         $runningBalance -= $deduction;
 
         $entries[] = [
-          'engagement_id'   => $engagement->id,
+          'engagement_id' => $engagement->id,
           'engagement_name' => $this->engagementName($engagement),
           'engagement_type' => $this->engagementType($engagement),
-          'date'            => $engagement->starts_at?->toISOString(),
-          'arrived_at'      => null,
-          'left_at'         => null,
-          'absence_status'  => 'absent',
-          'excuse_status'   => $excuse?->status ?? 'none',
-          'deduction'       => -$deduction,
+          'date' => $engagement->starts_at?->toISOString(),
+          'arrived_at' => null,
+          'left_at' => null,
+          'absence_status' => 'absent',
+          'excuse_status' => $excuse?->status ?? 'none',
+          'deduction' => -$deduction,
           'running_balance' => $runningBalance,
         ];
       }
@@ -77,7 +80,7 @@ class AttendanceLedgerService
 
     return [
       'student' => [
-        'id'   => $student->id,
+        'id' => $student->id,
         'name' => $student->user->name,
       ],
       'current_balance' => $student->attendance_balance,

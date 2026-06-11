@@ -19,7 +19,7 @@ return new class extends Migration
             $table->index(['track_id', 'is_active'], 'idx_cohorts_track_active');
         });
 
-        // cohort_admins — looked up on every Track Admin dashboard load
+        // cohorts_admins — looked up on every Track Admin dashboard load
         Schema::table('cohorts_admins', function (Blueprint $table) {
             $table->index('cohort_id', 'idx_cohorts_admins_cohort');
             $table->index('staff_id', 'idx_cohorts_admins_staff');
@@ -86,9 +86,9 @@ return new class extends Migration
             $table->dropIndex('idx_cohorts_track_active');
         });
 
-        Schema::table('cohort_admins', function (Blueprint $table) {
-            $table->dropIndex('idx_cohort_admins_cohort');
-            $table->dropIndex('idx_cohort_admins_staff');
+        Schema::table('cohorts_admins', function (Blueprint $table) {
+            $table->dropIndex('idx_cohorts_admins_cohort');
+            $table->dropIndex('idx_cohorts_admins_staff');
         });
 
         Schema::table('student_profiles', function (Blueprint $table) {

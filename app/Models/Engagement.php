@@ -26,6 +26,7 @@ class Engagement extends Model
     'starts_at',
     'ends_at',
     'scheduled_hours',
+    'absences_processed_at'
   ];
 
   protected $casts = [

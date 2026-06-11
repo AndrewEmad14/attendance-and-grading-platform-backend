@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
 use App\Models\Track;
 use App\Models\Cohort;
 use App\Models\StudentProfile;
@@ -20,6 +21,7 @@ use App\Models\Submission;
 use App\Models\Announcement;
 use App\Models\User;
 use App\Models\BillingRecord;
+use App\Models\AttendanceRecord;
 
 class DatabaseSeeder extends Seeder
 {
@@ -35,7 +37,7 @@ class DatabaseSeeder extends Seeder
             $cohorts = $cohorts->concat(Cohort::factory(3)->create(['track_id' => $track->id, 'is_active' => false]));
         }
 
-        // 3. Lab groups (2 per cohort) - created before students so student profiles can reference them
+        // 3. Lab groups (2 per cohort)
         $labGroups = collect();
         foreach ($cohorts as $cohort) {
             $labGroups = $labGroups->concat(LabGroup::factory(2)->create(['cohort_id' => $cohort->id]));
@@ -47,42 +49,37 @@ class DatabaseSeeder extends Seeder
             $cohortLabGroups = $labGroups->where('cohort_id', $cohort->id);
             $students = $students->concat(StudentProfile::factory(30)->create([
                 'cohort_id' => $cohort->id,
-                'lab_group_id' => $cohortLabGroups->random()->id
+                'lab_group_id' => $cohortLabGroups->random()->id,
+                'attendance_balance' => 250,
             ]));
         }
 
-        // 5. Create staff profiles with correct roles
+        // 5. Staff profiles
         $staff = collect();
 
-        // One branch_manager
         $branchManagerUser = User::factory()->branchManager()->create();
         $staff->push(StaffProfile::factory()->create(['user_id' => $branchManagerUser->id]));
 
-        // Two track_admins
         $trackAdminUsers = User::factory(2)->trackAdmin()->create();
         foreach ($trackAdminUsers as $user) {
             $staff->push(StaffProfile::factory()->create(['user_id' => $user->id]));
         }
 
-        // Seven instructors
         $instructorUsers = User::factory(7)->instructor()->create();
         foreach ($instructorUsers as $user) {
             $staff->push(StaffProfile::factory()->create(['user_id' => $user->id]));
         }
 
-        // 6. Assign track admins to active cohorts (LC-2)
-        $trackAdminStaff = $staff->filter(function ($staffProfile) {
-            return $staffProfile->user->role === 'track_admin';
-        }); // Should give 2 staff profiles
-
+        // 6. Assign track admins to active cohorts
+        $trackAdminStaff = $staff->filter(fn($s) => $s->user->role === 'track_admin');
         foreach ($cohorts as $cohort) {
             if ($cohort->is_active) {
-                // Assign all track admins to each active cohort
-                $cohort->trackAdmins()->attach($trackAdminStaff->pluck('id')->toArray());
-            } else {
-                // Optionally assign only one track admin to inactive cohorts (or none)
-                // Uncomment next line if you want to assign the first track admin to all cohorts
-                // $cohort->trackAdmins()->attach($trackAdminStaff->first()->id);
+                DB::table('cohorts_admins')->insert(
+                    $trackAdminStaff->map(fn($admin) => [
+                        'cohort_id' => $cohort->id,
+                        'staff_id' => $admin->id
+                    ])->toArray()
+                );
             }
         }
 
@@ -117,7 +114,7 @@ class DatabaseSeeder extends Seeder
             $deliverables = $deliverables->concat(CourseDeliverable::factory(4)->create(['course_id' => $course->id]));
         }
 
-        // 12. Submissions (for 60% of student–deliverable pairs)
+        // 12. Submissions
         $studentIds = $students->pluck('id')->toArray();
         $staffIds = $staff->pluck('id')->toArray();
         foreach ($deliverables as $deliverable) {
@@ -126,15 +123,12 @@ class DatabaseSeeder extends Seeder
                 $isGraded = rand(0, 1);
                 $isOverridden = $isGraded && (rand(0, 9) === 0);
 
-                $gradedBy = $isGraded ? collect($staffIds)->random() : null;
-                $overriddenBy = $isOverridden ? collect($staffIds)->random() : null;
-
                 Submission::factory()->create([
                     'deliverable_id' => $deliverable->id,
                     'student_id' => $studentId,
-                    'graded_by' => $gradedBy,
+                    'graded_by' => $isGraded ? collect($staffIds)->random() : null,
                     'override_score' => $isOverridden ? rand(0, 100) : null,
-                    'overridden_by' => $overriddenBy,
+                    'overridden_by' => $isOverridden ? collect($staffIds)->random() : null,
                     'override_note' => $isOverridden ? 'Grade adjusted after review.' : null,
                     'overridden_at' => $isOverridden ? now() : null,
                 ]);
@@ -142,86 +136,189 @@ class DatabaseSeeder extends Seeder
         }
 
         // 13. Engagements
-        // Lectures (2 per course)
+        $engagements = collect();
         foreach ($courses as $course) {
-            Engagement::factory(2)->forEngageable($course)->create(['staff_id' => $staff->random()->id]);
+            $engagements->push(Engagement::factory()->forEngageable($course)->create(['staff_id' => $staff->random()->id]));
         }
-        // Labs (1 per lab)
         foreach ($labs as $lab) {
-            Engagement::factory()->forEngageable($lab)->create(['staff_id' => $staff->random()->id]);
+            $engagements->push(Engagement::factory()->forEngageable($lab)->create(['staff_id' => $staff->random()->id]));
         }
-        // Business sessions (1 per session)
         foreach ($businessSessions as $bs) {
-            Engagement::factory()->forEngageable($bs)->create(['staff_id' => $staff->random()->id]);
+            $engagements->push(Engagement::factory()->forEngageable($bs)->create(['staff_id' => $staff->random()->id]));
         }
 
-        // 14. Attendance records – MEMORY SAFE BULK INSERT
-        $engagements = Engagement::all();
-        $studentIds = $students->pluck('id')->toArray();
-        $studentCount = count($studentIds);
-        $attendanceData = [];
+        // 14. Attach cohorts to business sessions (Must happen before attendance calculations)
+        foreach ($businessSessions as $bs) {
+            $randomCohorts = $cohorts->random(rand(1, 2));
+            // Assuming pivot table 'business_sessions_cohorts' based on your previous logic
+            foreach ($randomCohorts as $cohort) {
+                DB::table('business_sessions_cohorts')->insert([
+                    'business_session_id' => $bs->id,
+                    'cohort_id' => $cohort->id
+                ]);
+            }
+        }
+
+        // 15. Attendance Records & 16. Excuse Requests
+        // Fetch all created engagements as an Eloquent Collection with relations loaded
+        $engagements = Engagement::with('engageable')->get();
 
         foreach ($engagements as $engagement) {
-            $presentCount = rand(ceil($studentCount * 0.6), $studentCount);
-            $presentKeys = (array) array_rand($studentIds, $presentCount);
-            $presentStudentIds = array_map(fn($key) => $studentIds[$key], $presentKeys);
+            $expectedStudentIds = collect($this->getExpectedStudentIds($engagement, $students));
 
+            if ($expectedStudentIds->isEmpty()) continue;
+
+            // 70% present, 30% absent
+            $presentCount = max(1, (int) round($expectedStudentIds->count() * 0.7));
+            $presentStudentIds = $expectedStudentIds->random($presentCount);
+            $absentStudentIds = $expectedStudentIds->diff($presentStudentIds);
+
+            // Create Attendance Records ONLY for the present students
             foreach ($presentStudentIds as $studentId) {
-                $attendanceData[] = [
+                AttendanceRecord::factory()->create([
                     'engagement_id' => $engagement->id,
-                    'student_id' => $studentId,
-                    'arrived_at' => now()->subDays(rand(0, 30))->subHours(rand(1, 8))->toDateTimeString(),
-                    'left_at' => now()->subDays(rand(0, 30))->toDateTimeString(),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
+                    'student_id'    => $studentId,
+                    'arrived_at'    => now()->subDays(rand(1, 30))->subHours(rand(1, 3)),
+                    'left_at'       => now()->subDays(rand(1, 30)),
+                ]);
+            }
 
-                if (count($attendanceData) >= 1000) {
-                    DB::table('attendance_records')->insert($attendanceData);
-                    $attendanceData = [];
+            // Create Excuse Requests for roughly 50% of the ABSENT students
+            foreach ($absentStudentIds as $studentId) {
+                if (rand(0, 1) === 1) { // 50% chance
+                    $status = collect([
+                        ExcuseRequest::STATUS_APPROVED,
+                        ExcuseRequest::STATUS_REJECTED,
+                        ExcuseRequest::STATUS_PENDING
+                    ])->random();
+
+                    $isReviewed = in_array($status, [ExcuseRequest::STATUS_APPROVED, ExcuseRequest::STATUS_REJECTED]);
+
+                    ExcuseRequest::factory()->create([
+                        'engagement_id' => $engagement->id,
+                        'student_id'    => $studentId,
+                        'status'        => $status,
+                        'reviewed_by'   => $isReviewed ? $staff->random()->id : null,
+                        'reviewed_at'   => $isReviewed ? now() : null,
+                    ]);
                 }
             }
         }
 
-        // Insert any leftover records remaining in the array
-        if (!empty($attendanceData)) {
-            DB::table('attendance_records')->insert($attendanceData);
+        // 17. Recalculate attendance_balance for every student
+        // Using Eloquent instead of raw DB inserts ensures everything syncs cleanly
+        foreach ($students as $student) {
+            $expectedEngagementIds = $this->getExpectedEngagementIdsForStudent($student, $engagements);
+
+            if (empty($expectedEngagementIds)) continue;
+
+            // Find engagements where the student ACTUALLY has an attendance record
+            $attendedEngagementIds = AttendanceRecord::where('student_id', $student->id)
+                ->whereNotNull('arrived_at')
+                ->pluck('engagement_id')
+                ->toArray();
+
+            $absentEngagementIds = array_diff($expectedEngagementIds, $attendedEngagementIds);
+
+            // Count approved excuses among the absences
+            $approvedExcusesCount = ExcuseRequest::where('student_id', $student->id)
+                ->whereIn('engagement_id', $absentEngagementIds)
+                ->where('status', ExcuseRequest::STATUS_APPROVED)
+                ->count();
+
+            $unexcusedCount = count($absentEngagementIds) - $approvedExcusesCount;
+            $newBalance = 250 - ($unexcusedCount * 25) - ($approvedExcusesCount * 5);
+
+            $student->update(['attendance_balance' => $newBalance]);
         }
 
-        // 15. Excuse requests (10% of attendance records)
-        $attendanceRecords = DB::table('attendance_records')->pluck('id')->toArray();
-        $excuseCount = (int)(count($attendanceRecords) * 0.1);
-        $selectedIds = (array) array_rand($attendanceRecords, $excuseCount);
-        foreach ($selectedIds as $attendanceId) {
-            ExcuseRequest::factory()->create(['attendance_id' => $attendanceId]);
-        }
+        // Mark ended engagements as processed
+        Engagement::where('ends_at', '<=', now())->update(['absences_processed_at' => now()]);
 
-        // 16. Attach cohorts to business sessions
-        foreach ($businessSessions as $bs) {
-            $randomCohorts = $cohorts->random(rand(1, 2));
-            $bs->cohorts()->attach($randomCohorts->pluck('id'));
-        }
-
-        // 17. Announcements – fix staff_id extraction
-        // 5 global announcements
-        Announcement::factory(5)->global()->create([
-            'staff_id' => $staff->random()->id,
-        ]);
-        // 2 per cohort
+        // 18. Announcements
+        Announcement::factory(5)->global()->create(['staff_id' => $staff->random()->id]);
         foreach ($cohorts as $cohort) {
-            Announcement::factory(2)->forCohort($cohort->id)->create([
-                'staff_id' => $staff->random()->id,
-            ]);
+            Announcement::factory(2)->forCohort($cohort->id)->create(['staff_id' => $staff->random()->id]);
         }
 
-        // 18. Billing records
+        // 19. Billing records
         foreach ($engagements as $engagement) {
             BillingRecord::factory()->create([
                 'engagement_id' => $engagement->id,
                 'staff_id' => $engagement->staff_id,
                 'delivered_hours' => $engagement->scheduled_hours,
-                'total_amount' => $engagement->scheduled_hours * 150, // e.g. 150 per hour
+                'total_amount' => $engagement->scheduled_hours * 150,
             ]);
         }
+    }
+
+    /**
+     * Determines which students are EXPECTED to attend an engagement.
+     */
+    private function getExpectedStudentIds(Engagement $engagement, Collection $students): array
+    {
+        $engageable = $engagement->engageable;
+
+        if (!$engageable) return [];
+
+        return match ($engagement->engageable_type) {
+            Engagement::TYPE_COURSE => $students
+                ->where('cohort_id', $engageable->cohort_id)
+                ->pluck('id')
+                ->toArray(),
+
+            Engagement::TYPE_LAB => $students
+                ->where('lab_group_id', $engageable->lab_group_id)
+                ->pluck('id')
+                ->toArray(),
+
+            Engagement::TYPE_BUSINESS_SESSION => $students
+                ->whereIn(
+                    'cohort_id',
+                    DB::table('business_sessions_cohorts')
+                        ->where('business_session_id', $engageable->id)
+                        ->pluck('cohort_id')
+                        ->toArray()
+                )
+                ->pluck('id')
+                ->toArray(),
+
+            default => [],
+        };
+    }
+
+    /**
+     * Determines which engagements a specific student is EXPECTED to attend.
+     */
+    private function getExpectedEngagementIdsForStudent(StudentProfile $student, Collection $engagements): array
+    {
+        $ids = [];
+
+        foreach ($engagements as $engagement) {
+            $engageable = $engagement->engageable;
+            if (!$engageable) continue;
+
+            $belongs = match ($engagement->engageable_type) {
+                Engagement::TYPE_COURSE =>
+                $engageable->cohort_id === $student->cohort_id,
+
+                Engagement::TYPE_LAB =>
+                $engageable->lab_group_id === $student->lab_group_id,
+
+                Engagement::TYPE_BUSINESS_SESSION =>
+                DB::table('business_sessions_cohorts')
+                    ->where('business_session_id', $engageable->id)
+                    ->where('cohort_id', $student->cohort_id)
+                    ->exists(),
+
+                default => false,
+            };
+
+            if ($belongs) {
+                $ids[] = $engagement->id;
+            }
+        }
+
+        return $ids;
     }
 }
