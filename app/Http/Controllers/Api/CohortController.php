@@ -37,13 +37,13 @@ class CohortController extends Controller
                     $sub->where('staff_id', $staffId);
                 })
                 // Check if instructor has labs in this cohort
-                ->orWhereHas('labGroups.labs.engagements', function ($sub) use ($staffId) {
-                    $sub->where('staff_id', $staffId);
-                })
+                    ->orWhereHas('labGroups.labs.engagements', function ($sub) use ($staffId) {
+                        $sub->where('staff_id', $staffId);
+                    })
                 // Check if instructor has business sessions linked to this cohort
-                ->orWhereHas('businessSessions.engagements', function ($sub) use ($staffId) {
-                    $sub->where('staff_id', $staffId);
-                });
+                    ->orWhereHas('businessSessions.engagements', function ($sub) use ($staffId) {
+                        $sub->where('staff_id', $staffId);
+                    });
             });
         } elseif ($user->role === 'student') {
             $query->where('id', $user->studentProfile->cohort_id);

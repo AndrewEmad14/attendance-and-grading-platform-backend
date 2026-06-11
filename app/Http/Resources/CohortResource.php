@@ -24,9 +24,9 @@ class CohortResource extends JsonResource
                 return $this->trackAdmins->map(function ($staff) {
                     return [
                         'staff_profile_id' => $staff->id,
-                        'user_id'          => $staff->user_id,
-                        'name'             => $staff->user?->name,
-                        'email'            => $staff->user?->email,
+                        'user_id' => $staff->user_id,
+                        'name' => $staff->user?->name,
+                        'email' => $staff->user?->email,
                     ];
                 });
             }),

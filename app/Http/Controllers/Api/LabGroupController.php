@@ -47,7 +47,7 @@ class LabGroupController extends Controller
             abort(403, 'This action is unauthorized.');
         }
 
-        $query = \App\Models\StudentProfile::where('cohort_id', $cohort->id)->with(['user']);
+        $query = StudentProfile::where('cohort_id', $cohort->id)->with(['user']);
 
         if ($request->boolean('unassigned_only')) {
             $query->whereNull('lab_group_id');

@@ -79,7 +79,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('', [BusinessSessionController::class, 'index']);
         Route::post('', [BusinessSessionController::class, 'store']);
         Route::get('{businessSession}', [BusinessSessionController::class, 'show']);
-        
+
         Route::post('{businessSession}/cohorts', [BusinessSessionController::class, 'enrollCohort']);
         Route::delete('{businessSession}/cohorts/{cohortId}', [BusinessSessionController::class, 'removeCohort']);
     });
