@@ -31,7 +31,7 @@ class ExcuseRequestController extends Controller
         $this->authorize('view', $excuseRequest);
 
         return new ExcuseRequestResource(
-            $excuseRequest->load(['attendanceRecord.student.user', 'attendanceRecord.engagement', 'reviewer.user'])
+            $excuseRequest->load(['engagement', 'student.user', 'reviewer.user'])
         );
     }
 

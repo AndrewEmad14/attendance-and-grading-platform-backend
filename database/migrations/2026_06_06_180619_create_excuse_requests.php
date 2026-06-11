@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('engagement_id')->constrained('engagements')->cascadeOnDelete();
             $table->foreignId('student_id')->constrained('student_profiles')->cascadeOnDelete();
             $table->text('reason');
-            $table->string('attachment_path');
+            $table->string('attachment_path')->nullable();
             $table->enum('status', ['pending', 'approved', 'rejected']);
             $table->foreignId('reviewed_by')->nullable()->constrained('staff_profiles')->nullOnDelete();
             $table->timestamp('reviewed_at')->nullable();

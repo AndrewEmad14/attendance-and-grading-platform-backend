@@ -30,11 +30,17 @@ class ExcuseService
             abort(422, 'An excuse request already exists for this engagement.');
         }
 
+        $attachmentPath = null;
+        if (isset($data['attachment'])) {
+            // Store the file in the 'storage/app/public/excuses' directory
+            $attachmentPath = $data['attachment']->store('excuses', 'public');
+        }
+
         return ExcuseRequest::create([
             'student_id' => $studentId,
             'engagement_id' => $engagementId,
             'reason' => $data['reason'],
-            'attachment_path' => $attachment,
+            'attachment_path' => $attachmentPath,
             'status' => ExcuseRequest::STATUS_PENDING,
         ]);
     }
@@ -44,7 +50,7 @@ class ExcuseService
         $excuseRequest->update(array_filter([
             'reason' => $data['reason'] ?? null,
             'attachment_path' => $attachmentPath,
-        ], fn ($v) => ! is_null($v)));
+        ], fn($v) => ! is_null($v)));
 
         return $excuseRequest->refresh();
     }
