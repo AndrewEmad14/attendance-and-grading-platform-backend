@@ -8,7 +8,7 @@ http:
   url: "{{baseurl}}/tags"
   auth:
     type: bearer
-    token: 2|jqywaJid6pvH1m1gEwoy3UsEmJiljtUGUp2OJ9bRe90fb001
+    token: 4|qZhC2g9KzLWRIRrqqS1ywzuluaUqIn7X8GQXYwfYd0b69bdf
 
 settings:
   encodeUrl: true

@@ -87,7 +87,8 @@ Route::patch('/test-notes/{studentId}', [NoteController::class, 'append']);
 
   Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:login');
-    
+    Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('auth/reset-password', [AuthController::class, 'resetPassword']);
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('me', [AuthController::class, 'me']);
         Route::post('logout', [AuthController::class, 'logout']);
@@ -95,10 +96,13 @@ Route::patch('/test-notes/{studentId}', [NoteController::class, 'append']);
     });
 });
   
-  Route::group(['prefix' => 'users','middleware' => ['auth:sanctum','role:'.Role::BRANCH_MANAGER.','.Role::TRACK_ADMIN]], function () {
-    Route::get('', [UserController::class, 'index']);
-    Route::post('', [UserController::class, 'register']);
+  Route::group(['prefix' => 'users', 'middleware' => ['auth:sanctum', 'role:'.Role::BRANCH_MANAGER.','.Role::TRACK_ADMIN]], function () {
+    Route::get('students', [UserController::class, 'listStudents']);
+    Route::get('instructors', [UserController::class, 'listInstructors']);
+    Route::get('track-admins', [UserController::class, 'listTrackAdmins'])->middleware('role:'.Role::BRANCH_MANAGER);
+
+    Route::post('', [UserController::class, 'store']);
     Route::get('{user}', [UserController::class, 'show']);
     Route::patch('{user}', [UserController::class, 'update']);
     Route::delete('{user}', [UserController::class, 'destroy']);
-  });
+});

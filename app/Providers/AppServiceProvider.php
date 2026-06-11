@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
-
+use Illuminate\Auth\Notifications\ResetPassword;
 use App\Models\Submission;
 use App\Policies\SubmissionPolicy;
 use Illuminate\Support\Facades\Gate;
@@ -41,8 +41,11 @@ class AppServiceProvider extends ServiceProvider
                     ], 429);
                 });
         });
-
+        
         Gate::policy(Tag::class, TagPolicy::class);
         Gate::policy(Submission::class, SubmissionPolicy::class);
+        ResetPassword::createUrlUsing(function ($user, string $token) {
+        return env('FRONTEND_URL') . '/reset-password?token=' . $token . '&email=' . urlencode($user->email);
+        });
     }
 }

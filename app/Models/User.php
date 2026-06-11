@@ -68,4 +68,8 @@ class User extends Authenticatable
         'tag_id'
         );
     }
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new \App\Notifications\ResetPasswordNotification($token, $this->email));
+    }
 }
