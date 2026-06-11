@@ -12,6 +12,20 @@ class ExcuseRequestResource extends JsonResource
     return [
       'id' => $this->id,
       'attendance_id' => $this->attendance_id,
+      'attendance' => $this->whenLoaded('attendance', fn() => [
+        'id' => $this->attendanceRecord->id,
+        'arrived_at' => $this->attendanceRecord->arrived_at?->toISOString(),
+        'left_at' => $this->attendanceRecord->left_at?->toISOString(),
+        'student' => [
+          'id' => $this->attendanceRecord->student->id,
+          'name' => $this->attendanceRecord->student->user->name,
+        ],
+        'engagement' => [
+          'id' => $this->attendanceRecord->engagement->id,
+          'type' => $this->attendanceRecord->engagement->type(),
+          'starts_at' => $this->attendanceRecord->engagement->starts_at?->toISOString(),
+        ],
+      ]),
       'reason' => $this->reason,
       'attachment_path' => $this->attachment_path,
       'status' => $this->status,

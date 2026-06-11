@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class ExcuseRequest extends Model
 {
@@ -50,8 +50,15 @@ class ExcuseRequest extends Model
     return $this->status === self::STATUS_REJECTED;
   }
 
-  public function getStudentAttribute(): ?StudentProfile
+  public function student(): HasOneThrough
   {
-    return $this->attendanceRecord?->student;
+    return $this->hasOneThrough(
+      StudentProfile::class,
+      AttendanceRecord::class,
+      'id', // attendance_records.id matched against excuse_requests.attendance_id
+      'id', // student_profiles.id matched against attendance_records.student_id
+      'attendance_id', // excuse_requests.attendance_id
+      'student_id' // attendance_records.student_id
+    );
   }
 }
