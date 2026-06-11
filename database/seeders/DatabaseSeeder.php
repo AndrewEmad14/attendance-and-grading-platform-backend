@@ -155,6 +155,7 @@ class DatabaseSeeder extends Seeder
         }
 
         // 13. Engagements
+        //
         //   - Course engagements  → track_admin or instructor as staff
         //   - Lab engagements     → instructor only
         //     (this is what makes instructor access work via AccessService:
@@ -244,31 +245,11 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // 17. Recalculate attendance_balance for every student
-        foreach ($students as $student) {
-            $expectedEngagementIds = $this->getExpectedEngagementIdsForStudent($student, $engagements);
-
-            if (empty($expectedEngagementIds)) {
-                continue;
-            }
-
-            $attendedEngagementIds = AttendanceRecord::where('student_id', $student->id)
-                ->whereNotNull('arrived_at')
-                ->pluck('engagement_id')
-                ->toArray();
-
-            $absentEngagementIds = array_diff($expectedEngagementIds, $attendedEngagementIds);
-
-            $approvedExcusesCount = ExcuseRequest::where('student_id', $student->id)
-                ->whereIn('engagement_id', $absentEngagementIds)
-                ->where('status', ExcuseRequest::STATUS_APPROVED)
-                ->count();
-
-            $unexcusedCount = count($absentEngagementIds) - $approvedExcusesCount;
-            $newBalance = 250 - ($unexcusedCount * 25) - ($approvedExcusesCount * 5);
-
-            $student->update(['attendance_balance' => $newBalance]);
-        }
+        // 17. attendance_balance starts at 250 for all students (set in step 4).
+        //     The ProcessAbsences command is the sole source of truth for deductions.
+        //     It runs after each session ends and is the only place that modifies the
+        //     balance. Do NOT recalculate here — doing so would cause double-deduction
+        //     when the command later processes the same sessions.
 
         // 18. Announcements
         Announcement::factory(5)->global()->create(['staff_id' => $allStaff->random()->id]);
@@ -291,12 +272,15 @@ class DatabaseSeeder extends Seeder
         $this->outputCredentials($trackAdmins, $instructors, $students, $labGroups, $engagements);
     }
 
+    // --------------------------------------------------------------------
     // Credentials output
+    //
     // branch_manager  — sees everything, no extra wiring needed
     // track_admin     — picks the first seeded track admin (already in cohorts_admins)
     // instructor      — picks the first seeded instructor and finds a student
     //                   whose lab group has an engagement owned by that instructor
     // student         — creates a fresh student in the first active cohort
+    // --------------------------------------------------------------------
     private function outputCredentials(
         Collection $trackAdmins,
         Collection $instructors,
@@ -383,7 +367,9 @@ class DatabaseSeeder extends Seeder
         echo str_repeat('-', 60)."\n";
     }
 
+    // --------------------------------------------------------------------
     // Helpers
+    // --------------------------------------------------------------------
 
     private function getExpectedStudentIds(Engagement $engagement, Collection $students): array
     {

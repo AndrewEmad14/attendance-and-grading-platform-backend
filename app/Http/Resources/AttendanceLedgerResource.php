@@ -18,14 +18,13 @@ class AttendanceLedgerResource extends JsonResource
             'entries' => collect($this->resource['entries'])->map(fn ($entry) => [
                 'engagement_id' => $entry['engagement_id'],
                 'engagement_type' => $entry['engagement_type'],
-                'name' => $entry['engagement_name'],
+                'name' => $entry['name'],
                 'date' => $entry['date'],
                 'arrived_at' => $entry['arrived_at'],
                 'left_at' => $entry['left_at'],
                 'absence_status' => $entry['absence_status'],
                 'excuse_status' => $entry['excuse_status'],
                 'deduction' => $entry['deduction'],
-                'running_balance' => $entry['running_balance'],
             ]),
         ];
     }
