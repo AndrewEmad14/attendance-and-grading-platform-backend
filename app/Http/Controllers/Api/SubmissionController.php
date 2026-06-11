@@ -76,6 +76,35 @@ class SubmissionController extends Controller
 
         return CohortStudentResource::collection($missing);
     }
+
+    // a student's own submission tracker across deliverables (POR-2 / ACC-4)
+    public function studentSubmissions(int $studentId)
+    {
+        $student = StudentProfile::findOrFail($studentId);
+
+        $this->authorize('viewStudentTracker', [Submission::class, $student]);
+
+        $submissions = Submission::where('student_id', $student->id)
+            ->with(['deliverable', 'gradedBy.user', 'overriddenBy.user'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(min((int) request('per_page', 15), 100));
+
+        return SubmissionResource::collection($submissions);
+    }
+    // safe file fetch for a submission (grader + owner only)
+    public function download(Submission $submission)
+    {
+        $this->authorize('view', $submission);
+
+        // url submissions have no file to stream — return the link
+        if ($submission->submission_type === 'url') {
+            return response()->json(['data' => ['url' => $submission->submission_path]]);
+        }
+
+        // file submission: submission_path is the storage key / remote URL
+        return $this->submissionService->download($submission);
+    }
+
     // student submits to a deliverable — url or file (POR-4)
     public function store(StoreSubmissionRequest $request, CourseDeliverable $deliverable)
     {

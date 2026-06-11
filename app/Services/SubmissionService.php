@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SubmissionService
 {
@@ -119,4 +120,19 @@ class SubmissionService
             ->pluck('id')
             ->all();
     }
+
+    public function download(Submission $submission): StreamedResponse
+    {
+        abort_unless(
+            Storage::exists($submission->submission_path),
+            404,
+            'File not found.'
+        );
+
+        return Storage::download(
+            $submission->submission_path,
+            $submission->file_name ?? basename($submission->submission_path)
+        );
+    }
 }
+
