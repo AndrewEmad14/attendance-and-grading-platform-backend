@@ -61,7 +61,7 @@ class SubmissionPolicy
      */
     public function viewAny(User $user, ?CourseDeliverable $deliverable = null): bool
     {
-        if ($user->role === 'track_admin') {
+        if ($user->role === 'track_admin' || $user->role === 'branch_manager') {
             return true;
         }
 
