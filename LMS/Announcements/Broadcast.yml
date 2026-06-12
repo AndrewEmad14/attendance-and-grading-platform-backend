@@ -1,0 +1,22 @@
+info:
+  name: Broadcast
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseurl}}/announcements/broadcast"
+  body:
+    type: json
+    data: |-
+      {
+        "title": "Mandatory Laboratory Environment Setup",
+        "body": "All students must complete their Docker environment configurations before Monday's lecture. Please review the shared troubleshooting guide in the main repository if you encounter any port binding permissions issues during installation."
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

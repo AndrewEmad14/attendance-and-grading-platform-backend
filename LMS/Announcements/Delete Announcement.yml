@@ -1,14 +1,14 @@
 info:
-  name: show user
+  name: Delete Announcement
   type: http
-  seq: 4
+  seq: 5
 
 http:
-  method: GET
-  url: "{{baseurl}}/users/:id"
+  method: DELETE
+  url: "{{baseurl}}/announcements/:id"
   params:
     - name: id
-      value: "362"
+      value: "31"
       type: path
   auth: inherit
 

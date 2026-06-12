@@ -298,7 +298,7 @@ class UserController extends Controller
                 'studentProfile.tags',
             ],
             default => [
-                'staffProfile.managedCohorts.track',
+                'staffProfile.managedCohorts.cohort.track',
             ],
         });
 
@@ -311,40 +311,44 @@ class UserController extends Controller
 
     public function store(StoreUserRequest $request)
     {
-        $this->authorize('store', [User::class, $request->role]);
+        $validated = $request->validated();
 
-        $user = DB::transaction(function () use ($request) {
+        $this->authorize('store', [User::class, $validated['role']]);
+
+        $user = DB::transaction(function () use ($validated) {
+            // 2. Safely extract only user table data using validated keys
             $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
+                'name' => $validated['name'],
+                'email' => $validated['email'],
                 'password_hash' => Str::random(16),
-                'role' => $request->role,
-                'expires_at' => $request->expires_at,
+                'role' => $validated['role'],
+                'expires_at' => $validated['expires_at'] ?? null,
             ]);
 
+            // 3. Conditional profile creation using the validated role
             if ($user->role === Role::STUDENT) {
                 $user->studentProfile()->create([
-                    'cohort_id' => $request->cohort_id,
-                    'lab_group_id' => $request->lab_group_id,
+                    'cohort_id' => $validated['cohort_id'],
+                    'lab_group_id' => $validated['lab_group_id'] ?? null,
                     'attendance_balance' => 250,
                     'notes' => '',
                 ]);
             } else {
                 $user->staffProfile()->create([
-                    'compensation_type' => $request->compensation_type,
-                    'hourly_rate' => $request->hourly_rate,
-                    'fixed_salary' => $request->fixed_salary,
+                    'compensation_type' => $validated['compensation_type'],
+                    'hourly_rate' => $validated['hourly_rate'] ?? 0,
+                    'fixed_salary' => $validated['fixed_salary'] ?? 0,
                 ]);
             }
 
-            Password::sendResetLink(['email' => $user->email]);
-
             return $user;
         });
+
+        // 4. Send the reset link ONCE outside the transaction block
         Password::sendResetLink(['email' => $user->email]);
 
         return response()->json([
-            'message' => 'user created successfully',
+            'message' => 'User created successfully.',
             'status' => 201,
             'data' => $user,
         ], 201);
@@ -354,30 +358,39 @@ class UserController extends Controller
     {
         $this->authorize('update', $user);
 
-        $emailChanged = $request->filled('email') && $request->email !== $user->email;
+        $validated = $request->validated();
+
+        // 1. Calculate email changes safely from the validated array
+        $emailChanged = isset($validated['email']) && $validated['email'] !== $user->email;
         $oldEmail = $user->email;
 
-        DB::transaction(function () use ($request, $user) {
-            $user->update($request->only(['name', 'email', 'expires_at']));
+        DB::transaction(function () use ($validated, $user) {
+            // 2. Safely filter user arrays from validated data
+            $userData = array_intersect_key($validated, array_flip(['name', 'email', 'expires_at']));
+            $user->update($userData);
 
-            if ($user->staffProfile && $request->hasAny(['compensation_type', 'hourly_rate', 'fixed_salary'])) {
-                $user->staffProfile->update(
-                    $request->only(['compensation_type', 'hourly_rate', 'fixed_salary'])
-                );
+            // 3. Update staff profiles using strictly validated profile keys
+            if ($user->staffProfile) {
+                $staffData = array_intersect_key($validated, array_flip(['compensation_type', 'hourly_rate', 'fixed_salary']));
+
+                if (! empty($staffData)) {
+                    $user->staffProfile->update($staffData);
+                }
             }
+
         });
 
-        // notify old email that the address was changed — safety net for the user
+        // 5. Notify the old email that the address was changed
         if ($emailChanged) {
             Mail::to($oldEmail)->send(new EmailChangedNotification($user, $oldEmail));
         }
 
         return response()->json([
-            'message' => 'user updated successfully',
+            'message' => 'User updated successfully',
             'status' => 200,
             'data' => $user->fresh()->load(
                 match ($user->role) {
-                    'student' => ['studentProfile'],
+                    Role::STUDENT => ['studentProfile'], // Restored Enum consistency
                     default => ['staffProfile'],
                 }
             ),
