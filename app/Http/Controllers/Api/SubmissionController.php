@@ -51,6 +51,18 @@ class SubmissionController extends Controller
         return SubmissionResource::collection($submissions);
     }
 
+    // removes a submission entirely — the only correction path for a wrong
+    // submission, since students cannot resubmit. Track admin only.
+    // Deleting a graded row shifts the student's course total + at-risk flag;
+    // those recompute downstream through the score views automatically.
+    public function destroy(Submission $submission)
+    {
+        $this->authorize('delete', $submission);
+
+        $this->submissionService->deleteWithFile($submission);
+
+        return response()->noContent(); // 204
+    }
     // roster students with NO submission for this deliverable (the gaps)
     public function missing(CourseDeliverable $deliverable)
     {

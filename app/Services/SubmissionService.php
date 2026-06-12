@@ -64,6 +64,24 @@ class SubmissionService
             "{$student->id}_".$file->hashName()
         );
     }
+    /**
+     * Delete a submission and its stored file, atomically.
+     *
+     * URL submissions have no file to remove. File submissions delete the
+     * stored object first inside the transaction so a storage failure rolls
+     * back the row delete and we never end up with a row pointing at a
+     * missing file (or vice versa).
+     */
+    public function deleteWithFile(Submission $submission): void
+    {
+        DB::transaction(function () use ($submission) {
+            if ($submission->submission_type === 'file' && $submission->submission_path) {
+                Storage::delete($submission->submission_path);
+            }
+
+            $submission->delete();
+        });
+    }
 
     /**
      * Student-profile ids the instructor is responsible for on this

@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\Role;
 use App\Models\CourseDeliverable;
 use App\Models\StaffProfile;
 use App\Models\StudentProfile;
@@ -145,5 +146,9 @@ class SubmissionPolicy
     public function override(User $user, Submission $submission): bool
     {
         return $user->role === 'track_admin';
+    }
+
+    public function delete(User $user, Submission $submission): bool {
+        return $user->role === Role::TRACK_ADMIN || Role::BRANCH_MANAGER;
     }
 }

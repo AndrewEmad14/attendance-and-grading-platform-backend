@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Submission;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class StoreSubmissionRequest extends FormRequest
 {
@@ -65,5 +66,34 @@ class StoreSubmissionRequest extends FormRequest
             'file.mimes' => 'The file must be a PDF, ZIP, or image (jpg, jpeg, png).',
             'file.mimetypes' => 'The file must be a PDF, ZIP, or image (jpg, jpeg, png).',
         ];
+    }
+
+    /**
+ * Reject a second submission to the same deliverable before it reaches
+ * the DB unique constraint, so the student sees a clear 422 rather than
+ * a 500 integrity error. Resubmission is not supported: the student must
+ * ask their Track Admin to delete the existing one first.
+ */
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            $deliverable = $this->route('deliverable');
+            $student     = $this->user()?->studentProfile;
+
+            if (! $deliverable || ! $student) {
+                return;
+            }
+
+            $exists = Submission::where('deliverable_id', $deliverable->id)
+                ->where('student_id', $student->id)
+                ->exists();
+
+            if ($exists) {
+                $validator->errors()->add(
+                    'submission_type',
+                    'You already have a submission for this deliverable. Ask your Track Admin to remove it before submitting again.'
+                );
+            }
+        });
     }
 }
