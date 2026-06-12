@@ -65,7 +65,10 @@ class ExcuseService
             'reviewed_by' => $reviewer->staffProfile->id,
             'reviewed_at' => now(),
         ]);
-        if ($status === 'approved') {
+        if (
+            $status === 'approved' &&
+            $excuseRequest->engagement->absences_processed_at !== null
+        ) {
             $excuseRequest->student->increment('attendance_balance', 20);
         }
 
