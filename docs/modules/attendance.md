@@ -70,12 +70,13 @@ The system uses a strict check-in/check-out model via a single endpoint. Scans a
 
 ```mermaid
 graph TD
-    A[Student Scan Request] --> B{Within [starts_at, ends_at] Window?}
+    A[Student Scan Request] --> B{"Within [starts_at, ends_at] Window?"}
     B -- No --> C[Abort 422: Window Closed]
     B -- Yes --> D[Execute firstOrCreate on Record]
-    D -- Record Created --> E[Set arrived_at = now<br>Return HTTP 201]
-    D -- Record Exists: left_at is NULL --> F[Set left_at = now<br>Return HTTP 200]
-    D -- Record Exists: left_at is SET --> G[Idempotent Bypass: Maintain State<br>Return HTTP 200]
+    
+    D -->|1st Scan: Record Created| E["Set arrived_at = now<br>Return HTTP 201"]
+    D -->|2nd Scan: Record Exists, left_at is NULL| F["Set left_at = now<br>Return HTTP 200"]
+    D -->|3rd+ Scan: Record Exists, left_at is SET| G["Idempotent Bypass: Maintain State<br>Return HTTP 200"]
 ```
 
 ---
@@ -86,36 +87,22 @@ The core background command (`php artisan attendance:process-absences`) processe
 
 ```mermaid
 graph TD
-    Start([Trigger Job]) --> Fetch[Query Engagements<br>ends_at <= now AND absences_processed_at IS NULL]
-    Fetch --> CheckEmpty{Engagements Empty?}
-    CheckEmpty -- Yes --> End([Terminate])
-    CheckEmpty -- No --> MapData[Compile In-Memory Data Maps<br>Expected Rosters, Attendance Keys, Excuses]
+    Start([Trigger Job]) --> Fetch{Unprocessed Engagements?}
+    Fetch -->|No| End([End])
+    Fetch -->|Yes| Batch[Batch Load Expected Rosters, Scans & Excuses]
     
-    MapData --> OuterLoop[Loop Engagements]
-    OuterLoop --> InnerLoop[Loop Expected Students]
+    Batch --> Loop[For Each Expected Student]
     
-    InnerLoop --> CheckAttended{Is Student ID in Attended Key Map?}
-    CheckAttended -- Yes --> NextStudent[Skip Student]
-    CheckAttended -- No --> CheckExcuse{Is Excuse Approved?}
+    Loop --> Attended{Attended?}
+    Attended -->|Yes| Loop
+    Attended -->|No| Excuse{Excuse Approved?}
     
-    CheckExcuse -- Yes --> AddExcused[Add Penalty: -5 pts]
-    CheckExcuse -- No / None --> AddUnexcused[Add Penalty: -25 pts]
+    Excuse -->|Yes| Custom5[Buffer -5 pts] --> Loop
+    Excuse -->|No| Custom25[Buffer -25 pts] --> Loop
     
-    AddExcused --> TrackDeduction[Buffer Total Points to Memory Map]
-    AddUnexcused --> TrackDeduction
-    TrackDeduction --> NextStudent
-    
-    NextStudent --> ControlStudent{More Students?}
-    ControlStudent -- Yes --> InnerLoop
-    ControlStudent -- No --> ControlEngagement{More Engagements?}
-    
-    ControlEngagement -- Yes --> OuterLoop
-    ControlEngagement -- No --> DBTransaction[Open Database Transaction]
-    
-    DBTransaction --> BulkUpdate[Bulk Apply Deductions via Raw SQL CASE Statement]
-    BulkUpdate --> LockState[Update Engagements: absences_processed_at = now]
-    LockState --> Commit[Commit Transaction]
-    Commit --> End
+    Loop -->|Processing Complete| Tx[Open DB Transaction]
+    Tx --> Bulk["Bulk Update Balances via Raw CASE Statement<br>& Mark Engagements Processed"]
+    Bulk --> End
 ```
 
 ---
@@ -142,16 +129,25 @@ To resolve this, the system uses a conditional balance check in `ExcuseService::
 
 
 ```mermaid
+graph TD
+    subgraph Scenario_A ["Scenario A: Standard Execution Pipeline"]
+        A1[Engagement Concludes] --> A2["Cron Job Processes Absence (-25)"]
+        A2 --> A3["Admin Approves Excuse (+20 Refund)"]
+        A3 --> A4["Result: Net -5 Deduction (Correct)"]
+    end
 
-[Scenario A: Standard Execution Pipeline]
-Engagement Concludes -> Cron Job Processes Absence (-25) -> Admin Approves Excuse (+20 Refund)
-Result: Net -5 Deduction (Correct)
+    %% Invisible link to force vertical stacking
+    A4 ~~~ B1
 
-[Scenario B: Proactive Review Pipeline (Loophole Prevented)]
-Engagement Concludes -> Admin Approves Excuse -> System checks 'absences_processed_at' (Null) -> Skips +20 Refund
--> Cron Job Runs Later -> Evaluates Approved Status -> Applies -5 Penalty Directly
-Result: Net -5 Deduction (Correct)
-
+    subgraph Scenario_B ["Scenario B: Proactive Review Pipeline (Loophole Prevented)"]
+        B1[Engagement Concludes] --> B2[Admin Approves Excuse]
+        B2 --> B3{"System Checks absences_processed_at"}
+        B3 -->|Is Null| B4[Skips +20 Refund]
+        B4 --> B5[Cron Job Runs Later]
+        B5 --> B6[Evaluates Approved Status]
+        B6 --> B7["Applies -5 Penalty Directly"]
+        B7 --> B8["Result: Net -5 Deduction (Correct)"]
+    end
 ```
 
 ---

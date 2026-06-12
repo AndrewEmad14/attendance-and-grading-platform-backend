@@ -116,9 +116,9 @@ API is now available at `http://127.0.0.1:8000/api`.
 
 ---
 
-## 🗄️ Database Schema
+## 🗄️ Database Schema Mapping
 
-The schema is split into five domain groups. Each diagram below shows one group's tables and their relationships. Foreign keys that cross groups (e.g. `engagements.instructor_id → staff_profiles`) are shown as dashed references.
+The system schema is fully normalized and organized across six relational domains. Foreign key relations crossing distinct domain boundaries use clear logical mapping definitions.
 
 ![ERD](docs/db/ERD.svg)
 
@@ -130,85 +130,79 @@ Every person in the system is a `users` row. Role-specific data lives in a separ
 
 ```mermaid
 erDiagram
-    users {}
-    student_profiles {}
-    staff_profiles {}
-    users ||--o| student_profiles : "has profile"
-    users ||--o| staff_profiles   : "has profile"
+    users ||--o| student_profiles : "has identity"
+    users ||--o| staff_profiles : "has identity"
 ```
 
 ---
 
-### 2. Organization — Tracks, Cohorts & Courses
+### 2. Academic Hierarchy & Organization
 
 The hierarchy is: a `track` (e.g. Web Dev) contains `cohorts` (one active at a time), each cohort contains `courses`, and each course is split into `lab_groups` of ~15 students.
 
 ```mermaid
 erDiagram
-    tracks {}
-    cohorts {}
-    courses {}
-    lab_groups {}
-    lab_group_users {}
-    tracks     ||--o{ cohorts        : "runs"
-    cohorts    ||--o{ courses        : "contains"
-    cohorts    ||--o{ lab_groups     : "splits into"
-    lab_groups ||--o{ lab_group_users : "has members"
+    tracks ||--o{ cohorts : "has"
+    cohorts ||--o{ courses : "teaches"
+    cohorts ||--o{ lab_groups : "subdivides"
+    cohorts ||--o{ cohorts_admins : "assigned to"
 ```
 
 ---
 
-### 3. Engagements & Scheduling
+### 3. Engagements & Polymorphic Scheduling
 
 An `engagement` is a polymorphic teaching booking — it can be attached to a `course`, a `lab`, or a `business_session`. Business sessions can span multiple cohorts via `business_sessions_cohorts`.
 
 ```mermaid
 erDiagram
-    engagements {}
-    labs {}
-    business_sessions {}
-    business_sessions_cohorts {}
-    engagements             }o--|| labs                    : "engageable (lab)"
-    engagements             }o--|| business_sessions       : "engageable (biz)"
-    labs                    }o--|| courses                 : "belongs to"
-    labs                    }o--|| lab_groups              : "assigned group"
-    business_sessions       ||--o{ business_sessions_cohorts : "covers"
+    engagements }o--|| courses : "polymorphic target (Lecture)"
+    engagements }o--|| labs : "polymorphic target (Lab)"
+    engagements }o--|| business_sessions : "polymorphic target (Business Session)"
+    labs }o--|| lab_groups : "contained within"
+    business_sessions ||--o{ business_sessions_cohorts : "allocates"
 ```
-
-> The `engagements.instructor_id` FK references `staff_profiles.id`. The `engagements.engageable_id` forms a polymorphic relation covering `courses`, `labs`, and `business_sessions`.
 
 ---
 
-### 4. Attendance
+### 4. Attendance & Mitigation Operations
 
-Every student scan-in/out creates an `attendance_records` row. A student can raise an `excuse_requests` against any attendance record. The Track Admin then approves or rejects it.
+Tracks explicit student scanning logs alongside submitted excuse requests. Following architectural optimizations, **`excuse_requests` link directly to engagements and student profiles**, eliminating the direct dependency on individual scan rows.
 
 ```mermaid
 erDiagram
-    attendance_records {}
-    excuse_requests {}
-    attendance_records ||--o| excuse_requests : "may have"
+    attendance_records }o--|| engagements : "tracks scans for"
+    attendance_records }o--|| student_profiles : "logs history for"
+    excuse_requests }o--|| engagements : "seeks mitigation for"
+    excuse_requests }o--|| student_profiles : "submitted by"
 ```
-
-> `attendance_records.student_id` → `student_profiles.id`. `attendance_records.engagement_id` → `engagements.id`.
 
 ---
 
-### 5. Grading, Submissions & Tags
+### 5. Grading, Performance Submissions & Tags
 
-Each `course` has `courses_deliverables` (labs, exams, projects). Students submit against them in `submissions`. Tags are predefined labels attached to a student via `students_tags`.
+Manages structural course metrics, tracking student workspace project deliverables, evaluation feedback loops, overrides, and performance metadata tag arrays.
 
 ```mermaid
 erDiagram
-    courses_deliverables {}
-    submissions {}
-    tags {}
-    students_tags {}
-    courses_deliverables ||--o{ submissions   : "receives"
-    tags                 ||--o{ students_tags : "applied via"
+    courses_deliverables ||--o{ submissions : "evaluates"
+    student_profiles ||--o{ submissions : "submits"
+    tags ||--o{ students_tags : "categorizes via"
+    student_profiles ||--o{ students_tags : "identifies"
 ```
 
-> `submissions.student_id` and `students_tags.student_id` both reference `student_profiles.id`. `courses_deliverables.course_id` references `courses.id`.
+---
+
+### 6. Communications, Logistics & Operations Billing
+
+Maintains targeted internal communications channels alongside ledger components for checking performed staff operational hours against engagements.
+
+```mermaid
+erDiagram
+    announcements }o--|| cohorts : "broadcasts to"
+    billing_records }o--|| engagements : "extracts metrics from"
+    billing_records }o--|| staff_profiles : "compensates"
+```
 
 ---
 
