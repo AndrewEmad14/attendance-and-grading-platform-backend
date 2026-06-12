@@ -6,7 +6,6 @@ info:
 http:
   method: POST
   url: "{{baseurl}}/auth/me"
-  auth: inherit
 
 settings:
   encodeUrl: true

@@ -59,4 +59,9 @@ class Cohort extends Model
             'engageable_id' // Foreign key on the engagements table
         )->where('engagements.engageable_type', Course::class);
     }
+
+    public function announcements()
+    {
+        return $this->hasMany(Announcement::class);
+    }
 }

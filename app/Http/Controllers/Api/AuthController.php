@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ForgetPasswordRequest;
 use App\Http\Requests\ResetPasswordRequest;
@@ -43,7 +44,18 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        return response()->json($request->user())->setStatusCode(200);
+        $user = $request->user()->load(match (request()->user()->role) {
+            Role::STUDENT => [
+                'studentProfile.cohort.track',
+                'studentProfile.labGroup',
+                'studentProfile.tags',
+            ],
+            default => [
+                'staffProfile.managedCohorts.cohort.track',
+            ],
+        });
+
+        return response()->json($user)->setStatusCode(200);
     }
 
     public function logout(Request $request)

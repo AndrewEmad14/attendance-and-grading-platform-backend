@@ -1,0 +1,26 @@
+info:
+  name: Update Announcement
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: "{{baseurl}}/announcements/:id"
+  params:
+    - name: id
+      value: "31"
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "title": "no life",
+        "body": "All students must complete their Docker environment configurations before Monday's lecture. Please review the shared troubleshooting guide in the main repository if you encounter any port binding permissions issues during installation."
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

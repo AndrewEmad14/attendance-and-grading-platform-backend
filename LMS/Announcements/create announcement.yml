@@ -1,0 +1,26 @@
+info:
+  name: create announcement
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseurl}}/cohorts/:id/announcements"
+  params:
+    - name: id
+      value: "1"
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "title": "Mandatory Laboratory Environment Setup",
+        "body": "All students must complete their Docker environment configurations before Monday's lecture. Please review the shared troubleshooting guide in the main repository if you encounter any port binding permissions issues during installation."
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

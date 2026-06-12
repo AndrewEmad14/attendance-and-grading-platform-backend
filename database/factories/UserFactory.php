@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Enums\CompensationType;
+use App\Models\StaffProfile;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -38,7 +40,15 @@ class UserFactory extends Factory
 
     public function branchManager()
     {
-        return $this->state(['role' => 'branch_manager']);
+        return $this->state(['role' => 'branch_manager'])
+            ->afterCreating(function (User $user) {
+                StaffProfile::factory()->create([
+                    'user_id' => $user->id,
+                    'compensation_type' => CompensationType::INTERNAL->value,
+                    'fixed_salary' => 0,
+                    'hourly_rate' => 0,
+                ]);
+            });
     }
 
     public function trackAdmin()
