@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/deliverables/{deliverable}/missing', [SubmissionController::class, 'missing']);
     Route::get('/students/{studentId}/submissions', [SubmissionController::class, 'studentSubmissions']);
 
+    Route::get('/submissions/{submission}', [SubmissionController::class, 'show']);
     Route::delete('/submissions/{submission}', [SubmissionController::class, 'destroy']);
 
     Route::get('/submissions/{submission}/download', [SubmissionController::class, 'download']);
