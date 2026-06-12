@@ -161,18 +161,20 @@ class Engagement extends Model
     }
 
     // Scope a query to only include engagements linked to a specific cohort
-    public function scopeForCohort(Builder $query, int $cohortId): Builder
+    public function scopeForCohort(Builder $query, $cohortIds): Builder
     {
-        return $query->where(function ($q) use ($cohortId) {
-            $q->whereHasMorph('engageable', [Course::class], function ($sub) use ($cohortId) {
-                $sub->where('cohort_id', $cohortId);
-            })->orWhereHasMorph('engageable', [Lab::class], function ($sub) use ($cohortId) {
-                $sub->whereHas('labGroup', function ($lg) use ($cohortId) {
-                    $lg->where('cohort_id', $cohortId);
+        $ids = is_array($cohortIds) ? $cohortIds : [$cohortIds];
+
+        return $query->where(function ($q) use ($ids) {
+            $q->whereHasMorph('engageable', [Course::class], function ($sub) use ($ids) {
+                $sub->whereIn('cohort_id', $ids);
+            })->orWhereHasMorph('engageable', [Lab::class], function ($sub) use ($ids) {
+                $sub->whereHas('labGroup', function ($lg) use ($ids) {
+                    $lg->whereIn('cohort_id', $ids);
                 });
-            })->orWhereHasMorph('engageable', [BusinessSession::class], function ($sub) use ($cohortId) {
-                $sub->whereHas('cohorts', function ($c) use ($cohortId) {
-                    $c->where('cohorts.id', $cohortId);
+            })->orWhereHasMorph('engageable', [BusinessSession::class], function ($sub) use ($ids) {
+                $sub->whereHas('cohorts', function ($c) use ($ids) {
+                    $c->whereIn('cohorts.id', $ids);
                 });
             });
         });
@@ -193,7 +195,7 @@ class Engagement extends Model
         return $this->engageable_type === self::TYPE_BUSINESS_SESSION;
     }
 
-    public function type(): string
+    public function getEngagementTypeLabelAttribute(): string
     {
         return match ($this->engageable_type) {
             self::TYPE_COURSE => 'lecture',

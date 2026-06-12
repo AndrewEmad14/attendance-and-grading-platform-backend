@@ -30,7 +30,7 @@ class EngagementResource extends JsonResource
 
         return [
             'id' => $this->id,
-            'type' => $this->type(),
+            'type' => $this->getEngagementTypeLabelAttribute(),
             'engageable_type' => $this->engageable_type,
             'engageable_id' => $this->engageable_id,
             'staff_id' => $this->staff_id,
@@ -43,6 +43,7 @@ class EngagementResource extends JsonResource
             // UI Aggregation Layer fields
             'display_title' => $title,
             'display_context' => $subtitle,
+            'staff_name' => $this->relationLoaded('staff') ? ($this->staff?->user?->name ?? 'Unassigned Instructor') : null,
         ];
     }
 }
