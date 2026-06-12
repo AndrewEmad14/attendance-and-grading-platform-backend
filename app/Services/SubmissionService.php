@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\CourseDeliverable;
+use App\Models\Lab;
 use App\Models\StaffProfile;
 use App\Models\StudentProfile;
 use App\Models\Submission;
@@ -99,7 +100,7 @@ class SubmissionService
 
         // lab ids this instructor teaches in this course
         $labIds = DB::table('engagements')
-            ->where('engageable_type', 'lab')
+            ->where('engageable_type', Lab::class)
             ->where('staff_id', $staffId)
             ->whereIn('engageable_id', function ($q) use ($deliverable) {
                 $q->select('id')->from('labs')->where('course_id', $deliverable->course_id);

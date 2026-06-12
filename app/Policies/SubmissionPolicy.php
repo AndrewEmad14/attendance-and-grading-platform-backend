@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Enums\Role;
 use App\Models\CourseDeliverable;
+use App\Models\Lab;
 use App\Models\StaffProfile;
 use App\Models\StudentProfile;
 use App\Models\Submission;
@@ -75,7 +76,7 @@ class SubmissionPolicy
             }
 
             return DB::table('engagements')
-                ->where('engageable_type', 'lab')
+                ->where('engageable_type', Lab::class)
                 ->where('staff_id', $staffId)
                 ->whereIn('engageable_id', function ($query) use ($deliverable) {
                     $query->select('id')
@@ -120,10 +121,16 @@ class SubmissionPolicy
                 return false;
             } // instructor grade only labs
 
+            $staffId = StaffProfile::where('user_id', $user->id)->value('id');
+
+            if ($staffId === null) {
+                return false;
+            }
+
             // get all lab ids for this course that this instructor is assigned to
             $instructorLabIds = DB::table('engagements')
-                ->where('engageable_type', 'lab')
-                ->where('instructor_id', $user->id)
+                ->where('engageable_type', Lab::class)
+                ->where('staff_id', $staffId)
                 ->whereIn('engageable_id', function ($query) use ($deliverable) {
                     $query->select('id')
                         ->from('labs')

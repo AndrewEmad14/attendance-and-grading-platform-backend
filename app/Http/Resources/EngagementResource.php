@@ -30,7 +30,7 @@ class EngagementResource extends JsonResource
 
         return [
             'id' => $this->id,
-            'type' => $this->type,
+            'type' => $this->type(),
             'engageable_type' => $this->engageable_type,
             'engageable_id' => $this->engageable_id,
             'staff_id' => $this->staff_id,
