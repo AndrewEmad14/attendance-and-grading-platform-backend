@@ -44,7 +44,7 @@ class EngagementController extends Controller
             if ($request->filled('cohort_id')) {
                 $requestedCohortId = (int) $request->get('cohort_id');
 
-                if (!in_array($requestedCohortId, $managedCohortIds)) {
+                if (! in_array($requestedCohortId, $managedCohortIds)) {
                     abort(403, 'This action is unauthorized.');
                 }
 
