@@ -18,14 +18,14 @@ class SubmissionService
      * Persist a student's submission to a deliverable (POR-4).
      *
      * Two channels, mutually exclusive (already enforced by StoreSubmissionRequest):
-     *   - url:  submission_path holds the user-supplied link
+     *   - link: submission_path holds the user-supplied link
      *   - file: the upload is stored and submission_path holds the storage key/URL
      *
      * HTTP-agnostic: receives the validated payload and an optional UploadedFile,
      * never the Request. Wrapped in a transaction so a stored file and its row
      * commit together.
      *
-     * @param  array{submission_type:string, url?:string}  $data
+     * @param  array{submission_type:string, link?:string}  $data
      */
     public function submit(
         CourseDeliverable $deliverable,
@@ -34,8 +34,8 @@ class SubmissionService
         ?UploadedFile $file = null
     ): Submission {
         return DB::transaction(function () use ($deliverable, $student, $data, $file) {
-            $path = $data['submission_type'] === 'url'
-                ? $data['url']
+            $path = $data['submission_type'] === 'link'
+                ? $data['link']
                 : $this->storeFile($deliverable, $student, $file);
 
             return Submission::create([
@@ -43,6 +43,7 @@ class SubmissionService
                 'student_id' => $student->id,
                 'submission_type' => $data['submission_type'],
                 'submission_path' => $path,
+                'raw_score' => 0
             ]);
         });
     }
@@ -135,4 +136,3 @@ class SubmissionService
         );
     }
 }
-

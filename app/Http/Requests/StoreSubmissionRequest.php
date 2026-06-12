@@ -23,17 +23,17 @@ class StoreSubmissionRequest extends FormRequest
 
     /**
      * Mutually-exclusive submission channels (POR-4):
-     *   - type=url  → a URL is required, no file allowed
-     *   - type=file → a file is required, no URL allowed
+     *   - type=link → a link is required, no file allowed
+     *   - type=file → a file is required, no link allowed
      */
     public function rules(): array
     {
         return [
-            'submission_type' => ['required', 'in:url,file'],
+            'submission_type' => ['required', 'in:link,file'],
 
-            'url' => [
-                'required_if:submission_type,url',
-                'prohibited_unless:submission_type,url',
+            'link' => [
+                'required_if:submission_type,link',
+                'prohibited_unless:submission_type,link',
                 'url',
                 'max:2048',
             ],
@@ -56,9 +56,9 @@ class StoreSubmissionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'submission_type.in' => 'Submission type must be either "url" or "file".',
-            'url.required_if' => 'A URL is required when submitting by link.',
-            'url.prohibited_unless' => 'A URL may only be provided when the submission type is "url".',
+            'submission_type.in' => 'Submission type must be either "link" or "file".',
+            'link.required_if' => 'A link is required when submitting by link.',
+            'link.prohibited_unless' => 'A link may only be provided when the submission type is "link".',
             'file.required_if' => 'A file is required when submitting by upload.',
             'file.prohibited_unless' => 'A file may only be provided when the submission type is "file".',
             'file.max' => 'The file may not be larger than 25 MB.',

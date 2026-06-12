@@ -115,7 +115,7 @@ class SubmissionController extends Controller
         $submission = $this->submissionService->submit(
             $deliverable,
             $student,
-            $request->safe()->only(['submission_type', 'url']),
+            $request->safe()->only(['submission_type', 'link']),
             $request->file('file'),
         );
 
