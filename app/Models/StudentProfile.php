@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Builder;
 
 class StudentProfile extends Model
 {
@@ -73,17 +73,17 @@ class StudentProfile extends Model
                 $query->whereHasMorph(
                     'engageable',
                     [Course::class],
-                    fn($q) => $q->where('cohort_id', $this->cohort_id)
+                    fn ($q) => $q->where('cohort_id', $this->cohort_id)
                 )->orWhereHasMorph(
                     'engageable',
                     [Lab::class],
-                    fn($q) => $q->where('lab_group_id', $this->lab_group_id)
+                    fn ($q) => $q->where('lab_group_id', $this->lab_group_id)
                 )->orWhereHasMorph(
                     'engageable',
                     [BusinessSession::class],
-                    fn($q) => $q->whereHas(
+                    fn ($q) => $q->whereHas(
                         'cohorts',
-                        fn($c) => $c->where('cohorts.id', $this->cohort_id)
+                        fn ($c) => $c->where('cohorts.id', $this->cohort_id)
                     )
                 );
             });
