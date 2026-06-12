@@ -12,7 +12,7 @@ class AttendanceService
 
     public function index(User $user, int $perPage = 20)
     {
-        $query = AttendanceRecord::query()->with(['student.user', 'engagement']);
+        $query = AttendanceRecord::query()->with(['student.user', 'engagement.staff.user']);
         $this->accessService->scopedToUser($query, $user);
 
         return $query->latest()->paginate($perPage);
@@ -37,13 +37,13 @@ class AttendanceService
             $record->update(['left_at' => now()]);
         }
 
-        return $record->load('student.user', 'engagement');
+        return $record->load('student.user', 'engagement.staff.user');
     }
 
     public function correctTimestamps(AttendanceRecord $record, array $data): AttendanceRecord
     {
-        $record->update(array_filter($data, fn ($v) => ! is_null($v)));
+        $record->update(array_filter($data, fn($v) => ! is_null($v)));
 
-        return $record->load('student.user', 'engagement');
+        return $record->load('student.user', 'engagement.staff.user');
     }
 }
