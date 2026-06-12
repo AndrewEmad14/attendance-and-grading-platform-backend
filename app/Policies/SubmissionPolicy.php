@@ -149,6 +149,6 @@ class SubmissionPolicy
     }
 
     public function delete(User $user, Submission $submission): bool {
-        return $user->role === Role::TRACK_ADMIN || Role::BRANCH_MANAGER;
+        return $user->role === Role::TRACK_ADMIN || $user->role ===Role::BRANCH_MANAGER;
     }
 }
