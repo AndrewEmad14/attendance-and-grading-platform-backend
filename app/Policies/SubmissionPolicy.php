@@ -36,7 +36,7 @@ class SubmissionPolicy
      */
     public function view(User $user, Submission $submission): bool
     {
-        if ($user->role === 'track_admin') {
+        if ($user->role === Role::TRACK_ADMIN || $user->role === Role::BRANCH_MANAGER) {
             return true;
         }
 
@@ -63,7 +63,7 @@ class SubmissionPolicy
      */
     public function viewAny(User $user, ?CourseDeliverable $deliverable = null): bool
     {
-        if ($user->role === 'track_admin' || $user->role === 'branch_manager') {
+        if ($user->role === Role::TRACK_ADMIN || $user->role === Role::BRANCH_MANAGER) {
             return true;
         }
 
@@ -94,7 +94,7 @@ class SubmissionPolicy
      */
     public function viewStudentTracker(User $user, StudentProfile $student): bool
     {
-        if ($user->role === 'track_admin') {
+        if ($user->role === Role::TRACK_ADMIN || $user->role === Role::BRANCH_MANAGER) {
             return true;
         }
 
