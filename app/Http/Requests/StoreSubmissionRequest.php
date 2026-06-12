@@ -69,16 +69,16 @@ class StoreSubmissionRequest extends FormRequest
     }
 
     /**
- * Reject a second submission to the same deliverable before it reaches
- * the DB unique constraint, so the student sees a clear 422 rather than
- * a 500 integrity error. Resubmission is not supported: the student must
- * ask their Track Admin to delete the existing one first.
- */
+     * Reject a second submission to the same deliverable before it reaches
+     * the DB unique constraint, so the student sees a clear 422 rather than
+     * a 500 integrity error. Resubmission is not supported: the student must
+     * ask their Track Admin to delete the existing one first.
+     */
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator) {
             $deliverable = $this->route('deliverable');
-            $student     = $this->user()?->studentProfile;
+            $student = $this->user()?->studentProfile;
 
             if (! $deliverable || ! $student) {
                 return;

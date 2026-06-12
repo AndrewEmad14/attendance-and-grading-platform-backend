@@ -63,6 +63,7 @@ class SubmissionController extends Controller
 
         return response()->noContent(); // 204
     }
+
     // roster students with NO submission for this deliverable (the gaps)
     public function missing(CourseDeliverable $deliverable)
     {
@@ -103,6 +104,7 @@ class SubmissionController extends Controller
 
         return SubmissionResource::collection($submissions);
     }
+
     // safe file fetch for a submission (grader + owner only)
     public function download(Submission $submission)
     {

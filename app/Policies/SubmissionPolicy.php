@@ -42,6 +42,7 @@ class SubmissionPolicy
 
         if ($user->role === 'student') {
             $student = StudentProfile::where('user_id', $user->id)->first();
+
             return $student !== null && $submission->student_id === $student->id;
         }
 
@@ -99,6 +100,7 @@ class SubmissionPolicy
 
         if ($user->role === 'student') {
             $ownId = StudentProfile::where('user_id', $user->id)->value('id');
+
             return $ownId !== null && $ownId === $student->id;
         }
 
@@ -148,7 +150,8 @@ class SubmissionPolicy
         return $user->role === 'track_admin';
     }
 
-    public function delete(User $user, Submission $submission): bool {
-        return $user->role === Role::TRACK_ADMIN || $user->role ===Role::BRANCH_MANAGER;
+    public function delete(User $user, Submission $submission): bool
+    {
+        return $user->role === Role::TRACK_ADMIN || $user->role === Role::BRANCH_MANAGER;
     }
 }

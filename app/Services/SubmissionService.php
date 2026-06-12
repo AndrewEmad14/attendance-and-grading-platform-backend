@@ -43,7 +43,7 @@ class SubmissionService
                 'student_id' => $student->id,
                 'submission_type' => $data['submission_type'],
                 'submission_path' => $path,
-                'raw_score' => 0
+                'raw_score' => 0,
             ]);
         });
     }
@@ -64,6 +64,7 @@ class SubmissionService
             "{$student->id}_".$file->hashName()
         );
     }
+
     /**
      * Delete a submission and its stored file, atomically.
      *
@@ -111,11 +112,12 @@ class SubmissionService
 
         // lab groups behind those labs → their students
         return StudentProfile::whereIn('lab_group_id', function ($q) use ($labIds) {
-                $q->select('lab_group_id')->from('labs')->whereIn('id', $labIds);
-            })
+            $q->select('lab_group_id')->from('labs')->whereIn('id', $labIds);
+        })
             ->pluck('id')
             ->all();
     }
+
     /**
      * Student-profile ids that *should* have submitted this deliverable,
      * scoped by role:
@@ -132,10 +134,10 @@ class SubmissionService
 
         // track_admin (or anything that passed viewAny): full roster for the course
         return StudentProfile::whereIn('lab_group_id', function ($q) use ($deliverable) {
-                $q->select('lab_group_id')
-                  ->from('labs')
-                  ->where('course_id', $deliverable->course_id);
-            })
+            $q->select('lab_group_id')
+                ->from('labs')
+                ->where('course_id', $deliverable->course_id);
+        })
             ->pluck('id')
             ->all();
     }
