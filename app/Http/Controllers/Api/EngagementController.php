@@ -26,6 +26,7 @@ class EngagementController extends Controller
         $user = $request->user();
 
         $query = Engagement::with([
+            'staff.user',
             'engageable' => function ($morphTo) {
                 $morphTo->morphWith([
                     Lab::class => ['labGroup'],
@@ -37,6 +38,24 @@ class EngagementController extends Controller
             $query->where('staff_id', $user->staffProfile->id);
         } elseif ($user->role === 'student') {
             $query->forCohort($user->studentProfile->cohort_id);
+        } elseif ($user->role === 'track_admin') {
+            $managedCohortIds = $user->staffProfile->managedCohorts()->pluck('cohorts_admins.cohort_id')->toArray();
+
+            if ($request->filled('cohort_id')) {
+                $requestedCohortId = (int) $request->get('cohort_id');
+
+                if (! in_array($requestedCohortId, $managedCohortIds)) {
+                    abort(403, 'This action is unauthorized.');
+                }
+
+                $query->forCohort($requestedCohortId);
+            } else {
+                $query->forCohort($managedCohortIds);
+            }
+
+            if ($request->filled('staff_id')) {
+                $query->where('staff_id', $request->get('staff_id'));
+            }
         } else {
             if ($request->filled('cohort_id')) {
                 $query->forCohort($request->get('cohort_id'));
@@ -84,7 +103,7 @@ class EngagementController extends Controller
         }
 
         if ($user->role === 'student') {
-            $isAuthorized = Engagement::where('id', $engagement->id)
+            $isAuthorized = Engagement::with('staff.user')::where('id', $engagement->id)
                 ->forCohort($user->studentProfile->cohort_id)
                 ->exists();
 
