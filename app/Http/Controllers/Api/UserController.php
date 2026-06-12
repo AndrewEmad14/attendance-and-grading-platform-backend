@@ -298,7 +298,7 @@ class UserController extends Controller
                 'studentProfile.tags',
             ],
             default => [
-                'staffProfile.managedCohorts.track',
+                'staffProfile.managedCohorts.cohort.track',
             ],
         });
 
