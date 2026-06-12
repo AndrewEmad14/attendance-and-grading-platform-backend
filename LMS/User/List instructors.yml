@@ -38,9 +38,7 @@ http:
       value: -hourly_rate
       type: query
       disabled: true
-  auth:
-    type: bearer
-    token: 8|lnXCrIoEuLhKhF9oc6HKakeyOAR8qnfDQkc1P9ADa3ff4ba2
+  auth: inherit
 
 settings:
   encodeUrl: true

@@ -18,9 +18,7 @@ http:
         "hourly_rate": 1000,
         "fixed_salary": 0
       }
-  auth:
-    type: bearer
-    token: 9|X9sW2sFXDJm6RNn4JVq5mcwpgkmTdhfqUZ5tWBNb512cc451
+  auth: inherit
 
 settings:
   encodeUrl: true
