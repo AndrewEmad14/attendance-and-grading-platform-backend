@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\Role;
+use App\Http\Controllers\Api\AnnouncementController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\AttendanceLedgerController;
 use App\Http\Controllers\Api\AuthController;
@@ -16,7 +17,6 @@ use App\Http\Controllers\Api\NoteController;
 use App\Http\Controllers\Api\SubmissionController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\Api\AnnouncementController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {

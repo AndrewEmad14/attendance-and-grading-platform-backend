@@ -2,11 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Enums\CompensationType;
+use App\Models\StaffProfile;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use App\Enums\CompensationType;
 
 class UserFactory extends Factory
 {
@@ -37,12 +38,11 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => ['role' => $role]);
     }
 
-
     public function branchManager()
     {
         return $this->state(['role' => 'branch_manager'])
             ->afterCreating(function (User $user) {
-                \App\Models\StaffProfile::factory()->create([
+                StaffProfile::factory()->create([
                     'user_id' => $user->id,
                     'compensation_type' => CompensationType::INTERNAL->value,
                     'fixed_salary' => 0,

@@ -3,9 +3,9 @@
 namespace Tests\Feature;
 
 use App\Enums\CompensationType;
-use App\Enums\Role;
 use App\Models\Announcement;
 use App\Models\Cohort;
+use App\Models\Course;
 use App\Models\Engagement;
 use App\Models\StaffProfile;
 use App\Models\StudentProfile;
@@ -123,7 +123,7 @@ class AnnouncementTest extends TestCase
         Engagement::factory()->create([
             'staff_id' => $instructorStaff->id,
             'engageable_id' => $course->id,
-            'engageable_type' => \App\Models\Course::class,
+            'engageable_type' => Course::class,
             'starts_at' => now()->subDay(),
             'ends_at' => now()->addDay(),
         ]);
@@ -250,7 +250,7 @@ class AnnouncementTest extends TestCase
         Engagement::factory()->create([
             'staff_id' => $instructorStaff->id,
             'engageable_id' => $course->id,
-            'engageable_type' => \App\Models\Course::class,
+            'engageable_type' => Course::class,
             'starts_at' => now()->subDay(),
             'ends_at' => now()->addDay(),
         ]);

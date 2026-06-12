@@ -80,8 +80,7 @@ class AnnouncementPolicy
         if ($announcement->staff_id === $user->staffProfile->id) {
             return $this->instructorHasWindowFor($user, $announcement);
         }
-        
-    
+
         return false;
     }
 
@@ -115,8 +114,6 @@ class AnnouncementPolicy
             ->where('staff_id', $user->staffProfile->id)
             ->where('starts_at', '<=', $announcement->created_at)
             ->where('ends_at', '>=', now());
-
-        
 
         return $query->exists();
     }

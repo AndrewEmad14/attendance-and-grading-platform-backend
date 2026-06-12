@@ -16,13 +16,14 @@ class UserPolicy
 
         // track admin cannot view branch managers or other track admins
         if ($requester->role === Role::TRACK_ADMIN) {
-             if ($requester->id === $target->id) {
-            return true;
+            if ($requester->id === $target->id) {
+                return true;
             }
+
             return ! in_array($target->role, [
                 Role::BRANCH_MANAGER,
                 Role::TRACK_ADMIN,
-            ]) ;
+            ]);
         }
 
         return false;
