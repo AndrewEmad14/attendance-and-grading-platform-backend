@@ -16,9 +16,7 @@ http:
       {
         "email":"andrew14emad@gmail.com"
       }
-  auth:
-    type: bearer
-    token: 18|4DQvktZfIZNonCck5DHi5RA66nz7OW6j59InkMsUb9117364
+  auth: inherit
 
 settings:
   encodeUrl: true

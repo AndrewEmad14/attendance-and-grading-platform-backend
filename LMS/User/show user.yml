@@ -10,9 +10,7 @@ http:
     - name: id
       value: "361"
       type: path
-  auth:
-    type: bearer
-    token: lnXCrIoEuLhKhF9oc6HKakeyOAR8qnfDQkc1P9ADa3ff4ba2
+  auth: inherit
 
 settings:
   encodeUrl: true
