@@ -1,0 +1,23 @@
+info:
+  name: UpdateExcuseRequest
+  type: http
+  seq: 5
+
+http:
+  method: PATCH
+  url: "{{baseurl}}/excuse-requests/1"
+  body:
+    type: json
+    data: |
+      {
+        "reason": "Updated reason: I have attached a doctor's note."
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

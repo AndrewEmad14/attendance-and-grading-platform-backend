@@ -18,6 +18,7 @@ return new class extends Migration
             $table->timestamp('starts_at')->nullable();
             $table->timestamp('ends_at')->nullable();
             $table->integer('scheduled_hours');
+            $table->timestamp('absences_processed_at')->nullable();
             $table->timestamps();
         });
     }

@@ -1,12 +1,15 @@
 <?php
 
 use App\Enums\Role;
+use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\Api\AttendanceLedgerController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BranchAnalyticsController;
 use App\Http\Controllers\Api\BusinessSessionController;
 use App\Http\Controllers\Api\CohortController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\EngagementController;
+use App\Http\Controllers\Api\ExcuseRequestController;
 use App\Http\Controllers\Api\GradingAnalyticsController;
 use App\Http\Controllers\Api\LabGroupController;
 use App\Http\Controllers\Api\NoteController;
@@ -14,8 +17,6 @@ use App\Http\Controllers\Api\SubmissionController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
-
-// $table->enum('role', ['branch_manager', 'track_admin', 'instructor', 'student']);
 
 Route::get('/', function () {
     return response()->json(['message' => 'API is running']);
@@ -27,6 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('tracks/{track}')->group(function () {
         Route::post('cohorts', [CohortController::class, 'store']);
         Route::get('cohorts', [CohortController::class, 'index']);
+        Route::patch('cohorts/{cohort}', [CohortController::class, 'update']);
     });
     Route::get('cohorts', [CohortController::class, 'index']);
 
@@ -83,15 +85,30 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::prefix('business-sessions')->group(function () {
-
         Route::get('', [BusinessSessionController::class, 'index']);
         Route::post('', [BusinessSessionController::class, 'store']);
         Route::get('{businessSession}', [BusinessSessionController::class, 'show']);
 
         Route::post('{businessSession}/cohorts', [BusinessSessionController::class, 'enrollCohort']);
         Route::delete('{businessSession}/cohorts/{cohortId}', [BusinessSessionController::class, 'removeCohort']);
+    });
 
-        Route::patch('cohorts/{cohort}', [CohortController::class, 'update']);
+    Route::prefix('attendance')->group(function () {
+        Route::get('', [AttendanceController::class, 'index']);
+        Route::get('/{attendance}', [AttendanceController::class, 'show']);
+        Route::post('', [AttendanceController::class, 'store']);
+        Route::patch('/{attendance}', [AttendanceController::class, 'update']);
+    });
+
+    Route::get('/students/{student}/attendance-ledger', [AttendanceLedgerController::class, 'show']);
+
+    Route::prefix('excuse-requests')->group(function () {
+        Route::get('', [ExcuseRequestController::class, 'index']);
+        Route::get('/{excuseRequest}', [ExcuseRequestController::class, 'show']);
+        Route::post('', [ExcuseRequestController::class, 'store']);
+        Route::patch('/{excuseRequest}', [ExcuseRequestController::class, 'update']);
+        Route::post('/{excuseRequest}/approve', [ExcuseRequestController::class, 'approve']);
+        Route::post('/{excuseRequest}/reject', [ExcuseRequestController::class, 'reject']);
     });
 });
 

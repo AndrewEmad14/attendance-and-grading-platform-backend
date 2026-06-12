@@ -1,0 +1,28 @@
+info:
+  name: CreateExcuseRequest
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseurl}}/excuse-requests"
+  body:
+    type: multipartForm
+    data:
+      - name: attendance_id
+        value: "1"
+      - name: reason
+        value: "I was sick and have a medical certificate."
+      - name: attachment
+        value: ""
+        type: file
+        contentType: application/pdf
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

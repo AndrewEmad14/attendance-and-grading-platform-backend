@@ -2,10 +2,16 @@
 
 namespace App\Providers;
 
+use App\Models\AttendanceRecord;
+use App\Models\Cohort;
 use App\Models\Course;
+use App\Models\ExcuseRequest;
 use App\Models\Submission;
 use App\Models\Tag;
+use App\Policies\AttendancePolicy;
+use App\Policies\CohortPolicy;
 use App\Policies\CoursePolicy;
+use App\Policies\ExcuseRequestPolicy;
 use App\Policies\SubmissionPolicy;
 use App\Policies\TagPolicy;
 use Illuminate\Auth\Notifications\ResetPassword;
@@ -45,6 +51,9 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::policy(Tag::class, TagPolicy::class);
         Gate::policy(Submission::class, SubmissionPolicy::class);
+        Gate::policy(AttendanceRecord::class, AttendancePolicy::class);
+        Gate::policy(ExcuseRequest::class, ExcuseRequestPolicy::class);
+        Gate::policy(Cohort::class, CohortPolicy::class);
         ResetPassword::createUrlUsing(function ($user, string $token) {
             return env('FRONTEND_URL').'/reset-password?token='.$token.'&email='.urlencode($user->email);
         });
