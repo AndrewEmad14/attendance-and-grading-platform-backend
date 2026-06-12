@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Collection;
 
 class Engagement extends Model
 {
@@ -54,6 +56,108 @@ class Engagement extends Model
     public function billingRecord(): HasMany
     {
         return $this->hasMany(BillingRecord::class, 'engagement_id');
+    }
+
+    // Get array of student IDs  expected to attend this engagement
+    // Used in single engagement check, NOT in loops/array of engagements
+    protected function expectedStudentIds(): Attribute
+    {
+        return Attribute::make(
+            get: function (): array {
+                return match ($this->engageable_type) {
+                    self::TYPE_COURSE => StudentProfile::where('cohort_id', $this->engageable->cohort_id)
+                        ->pluck('id')
+                        ->toArray(),
+
+                    self::TYPE_LAB => StudentProfile::where('lab_group_id', $this->engageable->lab_group_id)
+                        ->pluck('id')
+                        ->toArray(),
+
+                    self::TYPE_BUSINESS_SESSION => StudentProfile::whereHas(
+                        'cohort.businessSessions',
+                        fn ($q) => $q->where('business_sessions.id', $this->engageable_id)
+                    )->pluck('id')->toArray(),
+
+                    default => [],
+                };
+            }
+        );
+    }
+
+    // Get a list of <engagement_id, student_id[]> for a list of engagements you pass in
+    public static function expectedStudentIdsForMany(Collection $engagements): array
+    {
+        if ($engagements->isEmpty()) {
+            return [];
+        }
+        $engagements->loadMissing('engageable');
+        $expected = [];
+
+        $courses = $engagements->where('engageable_type', self::TYPE_COURSE);
+        if ($courses->isNotEmpty()) {
+            $byCohort = StudentProfile::whereIn('cohort_id', $courses->pluck('engageable.cohort_id')->unique())
+                ->get(['id', 'cohort_id'])
+                ->groupBy('cohort_id')
+                ->map(fn ($s) => $s->pluck('id')->toArray());
+
+            foreach ($courses as $e) {
+                $expected[$e->id] = $byCohort->get($e->engageable->cohort_id, []);
+            }
+        }
+
+        $labs = $engagements->where('engageable_type', self::TYPE_LAB);
+        if ($labs->isNotEmpty()) {
+            $byGroup = StudentProfile::whereIn('lab_group_id', $labs->pluck('engageable.lab_group_id')->unique())
+                ->get(['id', 'lab_group_id'])
+                ->groupBy('lab_group_id')
+                ->map(fn ($s) => $s->pluck('id')->toArray());
+
+            foreach ($labs as $e) {
+                $expected[$e->id] = $byGroup->get($e->engageable->lab_group_id, []);
+            }
+        }
+
+        $sessions = $engagements->where('engageable_type', self::TYPE_BUSINESS_SESSION);
+        if ($sessions->isNotEmpty()) {
+            $sessionsWithCohorts = BusinessSession::with('cohorts')
+                ->whereIn('id', $sessions->pluck('engageable_id')->unique())
+                ->get()
+                ->keyBy('id');
+
+            $allCohortIds = $sessionsWithCohorts->flatMap(fn ($s) => $s->cohorts->pluck('id'))->unique();
+
+            $byCohort = StudentProfile::whereIn('cohort_id', $allCohortIds)
+                ->get(['id', 'cohort_id'])
+                ->groupBy('cohort_id')
+                ->map(fn ($s) => $s->pluck('id')->toArray());
+
+            foreach ($sessions as $e) {
+                $cohortIds = $sessionsWithCohorts->get($e->engageable_id)?->cohorts->pluck('id') ?? collect();
+                $expected[$e->id] = $cohortIds->flatMap(fn ($cid) => $byCohort->get($cid, []))->unique()->values()->toArray();
+            }
+        }
+
+        return $expected;
+    }
+
+    // Given engagements, get a collection of <engagement_id, [student_id => array_index]>
+    // Flip is used to optimize for O(1) lookup speed in usage
+    // ex: isset($attendedStudents[$studentId]) directly checks if $studentId attended
+    public static function attendedStudentIdsForMany(Collection $engagements): Collection
+    {
+        return AttendanceRecord::whereIn('engagement_id', $engagements->pluck('id'))
+            ->whereNotNull('arrived_at')
+            ->get(['engagement_id', 'student_id'])
+            ->groupBy('engagement_id')
+            ->map(fn ($records) => $records->pluck('student_id')->flip());
+    }
+
+    public static function excuseRequestsForMany(Collection $engagements): Collection
+    {
+        return ExcuseRequest::whereIn('engagement_id', $engagements->pluck('id'))
+            ->get(['engagement_id', 'student_id', 'status'])
+            ->groupBy('engagement_id')
+            ->map(fn ($requests) => $requests->keyBy('student_id'));
     }
 
     // Scope a query to only include engagements linked to a specific cohort
