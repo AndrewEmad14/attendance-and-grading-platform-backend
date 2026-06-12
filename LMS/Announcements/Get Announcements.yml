@@ -1,18 +1,16 @@
 info:
-  name: show user
+  name: Get Announcements
   type: http
-  seq: 4
+  seq: 1
 
 http:
   method: GET
-  url: "{{baseurl}}/users/:id"
+  url: "{{baseurl}}/cohorts/:id/announcements"
   params:
     - name: id
-      value: "362"
+      value: "1"
       type: path
-  auth:
-    type: bearer
-    token: 8|pErnAiX7UzuXdVeccjDDHYqnvWr57L2CUYETbhxa7ee39fe5
+  auth: inherit
 
 settings:
   encodeUrl: true

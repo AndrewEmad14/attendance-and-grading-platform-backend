@@ -6,7 +6,9 @@ info:
 http:
   method: POST
   url: "{{baseurl}}/auth/me"
-  auth: inherit
+  auth:
+    type: bearer
+    token: 8|pErnAiX7UzuXdVeccjDDHYqnvWr57L2CUYETbhxa7ee39fe5
 
 settings:
   encodeUrl: true

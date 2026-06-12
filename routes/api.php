@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\NoteController;
 use App\Http\Controllers\Api\SubmissionController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\AnnouncementController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -125,4 +126,19 @@ Route::group(['prefix' => 'users', 'middleware' => ['auth:sanctum', 'role:'.Role
     Route::get('{user}', [UserController::class, 'show']);
     Route::patch('{user}', [UserController::class, 'update']);
     Route::delete('{user}', [UserController::class, 'destroy']);
+});
+
+Route::group(['prefix' => 'cohorts/{cohort}/announcements', 'middleware' => ['auth:sanctum']], function () {
+    Route::get('', [AnnouncementController::class, 'index']);
+    Route::post('', [AnnouncementController::class, 'store'])
+        ->middleware('role:'.Role::BRANCH_MANAGER.','.Role::TRACK_ADMIN.','.Role::INSTRUCTOR);
+});
+
+Route::group(['prefix' => 'announcements', 'middleware' => ['auth:sanctum']], function () {
+    Route::patch('{announcement}', [AnnouncementController::class, 'update'])
+        ->middleware('role:'.Role::BRANCH_MANAGER.','.Role::TRACK_ADMIN.','.Role::INSTRUCTOR);
+    Route::delete('{announcement}', [AnnouncementController::class, 'destroy'])
+        ->middleware('role:'.Role::BRANCH_MANAGER.','.Role::TRACK_ADMIN.','.Role::INSTRUCTOR);
+    Route::post('broadcast', [AnnouncementController::class, 'broadcast'])
+        ->middleware('role:'.Role::BRANCH_MANAGER);
 });
