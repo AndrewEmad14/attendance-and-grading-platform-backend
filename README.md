@@ -153,7 +153,6 @@ erDiagram
     tracks     ||--o{ cohorts        : "runs"
     cohorts    ||--o{ courses        : "contains"
     cohorts    ||--o{ lab_groups     : "splits into"
-    lab_groups ||--o{ lab_group_users : "has members"
 ```
 
 ---
