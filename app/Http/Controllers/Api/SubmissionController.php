@@ -51,6 +51,16 @@ class SubmissionController extends Controller
         return SubmissionResource::collection($submissions);
     }
 
+    // a single submission. Authorization (owner student / assigned instructor /
+    // track admin) is enforced by SubmissionPolicy::view — a student can only
+    // ever fetch their own (ACC-4).
+    public function show(Submission $submission)
+    {
+        $this->authorize('view', $submission);
+
+        return new SubmissionResource($submission->load('deliverable'));
+    }
+
     // removes a submission entirely — the only correction path for a wrong
     // submission, since students cannot resubmit. Track admin only.
     // Deleting a graded row shifts the student's course total + at-risk flag;
