@@ -1,11 +1,11 @@
 info:
-  name: Create Submission
+  name: view Submission
   type: http
-  seq: 3
+  seq: 8
 
 http:
   method: GET
-  url: "{{baseurl}}/deliverables/1/submissions/"
+  url: "{{baseurl}}/submissions/1443"
   auth: inherit
 
 settings:

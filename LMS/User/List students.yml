@@ -5,11 +5,8 @@ info:
 
 http:
   method: GET
-  url: "{{baseurl}}/users/students?page=-1"
+  url: "{{baseurl}}/users/students"
   params:
-    - name: page
-      value: "-1"
-      type: query
     - name: name
       value: "Meda "
       type: query
