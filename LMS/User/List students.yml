@@ -5,11 +5,8 @@ info:
 
 http:
   method: GET
-  url: "{{baseurl}}/users/students?page=-1"
+  url: "{{baseurl}}/users/students"
   params:
-    - name: page
-      value: "-1"
-      type: query
     - name: name
       value: "Meda "
       type: query
@@ -46,9 +43,7 @@ http:
       value: "false"
       type: query
       disabled: true
-  auth:
-    type: bearer
-    token: 8|lnXCrIoEuLhKhF9oc6HKakeyOAR8qnfDQkc1P9ADa3ff4ba2
+  auth: inherit
 
 settings:
   encodeUrl: true

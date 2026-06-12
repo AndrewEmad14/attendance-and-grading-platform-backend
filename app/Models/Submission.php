@@ -46,11 +46,11 @@ class Submission extends Model
 
     public function gradedBy(): BelongsTo // user who graded submission (restriction on who is allowed in gradepolicy)
     {
-        return $this->belongsTo(User::class, 'graded_by');
+        return $this->belongsTo(StaffProfile::class, 'graded_by');
     }
 
     public function overriddenBy(): BelongsTo // user overridden grade (track admin in policy)
     {
-        return $this->belongsTo(User::class, 'overridden_by');
+        return $this->belongsTo(StaffProfile::class, 'overridden_by');
     }
 }

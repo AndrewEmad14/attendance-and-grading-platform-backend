@@ -1,0 +1,78 @@
+info:
+  name: Create Submission On Deliverable
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseurl}}/deliverables/1/submissions/"
+  body:
+    type: multipart-form
+    data:
+      - name: submission_type
+        type: text
+        value: file
+      - name: file
+        type: file
+        value:
+          - /home/zeyad/Downloads/MEAN Project - Sheet1.pdf
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: Submit a Link Example
+    request:
+      url: "{{baseurl}}/deliverables/1/submissions/"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "submission_type": "link",
+            "link": "https://www.google.com"
+          }
+    response:
+      statusText: Created
+      headers:
+        - name: host
+          value: localhost:8000
+        - name: connection
+          value: close
+        - name: x-powered-by
+          value: PHP/8.4.21
+        - name: cache-control
+          value: no-cache, private
+        - name: date
+          value: Fri, 12 Jun 2026 09:02:15 GMT
+        - name: content-type
+          value: application/json
+        - name: access-control-allow-origin
+          value: "*"
+      body:
+        type: json
+        data: |-
+          {
+            "data": {
+              "id": 1443,
+              "deliverable_id": 1,
+              "student_id": 1,
+              "submission_type": "link",
+              "submission_path": "https://www.google.com",
+              "submitted_at": "2026-06-12T09:02:12.000000Z",
+              "status": "completed",
+              "raw_score": 0,
+              "override_score": null,
+              "override_note": null,
+              "effective_raw_score": 0,
+              "normalized_score": 0,
+              "is_overridden": false,
+              "graded_by": null,
+              "overridden_by": null,
+              "overridden_at": null
+            }
+          }
