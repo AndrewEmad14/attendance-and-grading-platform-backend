@@ -2,24 +2,44 @@
 
 namespace App\Services;
 
+use App\Models\BusinessSession;
+use App\Models\Course;
 use App\Models\ExcuseRequest;
+use App\Models\Lab;
 use App\Models\StudentProfile;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 
 class AttendanceLedgerService
 {
-    // Returns all engagements student is expected to attend, attendance for each engagement,
-    // absence status, excuses, deduction per entry, running + current attendance balance
-    public function buildLedger(StudentProfile $student): array
+    public function buildLedger(StudentProfile $student, array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
-        $engagementsForStudent = $student->expectedEngagementsQuery()
+        $query = $student->expectedEngagementsQuery()
             ->with(['staff.user', 'engageable'])
-            ->orderBy('starts_at')
-            ->get();
+            ->where('starts_at', '<=', now())
+            ->orderBy('starts_at', 'desc');
 
-        // Index attendances & excuses by engagement_id for O(1) lookup
+        if (! empty($filters['date_from'])) {
+            $query->whereDate('starts_at', '>=', $filters['date_from']);
+        }
+        if (! empty($filters['date_to'])) {
+            $query->whereDate('starts_at', '<=', $filters['date_to']);
+        }
+        if (! empty($filters['search'])) {
+            $search = strtolower($filters['search']);
+            $query->where(function ($q) use ($search) {
+                $q->whereHasMorph('engageable', [Course::class], fn($s) => $s->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]))
+                    ->orWhereHasMorph('engageable', [Lab::class], fn($s) => $s->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]))
+                    ->orWhereHasMorph('engageable', [BusinessSession::class], fn($s) => $s->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]));
+            });
+        }
+
+        $engagementsForStudent = $query->get();
+
         $attendanceByEngagement = $student->attendanceRecords()->get()->keyBy('engagement_id');
         $excuseByEngagement = ExcuseRequest::where('student_id', $student->id)->get()->keyBy('engagement_id');
-        $entries = [];
+
+        $allEntries = collect();
 
         foreach ($engagementsForStudent as $engagement) {
             $ended = $engagement->ends_at !== null && $engagement->ends_at->isPast();
@@ -28,7 +48,7 @@ class AttendanceLedgerService
             $excuse = $excuseByEngagement->get($engagement->id);
 
             if (! $ended) {
-                $absenceStatus = $present ? 'present' : 'upcoming';
+                $absenceStatus = 'present';
                 $excuseStatus = null;
                 $deduction = 0;
             } elseif ($present) {
@@ -41,9 +61,13 @@ class AttendanceLedgerService
                 $deduction = ($excuse && $excuse->status === 'approved') ? -5 : -25;
             }
 
-            $entries[] = [
+            if (! empty($filters['status']) && $filters['status'] !== $absenceStatus) {
+                continue;
+            }
+
+            $allEntries->push([
                 'engagement_id' => $engagement->id,
-                'engagement_type' => $engagement->type,
+                'engagement_type' => $engagement->engagement_type_label,
                 'engagement_instructor' => $engagement->staff?->user?->name,
                 'name' => $engagement->engageable?->name ?? "Engagement #{$engagement->id}",
                 'date' => $engagement->starts_at?->toISOString(),
@@ -52,16 +76,18 @@ class AttendanceLedgerService
                 'absence_status' => $absenceStatus,
                 'excuse_status' => $excuseStatus,
                 'deduction' => $deduction,
-            ];
+            ]);
         }
 
-        return [
-            'student' => [
-                'id' => $student->id,
-                'name' => $student->user->name,
-            ],
-            'current_balance' => $student->attendance_balance,
-            'entries' => $entries,
-        ];
+        $page = Paginator::resolveCurrentPage();
+        $items = $allEntries->slice(($page - 1) * $perPage, $perPage)->values();
+
+        return new LengthAwarePaginator(
+            $items,
+            $allEntries->count(),
+            $perPage,
+            $page,
+            ['path' => Paginator::resolveCurrentPath()]
+        );
     }
 }
