@@ -1,0 +1,19 @@
+info:
+  name: show user
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: "{{baseurl}}/users/:id"
+  params:
+    - name: id
+      value: "362"
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

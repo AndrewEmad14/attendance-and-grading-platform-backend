@@ -1,0 +1,8 @@
+name: LMS
+variables:
+  - secret: true
+    name: baseurl
+  - secret: true
+    name: productionurl
+  - secret: true
+    name: access_token

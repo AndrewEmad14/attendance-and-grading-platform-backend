@@ -1,0 +1,21 @@
+info:
+  name: delete user
+  type: http
+  seq: 7
+
+http:
+  method: DELETE
+  url: "{{baseurl}}/users/:id"
+  params:
+    - name: id
+      value: "373"
+      type: path
+  auth:
+    type: bearer
+    token: 18|4DQvktZfIZNonCck5DHi5RA66nz7OW6j59InkMsUb9117364
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

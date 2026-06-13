@@ -1,0 +1,15 @@
+info:
+  name: Create Tag
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseurl}}/tags"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

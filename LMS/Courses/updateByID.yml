@@ -1,0 +1,21 @@
+info:
+  name: updateByID
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: "{{baseurl}}/courses/3"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Web Fundamentals Updated"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

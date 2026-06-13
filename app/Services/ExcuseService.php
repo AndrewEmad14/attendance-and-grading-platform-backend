@@ -1,0 +1,114 @@
+<?php
+
+namespace App\Services;
+
+use App\Http\Resources\ExcuseRequestResource;
+use App\Models\ExcuseRequest;
+use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Storage;
+
+class ExcuseService
+{
+    public function __construct(private AccessService $accessService) {}
+
+    public function index(
+        User $user,
+        int $perPage = 20,
+        ?int $cohortId = null,
+        ?string $status = null,
+        ?string $search = null,
+    ): LengthAwarePaginator {
+        $query = ExcuseRequest::query()->with([
+            'engagement.engageable',
+            'student.user',
+            'engagement.staff.user',
+            'reviewer.user',
+        ]);
+
+        $this->accessService->scopedToUser($query, $user);
+
+        $query->when($cohortId, fn ($q) => $q->whereHas(
+            'student',
+            fn ($s) => $s->where('cohort_id', $cohortId)
+        ));
+
+        $query->when($status, fn ($q) => $q->where('status', $status));
+
+        $query->when($search, fn ($q) => $q->where(function ($sub) use ($search) {
+            $sub->whereHas('student.user', fn ($u) => $u->where('name', 'like', "%{$search}%"))
+                ->orWhere('reason', 'like', "%{$search}%");
+        }));
+
+        return $query->latest()->paginate($perPage);
+    }
+
+    public function show(ExcuseRequest $excuseRequest)
+    {
+        return new ExcuseRequestResource($excuseRequest->load(['student.user', 'engagement.staff.user', 'reviewer.user']));
+    }
+
+    public function store(User $user, array $data, ?string $attachment): ExcuseRequest
+    {
+        $studentId = $user->studentProfile->id;
+        $engagementId = $data['engagement_id'];
+        if (ExcuseRequest::where('student_id', $studentId)->where('engagement_id', $engagementId)->exists()) {
+            abort(422, 'An excuse request already exists for this engagement.');
+        }
+
+        $attachmentPath = null;
+        if (isset($data['attachment'])) {
+            // Store the file in the 'storage/app/public/excuses' directory
+            $attachmentPath = $data['attachment']->store('excuses', 'public');
+        }
+
+        return ExcuseRequest::create([
+            'student_id' => $studentId,
+            'engagement_id' => $engagementId,
+            'reason' => $data['reason'],
+            'attachment_path' => $attachmentPath,
+            'status' => ExcuseRequest::STATUS_PENDING,
+        ]);
+    }
+
+    public function update(ExcuseRequest $excuseRequest, array $data, ?UploadedFile $attachment = null, bool $removeAttachment = false): ExcuseRequest
+    {
+        if ($attachment) {
+            if ($excuseRequest->attachment_path) {
+                Storage::disk('public')->delete($excuseRequest->attachment_path);
+            }
+            $excuseRequest->attachment_path = $attachment->store('excuses', 'public');
+        } elseif ($removeAttachment) {
+            if ($excuseRequest->attachment_path) {
+                Storage::disk('public')->delete($excuseRequest->attachment_path);
+            }
+            $excuseRequest->attachment_path = null;
+        }
+
+        $excuseRequest->reason = $data['reason'] ?? $excuseRequest->reason;
+        $excuseRequest->save();
+
+        return $excuseRequest->refresh();
+    }
+
+    public function review(ExcuseRequest $excuseRequest, User $reviewer, string $status): ExcuseRequest
+    {
+        if ($excuseRequest->status !== 'pending') {
+            abort(422, 'This excuse request has already been reviewed.');
+        }
+        $excuseRequest->update([
+            'status' => $status,
+            'reviewed_by' => $reviewer->staffProfile->id,
+            'reviewed_at' => now(),
+        ]);
+        if (
+            $status === 'approved' &&
+            $excuseRequest->engagement->absences_processed_at !== null
+        ) {
+            $excuseRequest->student->increment('attendance_balance', 20);
+        }
+
+        return $excuseRequest->refresh();
+    }
+}

@@ -1,0 +1,18 @@
+info:
+  name: me
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseurl}}/auth/me"
+  headers:
+    - name: Authorization
+      value: "{{access_token}}"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

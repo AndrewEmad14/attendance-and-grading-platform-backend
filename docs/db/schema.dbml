@@ -1,0 +1,237 @@
+Table users {
+  id int pk
+  name varchar 
+  email varchar 
+  email_verified_at datetime
+  password_hash varchar 
+  role enum 
+  expires_at datetime
+  remember_token varchar
+  created_at datetime
+  updated_at datetime
+}
+
+Table tracks {
+  id int pk
+  name varchar 
+  created_at datetime
+  updated_at datetime
+}
+
+
+Table cohorts {
+  track_id int 
+  id int pk
+  number int 
+  is_active tinyint 
+  created_at datetime
+  updated_at datetime
+}
+Ref: cohorts.track_id > tracks.id
+
+Table courses {
+  cohort_id int 
+  id int pk
+  name varchar 
+  created_at datetime
+  updated_at datetime
+}
+Ref: courses.cohort_id > cohorts.id
+
+Table tags {
+  id int pk
+  tag varchar 
+  created_at datetime
+  updated_at datetime
+}
+
+
+Table student_profiles {
+  id int pk
+  user_id int 
+  notes text 
+  lab_group_id int
+  created_at datetime
+  updated_at datetime
+  cohort_id int 
+  attendance_balance int 
+}
+Ref: student_profiles.cohort_id > cohorts.id
+Ref: student_profiles.user_id > users.id
+Ref: student_profiles.lab_group_id > lab_groups.id
+
+Table students_tags {
+  id int pk
+  tag_id int 
+  student_id int 
+  created_at datetime
+  updated_at datetime
+}
+Ref: students_tags.tag_id > tags.id
+Ref: students_tags.student_id > student_profiles.id
+
+Table staff_profiles {
+  user_id int 
+  id int pk
+  compensation_type varchar 
+  hourly_rate numeric 
+  fixed_slary numeric 
+  created_at datetime
+  updated_at datetime
+}
+Ref: staff_profiles.user_id > users.id
+
+Table lab_groups {
+  cohort_id int 
+  name varchar 
+  created_at datetime
+  updated_at datetime
+  id int pk
+}
+Ref: lab_groups.cohort_id > cohorts.id
+
+Table labs {
+  id int pk
+  lab_group_id int 
+  name varchar 
+  created_at datetime
+  updated_at datetime
+  course_id int 
+}
+Ref: labs.course_id > courses.id
+Ref: labs.lab_group_id > lab_groups.id
+
+Table business_sessions {
+  id int pk
+  name varchar 
+  created_at datetime
+  updated_at datetime
+}
+
+
+Table business_sessions_cohorts {
+  id int pk
+  business_session_id int 
+  cohort_id int 
+  created_at datetime
+  updated_at datetime
+}
+Ref: business_sessions_cohorts.cohort_id > cohorts.id
+Ref: business_sessions_cohorts.business_session_id > business_sessions.id
+
+Table courses_deliverables {
+  id int pk
+  type enum 
+  name varchar 
+  max_score int 
+  course_weight int 
+  course_id int 
+  due_date datetime
+  created_at datetime
+  updated_at datetime
+}
+Ref: courses_deliverables.course_id > courses.id
+
+Table submissions {
+  id int pk
+  submission_type enum 
+  submission_path varchar 
+  raw_score numeric 
+  deliverable_id int 
+  graded_by int
+  override_score numeric 
+  overridden_by int
+  override_note text 
+  overridden_at datetime
+  created_at datetime
+  updated_at datetime
+  student_id int 
+}
+Ref: submissions.student_id > student_profiles.id
+Ref: submissions.deliverable_id > courses_deliverables.id
+Ref: submissions.graded_by > staff_profiles.id
+Ref: submissions.overridden_by > staff_profiles.id
+
+Table engagements {
+  id int pk
+  starts_at datetime
+  ends_at datetime
+  scheduled_hours numeric 
+  staff_id int 
+  created_at datetime
+  updated_at datetime
+  engageable_id int 
+  engageable_type varchar 
+  absences_processed_at datetime
+}
+Ref: engagements.staff_id > staff_profiles.id
+Ref: engagements.engageable_id > courses.id
+Ref: engagements.engageable_id > labs.id
+Ref: engagements.engageable_id > business_sessions.id
+
+Table attendance_records {
+  student_id int 
+  engagement_id int 
+  id int pk
+  arrived_at datetime
+  left_at datetime
+  created_at datetime
+  updated_at datetime
+}
+Ref: attendance_records.student_id > student_profiles.id
+Ref: attendance_records.engagement_id > engagements.id
+
+Table excuse_requests {
+  id int pk
+  student_id int
+  status enum 
+  reason text 
+  attachment_path varchar 
+  created_at datetime
+  reviewed_by int
+  reviewed_at datetime
+  updated_at datetime
+  engagement_id int
+}
+Ref: excuse_requests.reviewed_by > staff_profiles.id
+Ref: excuse_requests.student_id > student_profiles.id
+Ref: excuse_requests.engagement_id > engagements.id
+
+Table announcements {
+  id int pk
+  cohort_id int 
+  author_id int
+  title varchar 
+  body text 
+  published_at datetime
+  created_at datetime
+  updated_at datetime
+}
+Ref: announcements.cohort_id > cohorts.id
+Ref: announcements.author_id > staff_profiles.id
+
+
+Table cohorts_admins {
+  id int pk
+  cohort_id int
+  staff_id int
+  created_at datetime
+  updated_at datetime
+}
+Ref: cohorts_admins.cohort_id > cohorts.id
+Ref: cohorts_admins.staff_id > staff_profiles.id
+
+
+Table billing_records {
+  id int pk
+  staff_id int
+  delivered_hours int
+  total_amount int
+  forwarded_at datetime
+  created_at datetime
+  updated_at datetime
+  engagement_id int
+}
+Ref: billing_records.engagement_id > engagements.id
+Ref: billing_records.staff_id > staff_profiles.id
+

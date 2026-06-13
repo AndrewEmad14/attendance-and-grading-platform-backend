@@ -1,0 +1,27 @@
+info:
+  name: login
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseurl}}/auth/login/"
+  body:
+    type: json
+    data: |-
+      {
+        "email":"branch@example.com",
+        "password":"password"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: bru.setEnvVar("access_token", res.body.data.access_token)
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

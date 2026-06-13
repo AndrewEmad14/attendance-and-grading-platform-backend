@@ -1,0 +1,15 @@
+info:
+  name: Log out all
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{baseurl}}/auth/logout-all"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

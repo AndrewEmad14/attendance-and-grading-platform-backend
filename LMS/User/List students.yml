@@ -1,0 +1,55 @@
+info:
+  name: List students
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseurl}}/users/students?page=2"
+  params:
+    - name: name
+      value: "Meda "
+      type: query
+      disabled: true
+    - name: cohort
+      value: "2"
+      type: query
+      disabled: true
+    - name: track_id
+      value: "3"
+      type: query
+      disabled: true
+    - name: tag_id
+      value: "5"
+      type: query
+      disabled: true
+    - name: lab_group_id
+      value: "4"
+      type: query
+      disabled: true
+    - name: attendance_min
+      value: "1"
+      type: query
+      disabled: true
+    - name: attendance_max
+      value: "5"
+      type: query
+      disabled: true
+    - name: sort
+      value: -cohort
+      type: query
+      disabled: true
+    - name: is_active
+      value: "false"
+      type: query
+      disabled: true
+    - name: page
+      value: "2"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

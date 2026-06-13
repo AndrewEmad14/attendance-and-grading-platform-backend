@@ -1,0 +1,43 @@
+# Laravel
+/vendor/
+/node_modules/
+
+# Environment
+.env
+.env.backup
+.env.production
+
+# Laravel cache & compiled files
+/bootstrap/cache/*
+!/bootstrap/cache/.gitkeep
+/storage/*.key
+/storage/app/public/*
+!/storage/app/public/.gitkeep
+/storage/framework/cache/*
+!/storage/framework/cache/.gitkeep
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitkeep
+/storage/framework/testing/*
+!/storage/framework/testing/.gitkeep
+/storage/framework/views/*
+!/storage/framework/views/.gitkeep
+/storage/logs/*
+!/storage/logs/.gitkeep
+
+# Testing
+/coverage/
+.phpunit.result.cache
+.phpunit.cache/
+
+# IDE & OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Build
+/public/hot
+/public/storage
+/public/build

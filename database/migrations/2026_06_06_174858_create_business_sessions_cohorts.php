@@ -1,0 +1,30 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('business_sessions_cohorts', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('business_session_id')->constrained('business_sessions')->onDelete('cascade');
+            $table->foreignId('cohort_id')->constrained('cohorts')->onDelete('cascade');
+            $table->unique(['business_session_id', 'cohort_id']);
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('business_sessions_cohorts');
+    }
+};

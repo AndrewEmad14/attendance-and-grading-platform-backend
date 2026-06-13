@@ -1,0 +1,21 @@
+info:
+  name: Update/create Note
+  type: http
+  seq: 1
+
+http:
+  method: PATCH
+  url: "{{baseurl}}/students/5/notes"
+  body:
+    type: json
+    data: |-
+      {
+        "note": "Student participates well in labs"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

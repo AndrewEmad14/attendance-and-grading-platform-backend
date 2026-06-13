@@ -1,0 +1,16 @@
+info:
+  name: List Billing Rollup
+  type: http
+
+http:
+  method: GET
+  url: "{{baseurl}}/billing/rollup"
+  auth:
+    type: bearer
+    token: 1|OGTGhWLslxUY7xa85gfigxl8FQANKaNn1CmTD6qieb25307e
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5​

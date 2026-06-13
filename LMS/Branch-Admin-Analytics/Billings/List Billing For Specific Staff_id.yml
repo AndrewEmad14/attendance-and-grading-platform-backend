@@ -1,0 +1,16 @@
+info:
+  name: List Billing For Specific Staff_id
+  type: http
+
+http:
+  method: GET
+  url: "{{baseurl}}/billing/instructors/{staffProfileId}"
+  auth:
+    type: bearer
+    token: 1|OGTGhWLslxUY7xa85gfigxl8FQANKaNn1CmTD6qieb25307e
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5​

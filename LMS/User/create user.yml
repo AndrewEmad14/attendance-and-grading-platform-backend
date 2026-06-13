@@ -1,0 +1,27 @@
+info:
+  name: create user
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{baseurl}}/users"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Andrew Emad",
+        "email": "andrew14emad@gmail.com",
+        "role": "branch_manager",
+        "expires_at": "2026-08-15 18:00:00",
+        "compensation_type": "internal",
+        "hourly_rate": 1000,
+        "fixed_salary": 0
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
