@@ -23,6 +23,7 @@ class ExcuseRequestController extends Controller
             $request->integer('per_page', 20),
             $request->integer('cohort_id') ?: null,
             $request->string('status')->toString() ?: null,
+            $request->string('search')->toString() ?: null,
         );
 
         return ExcuseRequestResource::collection($requests)->response();
