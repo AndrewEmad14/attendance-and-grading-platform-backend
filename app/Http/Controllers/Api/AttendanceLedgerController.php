@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\AttendanceLedgerResource;
 use App\Models\ExcuseRequest;
 use App\Models\StudentProfile;
 use App\Services\AccessService;
@@ -18,7 +17,7 @@ class AttendanceLedgerController extends Controller
         private AttendanceLedgerService $ledgerService,
     ) {}
 
-    public function show(Request $request, StudentProfile $student): \Illuminate\Http\JsonResponse
+    public function show(Request $request, StudentProfile $student): JsonResponse
     {
         if (! $this->accessService->canAccessStudent($request->user(), $student)) {
             abort(403);
@@ -84,7 +83,7 @@ class AttendanceLedgerController extends Controller
                 return ! $attendance && ! $hasExcuse;
             })
             ->values()
-            ->map(fn($e) => [
+            ->map(fn ($e) => [
                 'id' => $e->id,
                 'name' => $e->engageable?->name ?? "Engagement #{$e->id}",
                 'date' => $e->starts_at?->toISOString(),

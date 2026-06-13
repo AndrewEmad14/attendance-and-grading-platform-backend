@@ -18,6 +18,7 @@ class ExcuseRequestResource extends JsonResource
             'engagement' => $this->whenLoaded('engagement', fn () => [
                 'id' => $this->engagement->id,
                 'type' => $this->engagement->type,
+                'name' => $this->engagement->engageable?->name ?? "Engagement #{$this->engagement->id}",
                 'starts_at' => $this->engagement->starts_at?->toISOString(),
                 'ends_at' => $this->engagement->ends_at?->toISOString(),
                 'instructor' => $this->engagement->staff?->user?->name ?? null,

@@ -28,9 +28,9 @@ class AttendanceLedgerService
         if (! empty($filters['search'])) {
             $search = strtolower($filters['search']);
             $query->where(function ($q) use ($search) {
-                $q->whereHasMorph('engageable', [Course::class], fn($s) => $s->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]))
-                    ->orWhereHasMorph('engageable', [Lab::class], fn($s) => $s->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]))
-                    ->orWhereHasMorph('engageable', [BusinessSession::class], fn($s) => $s->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]));
+                $q->whereHasMorph('engageable', [Course::class], fn ($s) => $s->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]))
+                    ->orWhereHasMorph('engageable', [Lab::class], fn ($s) => $s->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]))
+                    ->orWhereHasMorph('engageable', [BusinessSession::class], fn ($s) => $s->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]));
             });
         }
 
