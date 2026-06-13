@@ -48,6 +48,11 @@ http:
       type: query
   auth: inherit
 
+runtime:
+  variables:
+    - name: baseurl
+      value: https://attendance-and-grading-backend-production.up.railway.app/api
+
 settings:
   encodeUrl: true
   timeout: 0
