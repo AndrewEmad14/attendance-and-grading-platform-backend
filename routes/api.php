@@ -83,6 +83,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('{engagement}', [EngagementController::class, 'show']);
         Route::patch('{engagement}', [EngagementController::class, 'update']);
         Route::delete('{engagement}', [EngagementController::class, 'destroy']);
+        Route::get('{engagement}/attendance', [EngagementController::class, 'attendance']);
+        Route::get('{engagement}/qr-token', [EngagementController::class, 'qrToken']);
     });
 
     Route::prefix('business-sessions')->group(function () {

@@ -8,20 +8,30 @@ use App\Models\User;
 
 class AttendanceService
 {
-    public function __construct(private AccessService $accessService) {}
+    public function __construct(
+        private AccessService $accessService,
+        private QrTokenService $qrTokenService,
+    ) {}
 
-    public function index(User $user, int $perPage = 20)
+    public function index(User $user, int $perPage = 20, ?int $engagementId = null)
     {
         $query = AttendanceRecord::query()->with(['student.user', 'engagement.staff.user']);
         $this->accessService->scopedToUser($query, $user);
+
+        $query->when($engagementId, fn ($q) => $q->where('engagement_id', $engagementId));
 
         return $query->latest()->paginate($perPage);
     }
 
     // POST /attendance: first scan = check-in, second = check-out, rest idempotent
-    public function handleScan(User $user, int $engagementId): AttendanceRecord
+    public function handleScan(User $user, int $engagementId, string $token): AttendanceRecord
     {
         $engagement = Engagement::findOrFail($engagementId);
+
+        if ($this->qrTokenService->validate($token, $engagementId) === null) {
+            abort(422, 'This QR code is invalid or has expired.');
+        }
+
         $now = now();
         if ($now->lt($engagement->starts_at) || $now->gt($engagement->ends_at)) {
             abort(422, 'Check in/out is only allowed during an active session window.');
@@ -42,7 +52,7 @@ class AttendanceService
 
     public function correctTimestamps(AttendanceRecord $record, array $data): AttendanceRecord
     {
-        $record->update(array_filter($data, fn($v) => ! is_null($v)));
+        $record->update(array_filter($data, fn ($v) => ! is_null($v)));
 
         return $record->load('student.user', 'engagement.staff.user');
     }

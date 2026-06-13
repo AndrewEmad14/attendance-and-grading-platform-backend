@@ -2,23 +2,29 @@
 
 namespace App\Services;
 
+use App\Http\Resources\ExcuseRequestResource;
 use App\Models\ExcuseRequest;
 use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
-use App\Http\Resources\ExcuseRequestResource;
 
 class ExcuseService
 {
     public function __construct(private AccessService $accessService) {}
 
-    public function index(User $user, int $perPage = 20): LengthAwarePaginator
-    {
+    public function index(
+        User $user,
+        int $perPage = 20,
+        ?int $cohortId = null,
+        ?string $status = null
+    ): LengthAwarePaginator {
         $query = ExcuseRequest::query()->with([
             'student.user',
             'engagement.staff.user',
             'reviewer.user',
         ]);
         $this->accessService->scopedToUser($query, $user);
+        $query->when($cohortId, fn ($q) => $q->whereHas('student', fn ($s) => $s->where('cohort_id', $cohortId)));
+        $query->when($status, fn ($q) => $q->where('status', $status));
 
         return $query->latest()->paginate($perPage);
     }
@@ -56,7 +62,7 @@ class ExcuseService
         $excuseRequest->update(array_filter([
             'reason' => $data['reason'] ?? null,
             'attachment_path' => $attachmentPath,
-        ], fn($v) => ! is_null($v)));
+        ], fn ($v) => ! is_null($v)));
 
         return $excuseRequest->refresh();
     }

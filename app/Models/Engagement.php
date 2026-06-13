@@ -198,9 +198,9 @@ class Engagement extends Model
     public function getTypeAttribute(): string
     {
         return match ($this->engageable_type) {
-            \App\Models\Course::class => 'lecture',
-            \App\Models\Lab::class => 'lab',
-            \App\Models\BusinessSession::class => 'business_session'
+            Course::class => 'lecture',
+            Lab::class => 'lab',
+            BusinessSession::class => 'business_session'
         };
     }
 }

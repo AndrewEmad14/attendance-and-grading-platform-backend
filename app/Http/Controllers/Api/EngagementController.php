@@ -6,9 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreEngagementRequest;
 use App\Http\Requests\UpdateEngagementRequest;
 use App\Http\Resources\EngagementResource;
+use App\Models\AttendanceRecord;
 use App\Models\Engagement;
+use App\Models\ExcuseRequest;
 use App\Models\Lab;
+use App\Models\StudentProfile;
 use App\Services\EngagementService;
+use App\Services\QrTokenService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -16,9 +20,12 @@ class EngagementController extends Controller
 {
     protected EngagementService $engagementService;
 
-    public function __construct(EngagementService $engagementService)
+    protected QrTokenService $qrTokenService;
+
+    public function __construct(EngagementService $engagementService, QrTokenService $qrTokenService)
     {
         $this->engagementService = $engagementService;
+        $this->qrTokenService = $qrTokenService;
     }
 
     public function index(Request $request): JsonResponse
@@ -131,5 +138,81 @@ class EngagementController extends Controller
         $engagement->delete();
 
         return response()->json(null, 204);
+    }
+
+    public function attendance(Request $request, Engagement $engagement): JsonResponse
+    {
+        $user = $request->user();
+        $engagement->load('engageable');
+
+        if ($user->role === 'instructor' && $engagement->staff_id !== $user->staffProfile->id) {
+            abort(403, 'This action is unauthorized.');
+        }
+
+        $studentIds = $engagement->expected_student_ids;
+
+        if ($request->filled('cohort_id')) {
+            $requestedCohortId = (int) $request->get('cohort_id');
+
+            if ($user->role === 'track_admin') {
+                $managedCohortIds = $user->staffProfile->managedCohorts()->pluck('cohorts_admins.cohort_id')->toArray();
+
+                if (! in_array($requestedCohortId, $managedCohortIds)) {
+                    abort(403, 'This action is unauthorized.');
+                }
+            }
+
+            $studentIds = StudentProfile::whereIn('id', $studentIds)
+                ->where('cohort_id', $requestedCohortId)
+                ->pluck('id')->toArray();
+        }
+
+        $students = StudentProfile::with('user')->whereIn('id', $studentIds)->get();
+        $attendance = AttendanceRecord::where('engagement_id', $engagement->id)
+            ->whereIn('student_id', $studentIds)->get()->keyBy('student_id');
+        $excuses = ExcuseRequest::where('engagement_id', $engagement->id)
+            ->whereIn('student_id', $studentIds)->get()->keyBy('student_id');
+
+        $roster = $students->map(function ($student) use ($attendance, $excuses, $engagement) {
+            $record = $attendance->get($student->id);
+            $excuse = $excuses->get($student->id);
+
+            return [
+                'student' => ['id' => $student->id, 'name' => $student->user->name],
+                'arrived_at' => $record?->arrived_at?->toISOString(),
+                'left_at' => $record?->left_at?->toISOString(),
+                'attendance_status' => $this->resolveStatus($record, $excuse, $engagement),
+                'excuse_status' => $excuse?->status ?? null,
+            ];
+        });
+
+        return response()->json(['data' => $roster->values()]);
+    }
+
+    // Generates a short-lived QR token for students to scan during this session
+    public function qrToken(Request $request, Engagement $engagement): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->role === 'instructor' && $engagement->staff_id !== $user->staffProfile->id) {
+            abort(403, 'This action is unauthorized.');
+        }
+
+        if (! in_array($user->role, ['instructor', 'track_admin', 'branch_manager'])) {
+            abort(403, 'This action is unauthorized.');
+        }
+
+        return response()->json(['data' => $this->qrTokenService->generate($engagement->id)]);
+    }
+
+    private function resolveStatus(?AttendanceRecord $record, ?ExcuseRequest $excuse, Engagement $engagement): string
+    {
+        return ($record?->arrived_at)
+            ? 'present'
+            : ((now()->lt($engagement->ends_at))
+                ? 'upcoming'
+                : (($excuse?->status === 'approved')
+                    ? 'excused'
+                    : 'absent'));
     }
 }
