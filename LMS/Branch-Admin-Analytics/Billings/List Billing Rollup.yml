@@ -5,11 +5,12 @@ info:
 http:
   method: GET
   url: "{{baseurl}}/billing/rollup"
-  auth: inherit
+  auth:
+    type: bearer
+    token: 1|OGTGhWLslxUY7xa85gfigxl8FQANKaNn1CmTD6qieb25307e
 
 settings:
   encodeUrl: true
   timeout: 0
   followRedirects: true
-  maxRedirects: 5
-​
+  maxRedirects: 5​

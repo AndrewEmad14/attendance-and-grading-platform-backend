@@ -2,3 +2,8 @@ info:
   name: Branch-Admin-Analytics
   type: folder
   seq: 1
+
+request:
+  auth:
+    type: bearer
+    token: 1|m8IrD3MPPAXTAHOtaIe14nOjlzvR7ilQUAFcPCxo7dc35e30
