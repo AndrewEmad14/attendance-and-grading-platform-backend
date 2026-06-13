@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{baseurl}}/users/students"
+  url: "{{baseurl}}/users/students?page=2"
   params:
     - name: name
       value: "Meda "
@@ -43,6 +43,9 @@ http:
       value: "false"
       type: query
       disabled: true
+    - name: page
+      value: "2"
+      type: query
   auth: inherit
 
 settings:

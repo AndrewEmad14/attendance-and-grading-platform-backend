@@ -5,18 +5,13 @@ info:
 
 http:
   method: GET
-  url: "{{baseurl}}/users/track-admins"
+  url: "{{baseurl}}/users/track-admins?page=1"
   params:
     - name: page
       value: "1"
       type: query
-      disabled: true
     - name: name
       value: ""
-      type: query
-      disabled: true
-    - name: cohort
-      value: "1"
       type: query
       disabled: true
     - name: track_id
@@ -25,6 +20,10 @@ http:
       disabled: true
     - name: is_active
       value: "true"
+      type: query
+      disabled: true
+    - name: cohort
+      value: "1"
       type: query
       disabled: true
   auth: inherit
