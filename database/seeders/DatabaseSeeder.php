@@ -25,8 +25,6 @@ class DatabaseSeeder extends Seeder
 {
     const LAB_GROUPS_PER_COHORT = 3;
 
-    const STUDENTS_PER_COHORT = 20;
-
     const COURSES_PER_COHORT = 4;
 
     const LABS_PER_LAB_GROUP = 2;
@@ -70,14 +68,28 @@ class DatabaseSeeder extends Seeder
             $branchManagers->push(StaffProfile::factory()->create(['user_id' => $user->id]));
         }
 
-        $trackAdmins = collect();
-        for ($i = 0; $i < 10; $i++) {
+        // Create specific "Special" Staff for custom echo requirement
+        $specialTaUser = User::factory()->trackAdmin()->create([
+            'name' => 'Special Track Admin',
+            'email' => 'trackadmin_special@iti.gov.eg',
+        ]);
+        $specialTa = StaffProfile::factory()->create(['user_id' => $specialTaUser->id]);
+
+        $specialInstrUser = User::factory()->instructor()->create([
+            'name' => 'Special Lab Instructor',
+            'email' => 'instructor_special@iti.gov.eg',
+        ]);
+        $specialInstr = StaffProfile::factory()->create(['user_id' => $specialInstrUser->id]);
+
+        // General track admins & instructors
+        $trackAdmins = collect([$specialTa]);
+        for ($i = 0; $i < 9; $i++) {
             $user = User::factory()->trackAdmin()->create();
             $trackAdmins->push(StaffProfile::factory()->create(['user_id' => $user->id]));
         }
 
-        $instructors = collect();
-        for ($i = 0; $i < 20; $i++) {
+        $instructors = collect([$specialInstr]);
+        for ($i = 0; $i < 19; $i++) {
             $user = User::factory()->instructor()->create();
             $instructors->push(StaffProfile::factory()->create(['user_id' => $user->id]));
         }
@@ -88,10 +100,23 @@ class DatabaseSeeder extends Seeder
         $taIds = $trackAdmins->pluck('id')->toArray();
 
         // -----------------------------------------------------------------------
-        // 3. Tracks (exactly 2)
+        // 3. Tracks (exactly 6 to 8 - we will make 6)
         // -----------------------------------------------------------------------
-        $this->command->info('Creating 2 tracks...');
-        $tracks = Track::factory(2)->create();
+        $this->command->info('Creating 6 tracks...');
+        $trackNames = [
+            'Full-Stack Web Development',
+            'Mobile Application Development',
+            'Cloud Computing & DevOps',
+            'Cyber Security & Ethical Hacking',
+            'Data Science & Artificial Intelligence',
+            'UI/UX Product Design', // We will make this the special track
+        ];
+
+        $tracks = collect();
+        foreach ($trackNames as $name) {
+            $tracks->push(Track::factory()->create(['name' => $name]));
+        }
+        $specialTrack = $tracks->where('name', 'UI/UX Product Design')->first();
 
         // -----------------------------------------------------------------------
         // 4. Cohorts — 2 per track (cohort 1 = 2025 inactive, cohort 2 = 2026 active)
@@ -110,7 +135,6 @@ class DatabaseSeeder extends Seeder
         }
 
         $activeCohorts = $cohorts->where('is_active', true)->values();
-        $inactiveCohorts = $cohorts->where('is_active', false)->values();
 
         // -----------------------------------------------------------------------
         // 5. Assign track admins to active cohorts
@@ -121,8 +145,21 @@ class DatabaseSeeder extends Seeder
         $insertRows = [];
 
         foreach ($activeCohorts as $idx => $cohort) {
-            $admin1 = $taCollection[$idx % $taCount];
-            $admin2 = $taCollection[($idx + 1) % $taCount];
+            // Ensure special Track Admin manages the special track's active cohort
+            if ($cohort->track_id === $specialTrack->id) {
+                $admin1 = $specialTa;
+                $admin2 = $taCollection[($idx + 1) % $taCount];
+            } else {
+                $admin1 = $taCollection[$idx % $taCount];
+                if ($admin1->id === $specialTa->id) {
+                    $admin1 = $taCollection[($idx + 2) % $taCount];
+                }
+                $admin2 = $taCollection[($idx + 1) % $taCount];
+                if ($admin2->id === $specialTa->id) {
+                    $admin2 = $taCollection[($idx + 3) % $taCount];
+                }
+            }
+
             foreach ([$admin1, $admin2] as $admin) {
                 $insertRows[] = [
                     'cohort_id' => $cohort->id,
@@ -150,15 +187,39 @@ class DatabaseSeeder extends Seeder
         }
 
         // -----------------------------------------------------------------------
-        // 7. Students
+        // 7. Students (different student counts per cohort/track from 20 to 30)
         // -----------------------------------------------------------------------
-        $this->command->info('Creating students...');
+        $this->command->info('Creating students with varied counts and profiles...');
         $students = collect();
+        
+        // Create the special student in UI/UX Product Design active cohort
+        $specialCohort = $activeCohorts->where('track_id', $specialTrack->id)->first();
+        $specialCohortLabGroups = $labGroups->where('cohort_id', $specialCohort->id)->values();
+        $specialLg = $specialCohortLabGroups->first(); // Group Alpha
+
+        $specialStudentUser = User::factory()->student()->create([
+            'name' => 'Special Student (UI/UX)',
+            'email' => 'student_special@iti.gov.eg',
+        ]);
+        $specialStudent = StudentProfile::factory()->create([
+            'user_id' => $specialStudentUser->id,
+            'cohort_id' => $specialCohort->id,
+            'lab_group_id' => $specialLg->id,
+            'attendance_balance' => 250,
+        ]);
+        $students->push($specialStudent);
+
         foreach ($cohorts as $cohort) {
             $cohortLabGroups = $labGroups->where('cohort_id', $cohort->id)->values();
             $lgCount = $cohortLabGroups->count();
 
-            for ($i = 0; $i < self::STUDENTS_PER_COHORT; $i++) {
+            // Determine randomized student count per cohort from 20 to 30
+            $targetCount = rand(20, 30);
+            
+            // Adjust if we already added the special student to this cohort
+            $startIdx = ($cohort->id === $specialCohort->id) ? 1 : 0;
+
+            for ($i = $startIdx; $i < $targetCount; $i++) {
                 $user = User::factory()->student()->create();
                 $students->push(StudentProfile::factory()->create([
                     'user_id' => $user->id,
@@ -235,33 +296,43 @@ class DatabaseSeeder extends Seeder
         $businessSessions = BusinessSession::factory(self::BUSINESS_SESSIONS_TOTAL)->create();
 
         // -----------------------------------------------------------------------
-        // 11. Deliverables
+        // 11. Deliverables (Ensure weights sum exactly to 100 per course)
         // -----------------------------------------------------------------------
         $this->command->info('Creating deliverables...');
         $deliverables = collect();
+        $weights = [40, 30, 30]; // Must sum to 100
+        
         foreach ($courses as $course) {
-            $deliverables = $deliverables->concat(
-                CourseDeliverable::factory(self::DELIVERABLES_PER_COURSE)->create(['course_id' => $course->id])
-            );
+            for ($i = 0; $i < self::DELIVERABLES_PER_COURSE; $i++) {
+                $deliverables->push(
+                    CourseDeliverable::factory()->create([
+                        'course_id' => $course->id,
+                        'course_weight' => $weights[$i],
+                        'max_score' => 100, // Make max score consistent
+                    ])
+                );
+            }
         }
 
         // -----------------------------------------------------------------------
-        // 12. Engagements
+        // 12. Engagements (with different start dates and status combinations)
         // -----------------------------------------------------------------------
         $this->command->info('Creating engagements...');
         $slotUsage = [];
         $engagementRows = [];
 
-        $assignStaff = function (string $type) use ($instrIds, $taIds) {
+        $assignStaff = function (string $type, $cohort, $labGroup = null) use ($instrIds, $taIds, $specialInstr, $specialLg) {
+            // If this is the special UI/UX student's lab group, assign the special instructor
+            if ($type === 'lab' && $labGroup && $labGroup->id === $specialLg->id) {
+                return $specialInstr->id;
+            }
             if ($type === 'lab') {
                 return $instrIds[array_rand($instrIds)];
             }
             if ($type === 'course') {
                 $pool = array_merge($instrIds, $taIds);
-
                 return $pool[array_rand($pool)];
             }
-
             return $instrIds[array_rand($instrIds)];
         };
 
@@ -270,6 +341,7 @@ class DatabaseSeeder extends Seeder
             $yearStart = Carbon::create($year, 1, 15);
             $yearEnd = Carbon::create($year, 11, 30);
 
+            // Generate weekdays
             $weekdays = collect();
             $current = $yearStart->copy();
             while ($current->lte($yearEnd)) {
@@ -286,6 +358,7 @@ class DatabaseSeeder extends Seeder
             )->values();
 
             foreach ($cohortCourses as $course) {
+                // Varying starts_at dates across the year
                 $sessionDates = $weekdays->random(min(15, $weekdays->count()))->sortBy(fn ($d) => $d->timestamp);
                 foreach ($sessionDates as $date) {
                     $freeSlot = $this->findFreeSlot($slotUsage, $cohort->id, $date->toDateString());
@@ -296,10 +369,11 @@ class DatabaseSeeder extends Seeder
                     [$startTime, $endTime, $hours] = self::DAILY_SLOTS[$freeSlot];
                     $startsAt = $date->copy()->setTimeFromTimeString($startTime);
                     $endsAt = $date->copy()->setTimeFromTimeString($endTime);
+                    
                     $engagementRows[] = [
                         'engageable_type' => Course::class,
                         'engageable_id' => $course->id,
-                        'staff_id' => $assignStaff('course'),
+                        'staff_id' => $assignStaff('course', $cohort),
                         'starts_at' => $startsAt,
                         'ends_at' => $endsAt,
                         'scheduled_hours' => $hours,
@@ -323,10 +397,11 @@ class DatabaseSeeder extends Seeder
                         [$startTime, $endTime, $hours] = self::DAILY_SLOTS[$freeSlot];
                         $startsAt = $date->copy()->setTimeFromTimeString($startTime);
                         $endsAt = $date->copy()->setTimeFromTimeString($endTime);
+                        
                         $engagementRows[] = [
                             'engageable_type' => Lab::class,
                             'engageable_id' => $lab->id,
-                            'staff_id' => $assignStaff('lab'),
+                            'staff_id' => $assignStaff('lab', $cohort, $labGroup),
                             'starts_at' => $startsAt,
                             'ends_at' => $endsAt,
                             'scheduled_hours' => $hours,
@@ -389,7 +464,7 @@ class DatabaseSeeder extends Seeder
         $engagements = Engagement::with('engageable')->get();
 
         // -----------------------------------------------------------------------
-        // 13. Submissions
+        // 13. Submissions (Variety: Some pass, some fail based on student profile index)
         // -----------------------------------------------------------------------
         $this->command->info('Creating submissions...');
         $studentIdsByCohort = $students->groupBy('cohort_id');
@@ -401,19 +476,39 @@ class DatabaseSeeder extends Seeder
                 continue;
             }
 
-            $sample = $cohortStudents->random(min(15, $cohortStudents->count()));
-            foreach ($sample as $student) {
-                $isGraded = rand(0, 100) < 75;
+            // All students should have deliverables to show correct grade aggregates
+            foreach ($cohortStudents as $student) {
+                $isGraded = rand(0, 100) < 90; // Most are graded
                 $isOverridden = $isGraded && rand(0, 100) < 8;
+
+                // Determine student grade group based on ID to create clean cohorts:
+                // Student profile ID % 4 determines passing tier:
+                // - ID % 4 === 0 -> Failing student (Grades 25% - 55%)
+                // - ID % 4 === 1 -> Average student (Grades 60% - 78%)
+                // - ID % 4 === 2 -> Excellent student (Grades 82% - 98%)
+                // - ID % 4 === 3 -> Mixed (some courses failed, some passed)
+                $mod = $student->id % 4;
+                if ($mod === 0) {
+                    $scorePct = rand(25, 55) / 100.0;
+                } elseif ($mod === 1) {
+                    $scorePct = rand(60, 78) / 100.0;
+                } elseif ($mod === 2) {
+                    $scorePct = rand(82, 98) / 100.0;
+                } else {
+                    $scorePct = (rand(0, 1) === 0) ? rand(35, 55) / 100.0 : rand(65, 88) / 100.0;
+                }
+
+                $rawScore = round($deliverable->max_score * $scorePct, 1);
+                $overrideScore = $isOverridden ? round($deliverable->max_score * min(1.0, $scorePct + 0.1), 1) : null;
 
                 $submissionRows[] = [
                     'deliverable_id' => $deliverable->id,
                     'student_id' => $student->id,
-                    'submission_type' => fake()->randomElement(['file', 'link']),
-                    'submission_path' => 'https://github.com/student/'.fake()->word().'-project',
-                    'raw_score' => round(fake()->randomFloat(1, $deliverable->max_score * 0.3, $deliverable->max_score), 1),
+                    'submission_type' => ($student->id % 2 === 0) ? 'file' : 'link',
+                    'submission_path' => 'https://github.com/student/project-' . $student->id . '-' . $deliverable->id,
+                    'raw_score' => $rawScore,
                     'graded_by' => $isGraded ? $staffIds[array_rand($staffIds)] : null,
-                    'override_score' => $isOverridden ? round(fake()->randomFloat(1, $deliverable->max_score * 0.5, $deliverable->max_score), 1) : null,
+                    'override_score' => $overrideScore,
                     'overridden_by' => $isOverridden ? $staffIds[array_rand($staffIds)] : null,
                     'override_note' => $isOverridden ? 'Grade adjusted after review.' : null,
                     'overridden_at' => $isOverridden ? now()->subDays(rand(1, 30)) : null,
@@ -428,9 +523,9 @@ class DatabaseSeeder extends Seeder
         }
 
         // -----------------------------------------------------------------------
-        // 14. Attendance records + excuse requests
+        // 14. Attendance records + excuse requests (Variety: absent patterns)
         // -----------------------------------------------------------------------
-        $this->command->info('Creating attendance records...');
+        $this->command->info('Creating attendance records with varied absences...');
 
         $pastEngagements = $engagements->filter(fn ($e) => $e->ends_at?->isPast());
         $studentsByCohort = $students->groupBy('cohort_id')->map(fn ($g) => $g->pluck('id')->toArray());
@@ -442,77 +537,106 @@ class DatabaseSeeder extends Seeder
         $attendanceRows = [];
         $excuseRows = [];
 
+        $excuseReasons = [
+            'Medical emergency.',
+            'Family bereavement.',
+            'Transport disruption.',
+            'Hospitalisation.',
+            'Government appointment.',
+            'Severe illness.',
+        ];
+
         foreach ($pastEngagements as $engagement) {
             $studentIds = $this->resolveExpectedStudentIds($engagement, $studentsByCohort, $studentsByLabGroup, $bsCohortMap);
             if (empty($studentIds)) {
                 continue;
             }
 
-            $presentCount = max(1, (int) round(count($studentIds) * 0.75));
-            $shuffled = $studentIds;
-            shuffle($shuffled);
-            $presentIds = array_slice($shuffled, 0, $presentCount);
-            $absentIds = array_slice($shuffled, $presentCount);
-
             $engStart = $engagement->starts_at;
             $engEnd = $engagement->ends_at;
 
-            foreach ($presentIds as $studentId) {
-                $attendanceRows[] = [
-                    'engagement_id' => $engagement->id,
-                    'student_id' => $studentId,
-                    'arrived_at' => $engStart->copy()->addMinutes(rand(0, 15)),
-                    'left_at' => $engEnd->copy()->subMinutes(rand(0, 10)),
-                    'created_at' => $engStart,
-                    'updated_at' => $engStart,
-                ];
-            }
+            foreach ($studentIds as $studentId) {
+                // Determine attendance group based on ID to create clean balance differences:
+                // - studentId % 5 === 0 -> Chronically absent / at-risk attendance (35% absence rate)
+                // - studentId % 5 === 1 -> Occasional absence (15% absence rate)
+                // - Others -> Perfect/near perfect (2% absence rate)
+                $mod = $studentId % 5;
+                $absenceThreshold = ($mod === 0) ? 35 : (($mod === 1) ? 15 : 2);
+                
+                $isAbsent = (rand(1, 100) <= $absenceThreshold);
 
-            foreach ($absentIds as $studentId) {
-                if (rand(0, 100) > 55) {
-                    continue;
+                if (! $isAbsent) {
+                    $attendanceRows[] = [
+                        'engagement_id' => $engagement->id,
+                        'student_id' => $studentId,
+                        // Avoid copy() and carbon method chains to reduce memory overhead
+                        'arrived_at' => $engStart,
+                        'left_at' => $engEnd,
+                        'created_at' => $engStart,
+                        'updated_at' => $engStart,
+                    ];
+                } else {
+                    // Must insert a null arrived_at record for the analytics denominator to be correct
+                    $attendanceRows[] = [
+                        'engagement_id' => $engagement->id,
+                        'student_id' => $studentId,
+                        'arrived_at' => null,
+                        'left_at' => null,
+                        'created_at' => $engStart,
+                        'updated_at' => $engStart,
+                    ];
+
+                    // Excuses for absent students: Chronically absent students rarely submit approved excuses
+                    if ($mod === 0) {
+                        // Chronically absent: 85% remain unexcused
+                        $excuseRoll = rand(1, 100);
+                        if ($excuseRoll <= 15) {
+                            $status = ExcuseRequest::STATUS_PENDING;
+                        } elseif ($excuseRoll <= 35) {
+                            $status = ExcuseRequest::STATUS_REJECTED;
+                        } else {
+                            continue;
+                        }
+                    } else {
+                        // Regular students: 80% excuse rate, mostly approved
+                        $excuseRoll = rand(1, 100);
+                        if ($excuseRoll <= 70) {
+                            $status = ExcuseRequest::STATUS_APPROVED;
+                        } elseif ($excuseRoll <= 85) {
+                            $status = ExcuseRequest::STATUS_PENDING;
+                        } else {
+                            $status = ExcuseRequest::STATUS_REJECTED;
+                        }
+                    }
+
+                    $isReviewed = in_array($status, [ExcuseRequest::STATUS_APPROVED, ExcuseRequest::STATUS_REJECTED]);
+                    $excuseRows[] = [
+                        'engagement_id' => $engagement->id,
+                        'student_id' => $studentId,
+                        'reason' => $excuseReasons[rand(0, 5)],
+                        'attachment_path' => '/excuse-attachments/excuse-' . $studentId . '-' . $engagement->id . '.pdf',
+                        'status' => $status,
+                        'reviewed_by' => $isReviewed ? $staffIds[array_rand($staffIds)] : null,
+                        'reviewed_at' => $isReviewed ? $engEnd : null,
+                        'created_at' => $engEnd,
+                        'updated_at' => $engEnd,
+                    ];
                 }
-                $statusRoll = rand(0, 100);
-                $status = match (true) {
-                    $statusRoll < 45 => ExcuseRequest::STATUS_APPROVED,
-                    $statusRoll < 75 => ExcuseRequest::STATUS_REJECTED,
-                    default => ExcuseRequest::STATUS_PENDING,
-                };
-                $isReviewed = in_array($status, [ExcuseRequest::STATUS_APPROVED, ExcuseRequest::STATUS_REJECTED]);
-                $excuseRows[] = [
-                    'engagement_id' => $engagement->id,
-                    'student_id' => $studentId,
-                    'reason' => fake()->randomElement([
-                        'Medical emergency.',
-                        'Family bereavement.',
-                        'Transport disruption.',
-                        'Hospitalisation.',
-                        'Government appointment.',
-                        'Severe illness.',
-                    ]),
-                    'attachment_path' => '/excuse-attachments/'.fake()->uuid().'.pdf',
-                    'status' => $status,
-                    'reviewed_by' => $isReviewed ? $staffIds[array_rand($staffIds)] : null,
-                    'reviewed_at' => $isReviewed ? $engEnd->copy()->addDays(rand(1, 7)) : null,
-                    'created_at' => $engEnd->copy()->addHours(rand(1, 24)),
-                    'updated_at' => $engEnd->copy()->addHours(rand(1, 24)),
-                ];
             }
         }
 
+        $this->command->info('Inserting attendance records...');
         foreach (array_chunk($attendanceRows, 1000) as $chunk) {
             DB::table('attendance_records')->insert($chunk);
         }
+
+        $this->command->info('Inserting excuse requests...');
         foreach (array_chunk($excuseRows, 500) as $chunk) {
             DB::table('excuse_requests')->insert($chunk);
         }
 
         // -----------------------------------------------------------------------
-        // 15. Attendance balance — computed for ALL cohorts from actual records
-        //     Active cohort (2026) has future engagements so balance won't be 0,
-        //     but past sessions within it are already accounted for.
-        //     The service also computes this dynamically, so this is just for
-        //     the stored column to reflect reality.
+        // 15. Attendance balance — computed from actual logs in past engagements
         // -----------------------------------------------------------------------
         $this->command->info('Computing attendance balances...');
 
@@ -529,7 +653,7 @@ class DatabaseSeeder extends Seeder
             ->groupBy('student_id');
 
         foreach ($students as $student) {
-            // Only count past engagements for balance
+            // Find past engagements that expected this student
             $expectedIds = [];
             foreach ($pastEngagements as $eng) {
                 $ids = $this->resolveExpectedStudentIds($eng, $studentsByCohort, $studentsByLabGroup, $bsCohortMap);
@@ -545,12 +669,15 @@ class DatabaseSeeder extends Seeder
             $attendedIds = $allAttended->get($student->id, []);
             $absentIds = array_diff($expectedIds, $attendedIds);
             $studentExcuses = $allExcuses->get($student->id, collect());
+            
             $approvedCount = $studentExcuses
                 ->whereIn('engagement_id', $absentIds)
                 ->where('status', ExcuseRequest::STATUS_APPROVED)
                 ->count();
 
             $unexcusedCount = count($absentIds) - $approvedCount;
+            
+            // Unexcused = -25 points, Approved = -5 points
             $balance = max(0, 250 - ($unexcusedCount * 25) - ($approvedCount * 5));
 
             DB::table('student_profiles')->where('id', $student->id)->update(['attendance_balance' => $balance]);
@@ -566,30 +693,16 @@ class DatabaseSeeder extends Seeder
         }
 
         // -----------------------------------------------------------------------
-        // 17. Billing records
+        // 17. Billing records (REMOVED: Leave for the batch job to populate)
         // -----------------------------------------------------------------------
-        $this->command->info('Creating billing records...');
-        $billingRows = [];
-        foreach ($engagements->whereNotNull('absences_processed_at') as $engagement) {
-            $billingRows[] = [
-                'engagement_id' => $engagement->id,
-                'staff_id' => $engagement->staff_id,
-                'delivered_hours' => $engagement->scheduled_hours,
-                'total_amount' => $engagement->scheduled_hours * 150,
-                'forwarded_at' => rand(0, 1) ? $engagement->ends_at?->copy()->addDays(rand(3, 14)) : null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }
-        foreach (array_chunk($billingRows, 500) as $chunk) {
-            DB::table('billing_records')->insert($chunk);
-        }
+        $this->command->info('Skipping billing_records insertion (will be populated by the billing job)...');
 
         DB::statement('SET session_replication_role = DEFAULT;');
 
         // -----------------------------------------------------------------------
-        // 18. Test credentials
+        // 18. Output Credentials & Echoing Special Supervision Map
         // -----------------------------------------------------------------------
+        $this->outputSpecialSupervision($specialTa, $specialStudent, $specialInstr, $specialTrack, $specialLg);
         $this->outputCredentials($branchManagers, $trackAdmins, $instructors, $students, $labGroups, $engagements, $cohorts);
         $this->command->info('Seeding complete!');
     }
@@ -626,6 +739,23 @@ class DatabaseSeeder extends Seeder
         };
     }
 
+    private function outputSpecialSupervision(
+        StaffProfile $specialTa,
+        StudentProfile $specialStudent,
+        StaffProfile $specialInstr,
+        Track $specialTrack,
+        LabGroup $specialLg
+    ): void {
+        echo "\n".str_repeat('=', 70)."\n";
+        echo "SPECIAL SUPERVISION / MAPPING RELATION\n";
+        echo str_repeat('=', 70)."\n";
+        echo "TRACK: {$specialTrack->name} (ID: {$specialTrack->id})\n";
+        echo "TRACK ADMIN: {$specialTa->user->name} | EMAIL: {$specialTa->user->email}\n";
+        echo "STUDENT: {$specialStudent->user->name} | EMAIL: {$specialStudent->user->email} | LAB GROUP: {$specialLg->name}\n";
+        echo "LAB SUPERVISOR INSTRUCTOR: {$specialInstr->user->name} | EMAIL: {$specialInstr->user->email}\n";
+        echo str_repeat('=', 70)."\n\n";
+    }
+
     private function outputCredentials(
         Collection $branchManagers,
         Collection $trackAdmins,
@@ -635,7 +765,7 @@ class DatabaseSeeder extends Seeder
         Collection $engagements,
         Collection $cohorts,
     ): void {
-        echo "\n".str_repeat('=', 70)."\n";
+        echo str_repeat('=', 70)."\n";
         echo "GENERATED TEST USERS, TOKENS & ACCESS MAP\n";
         echo str_repeat('=', 70)."\n\n";
 
@@ -651,11 +781,10 @@ class DatabaseSeeder extends Seeder
 
         $taStaff = $trackAdmins->first();
         $taUser = $taStaff->user;
-        $taUser->update(['email' => 'trackadmin@iti.gov.eg', 'name' => 'Track Admin (Test)']);
         $taToken = $taUser->createToken('test-token')->plainTextToken;
         $taCohortIds = DB::table('cohorts_admins')->where('staff_id', $taStaff->id)->pluck('cohort_id');
         echo "ROLE: track_admin\n";
-        echo "EMAIL: trackadmin@iti.gov.eg | PASSWORD: password\n";
+        echo "EMAIL: {$taUser->email} | PASSWORD: password\n";
         echo "TOKEN: {$taToken}\n";
         echo "USER ID: {$taUser->id} | STAFF PROFILE ID: {$taStaff->id}\n";
         echo 'ASSIGNED COHORT IDS: '.$taCohortIds->implode(', ')."\n";
@@ -663,10 +792,9 @@ class DatabaseSeeder extends Seeder
 
         $instrStaff = $instructors->first();
         $instrUser = $instrStaff->user;
-        $instrUser->update(['email' => 'instructor@iti.gov.eg', 'name' => 'Instructor (Test)']);
         $instrToken = $instrUser->createToken('test-token')->plainTextToken;
         echo "ROLE: instructor\n";
-        echo "EMAIL: instructor@iti.gov.eg | PASSWORD: password\n";
+        echo "EMAIL: {$instrUser->email} | PASSWORD: password\n";
         echo "TOKEN: {$instrToken}\n";
         echo "USER ID: {$instrUser->id} | STAFF PROFILE ID: {$instrStaff->id}\n";
         echo str_repeat('-', 70)."\n";
@@ -674,10 +802,9 @@ class DatabaseSeeder extends Seeder
         $activeCohortId = $cohorts->where('is_active', true)->first()->id;
         $realStudent = $students->where('cohort_id', $activeCohortId)->first();
         $realStudentUser = $realStudent->user;
-        $realStudentUser->update(['email' => 'student@iti.gov.eg', 'name' => 'Student (Test)']);
         $stToken = $realStudentUser->createToken('test-token')->plainTextToken;
         echo "ROLE: student\n";
-        echo "EMAIL: student@iti.gov.eg | PASSWORD: password\n";
+        echo "EMAIL: {$realStudentUser->email} | PASSWORD: password\n";
         echo "TOKEN: {$stToken}\n";
         echo "USER ID: {$realStudentUser->id} | STUDENT PROFILE ID: {$realStudent->id}\n";
         echo "COHORT ID: {$realStudent->cohort_id} | LAB GROUP ID: {$realStudent->lab_group_id}\n";
