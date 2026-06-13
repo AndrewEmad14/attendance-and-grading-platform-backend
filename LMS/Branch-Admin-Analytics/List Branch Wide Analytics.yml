@@ -1,10 +1,11 @@
 info:
   name: List Branch Wide Analytics
   type: http
+  seq: 1
 
 http:
   method: GET
-  url: "{{baseurl}}/analytics/cohorts/1/at-risk"
+  url: "{{baseurl}}/analytics/branch"
   auth: inherit
 
 settings:
@@ -12,4 +13,3 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
-​
