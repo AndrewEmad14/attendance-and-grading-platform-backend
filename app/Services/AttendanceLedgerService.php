@@ -42,7 +42,7 @@ class AttendanceLedgerService
 
             $entries[] = [
                 'engagement_id' => $engagement->id,
-                'engagement_type' => $engagement->type(),
+                'engagement_type' => $engagement->type,
                 'name' => $engagement->engageable?->name ?? "Engagement #{$engagement->id}",
                 'date' => $engagement->starts_at?->toISOString(),
                 'arrived_at' => $attendance?->arrived_at?->toISOString(),

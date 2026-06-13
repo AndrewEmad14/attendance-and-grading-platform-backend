@@ -11,13 +11,13 @@ class ExcuseRequestResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'student' => $this->whenLoaded('student', fn () => [
+            'student' => $this->whenLoaded('student', fn() => [
                 'id' => $this->student->id,
                 'name' => $this->student->user->name,
             ]),
-            'engagement' => $this->whenLoaded('engagement', fn () => [
+            'engagement' => $this->whenLoaded('engagement', fn() => [
                 'id' => $this->engagement->id,
-                'type' => $this->engagement->type(),
+                'type' => $this->engagement->type,
                 'starts_at' => $this->engagement->starts_at?->toISOString(),
             ]),
             'reason' => $this->reason,
