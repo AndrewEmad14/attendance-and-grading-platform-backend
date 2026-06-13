@@ -17,7 +17,8 @@ class ExcuseService
         User $user,
         int $perPage = 20,
         ?int $cohortId = null,
-        ?string $status = null
+        ?string $status = null,
+        ?string $search = null,
     ): LengthAwarePaginator {
         $query = ExcuseRequest::query()->with([
             'engagement.engageable',
@@ -25,9 +26,20 @@ class ExcuseService
             'engagement.staff.user',
             'reviewer.user',
         ]);
+
         $this->accessService->scopedToUser($query, $user);
-        $query->when($cohortId, fn ($q) => $q->whereHas('student', fn ($s) => $s->where('cohort_id', $cohortId)));
+
+        $query->when($cohortId, fn ($q) => $q->whereHas(
+            'student',
+            fn ($s) => $s->where('cohort_id', $cohortId)
+        ));
+
         $query->when($status, fn ($q) => $q->where('status', $status));
+
+        $query->when($search, fn ($q) => $q->where(function ($sub) use ($search) {
+            $sub->whereHas('student.user', fn ($u) => $u->where('name', 'like', "%{$search}%"))
+                ->orWhere('reason', 'like', "%{$search}%");
+        }));
 
         return $query->latest()->paginate($perPage);
     }
