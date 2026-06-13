@@ -41,13 +41,12 @@ class AuthController extends Controller
             'message' => 'logged in successfully',
             'status'  => 200,
             'data'    => [
+                'id'   => $user->id,
+                'name' => $user->name,
                 'access_token' => $token,
                 'role'         => $user->role,
                 'expires_at'   => $user->expires_at,
-                'user'         => [
-                    'id'   => $user->id,
-                    'name' => $user->name,
-                ],
+                
             ],
         ], 200);
     }
