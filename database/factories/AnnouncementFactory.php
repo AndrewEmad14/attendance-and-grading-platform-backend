@@ -2,30 +2,46 @@
 
 namespace Database\Factories;
 
-use App\Models\Announcement;
+use App\Models\StaffProfile;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class AnnouncementFactory extends Factory
 {
-    protected $model = Announcement::class;
+    private static array $titles = [
+        'Schedule Change Notice',
+        'Holiday Announcement',
+        'Important: Attendance Policy Reminder',
+        'Upcoming Career Fair',
+        'Lab Access Update',
+        'Exam Schedule Released',
+        'Guest Speaker This Week',
+        'Project Submission Deadline Extended',
+        'New Resources Available on Portal',
+        'Graduation Requirements Update',
+        'Mentorship Program Open',
+        'Hackathon Registration Open',
+        'System Maintenance Window',
+        'Grading Completed: Check Your Scores',
+        'Welcome to the New Cohort',
+    ];
 
-    public function definition()
+    public function definition(): array
     {
         return [
-            'title' => $this->faker->sentence(),
-            'body' => $this->faker->paragraphs(3, true),
-            'staff_id' => null,
             'cohort_id' => null,
-            'published_at' => $this->faker->optional(0.9)->dateTimeBetween('-1 month', '+1 week'),
+            'staff_id' => StaffProfile::factory(),
+            'title' => $this->faker->randomElement(self::$titles),
+            'body' => $this->faker->paragraphs(2, true),
+            'published_at' => $this->faker->optional(0.8)->dateTimeBetween('-3 months', 'now'),
         ];
     }
 
-    public function global()
+    public function global(): static
     {
         return $this->state(['cohort_id' => null]);
     }
 
-    public function forCohort($cohortId)
+    public function forCohort(int $cohortId): static
     {
         return $this->state(['cohort_id' => $cohortId]);
     }

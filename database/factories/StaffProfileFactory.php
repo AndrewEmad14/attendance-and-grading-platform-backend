@@ -2,22 +2,18 @@
 
 namespace Database\Factories;
 
-use App\Models\StaffProfile;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class StaffProfileFactory extends Factory
 {
-    protected $model = StaffProfile::class;
-
-    public function definition()
+    public function definition(): array
     {
-        $role = $this->faker->randomElement(['instructor', 'track_admin', 'branch_manager']);
-
         return [
-            'user_id' => User::factory()->role($role),
+            'user_id' => User::factory(),
             'compensation_type' => $this->faker->randomElement(['internal', 'external']),
-            'hourly_rate' => $this->faker->numberBetween(100, 1000),
+            'hourly_rate' => $this->faker->randomElement([100, 150, 200, 250]),
+            'fixed_salary' => $this->faker->optional(0.5)->randomElement([8000, 10000, 12000, 15000]),
         ];
     }
 }

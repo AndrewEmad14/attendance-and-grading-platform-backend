@@ -109,7 +109,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/{attendance}', [AttendanceController::class, 'update']);
     });
 
+    Route::get('/students/{student}/attendance-ledger/meta', [AttendanceLedgerController::class, 'meta']);
     Route::get('/students/{student}/attendance-ledger', [AttendanceLedgerController::class, 'show']);
+    Route::get('/students/{student}/absent-engagements', [AttendanceLedgerController::class, 'absentEngagements']);
 
     Route::prefix('excuse-requests')->group(function () {
         Route::get('', [ExcuseRequestController::class, 'index']);

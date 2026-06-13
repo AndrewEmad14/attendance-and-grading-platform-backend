@@ -2,30 +2,27 @@
 
 namespace Database\Factories;
 
-use App\Models\Cohort;
 use App\Models\Track;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CohortFactory extends Factory
 {
-    protected $model = Cohort::class;
-
-    public function definition()
+    public function definition(): array
     {
-        static $counter = 0;
-        $counter++;
-
         return [
-            'number' => $counter,
             'track_id' => Track::factory(),
+            'number' => 1,
             'is_active' => false,
         ];
     }
 
-    public function active()
+    public function active(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'is_active' => true,
-        ]);
+        return $this->state(['is_active' => true]);
+    }
+
+    public function number(int $n): static
+    {
+        return $this->state(['number' => $n]);
     }
 }

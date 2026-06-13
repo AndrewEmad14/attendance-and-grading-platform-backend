@@ -54,7 +54,12 @@ class ExcuseRequestController extends Controller
     public function update(UpdateExcuseRequest $request, ExcuseRequest $excuseRequest): ExcuseRequestResource
     {
         $this->authorize('update', $excuseRequest);
-        $updated = $this->excuseService->update($excuseRequest, $request->validated(), $request->file('attachment'));
+        $updated = $this->excuseService->update(
+            $excuseRequest,
+            $request->validated(),
+            $request->file('attachment'),
+            $request->boolean('remove_attachment')
+        );
 
         return new ExcuseRequestResource($updated);
     }

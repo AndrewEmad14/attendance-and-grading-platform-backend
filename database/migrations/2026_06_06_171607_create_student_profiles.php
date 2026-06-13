@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('cohort_id')->constrained('cohorts')->cascadeOnDelete();
             $table->foreignId('lab_group_id')->constrained('lab_groups')->nullOnDelete();
-            $table->text('notes');
+            $table->text('notes')->nullable();
             $table->integer('attendance_balance')->default(250);
             $table->timestamps();
         });

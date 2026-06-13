@@ -5,7 +5,9 @@ namespace App\Services;
 use App\Http\Resources\ExcuseRequestResource;
 use App\Models\ExcuseRequest;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Storage;
 
 class ExcuseService
 {
@@ -18,6 +20,7 @@ class ExcuseService
         ?string $status = null
     ): LengthAwarePaginator {
         $query = ExcuseRequest::query()->with([
+            'engagement.engageable',
             'student.user',
             'engagement.staff.user',
             'reviewer.user',
@@ -57,12 +60,22 @@ class ExcuseService
         ]);
     }
 
-    public function update(ExcuseRequest $excuseRequest, array $data, ?string $attachmentPath): ExcuseRequest
+    public function update(ExcuseRequest $excuseRequest, array $data, ?UploadedFile $attachment = null, bool $removeAttachment = false): ExcuseRequest
     {
-        $excuseRequest->update(array_filter([
-            'reason' => $data['reason'] ?? null,
-            'attachment_path' => $attachmentPath,
-        ], fn ($v) => ! is_null($v)));
+        if ($attachment) {
+            if ($excuseRequest->attachment_path) {
+                Storage::disk('public')->delete($excuseRequest->attachment_path);
+            }
+            $excuseRequest->attachment_path = $attachment->store('excuses', 'public');
+        } elseif ($removeAttachment) {
+            if ($excuseRequest->attachment_path) {
+                Storage::disk('public')->delete($excuseRequest->attachment_path);
+            }
+            $excuseRequest->attachment_path = null;
+        }
+
+        $excuseRequest->reason = $data['reason'] ?? $excuseRequest->reason;
+        $excuseRequest->save();
 
         return $excuseRequest->refresh();
     }
