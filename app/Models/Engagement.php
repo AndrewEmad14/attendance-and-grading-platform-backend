@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
@@ -198,9 +200,9 @@ class Engagement extends Model
     public function getEngagementTypeLabelAttribute(): string
     {
         return match ($this->engageable_type) {
-            self::TYPE_COURSE => 'lecture',
-            self::TYPE_LAB => 'lab',
-            self::TYPE_BUSINESS_SESSION => 'business_session',
+            Course::class => 'lecture',
+            Lab::class => 'lab',
+            BusinessSession::class => 'business_session'
         };
     }
 }

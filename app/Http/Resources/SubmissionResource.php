@@ -38,6 +38,14 @@ class SubmissionResource extends JsonResource
                 'name' => $this->whenLoaded('overriddenBy', fn () => $this->overriddenBy?->user?->name),
             ] : null,
             'overridden_at' => $this->overridden_at,
+            'student' => $this->whenLoaded('student', fn () => [
+                'id' => $this->student_id,
+                'name' => $this->student?->user?->name,
+                'lab_group' => $this->student?->relationLoaded('labGroup') && $this->student?->labGroup ? [
+                    'id' => $this->student->labGroup->id,
+                    'name' => $this->student->labGroup->name,
+                ] : null,
+            ]),
         ];
     }
 

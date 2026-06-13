@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AnnouncementController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\AttendanceLedgerController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BillingController;
 use App\Http\Controllers\Api\BranchAnalyticsController;
 use App\Http\Controllers\Api\BusinessSessionController;
 use App\Http\Controllers\Api\CohortController;
@@ -65,6 +66,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/analytics/cohorts/{cohortId}/at-risk', [GradingAnalyticsController::class, 'atRiskStudents']);
     Route::get('/analytics/lab-groups/{labGroupId}', [GradingAnalyticsController::class, 'labGroupGrades']);
 
+    Route::get('/billing/rollup', [BillingController::class, 'rollup']);
+    Route::get('/billing/instructors/{staffProfileId}', [BillingController::class, 'instructorBilling']);
+
     Route::prefix('cohorts/{cohort}')->group(function () {
         Route::get('lab-groups', [LabGroupController::class, 'index']);
         Route::post('lab-groups', [LabGroupController::class, 'store']);
@@ -83,6 +87,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('{engagement}', [EngagementController::class, 'show']);
         Route::patch('{engagement}', [EngagementController::class, 'update']);
         Route::delete('{engagement}', [EngagementController::class, 'destroy']);
+        Route::get('{engagement}/attendance', [EngagementController::class, 'attendance']);
+        Route::get('{engagement}/qr-token', [EngagementController::class, 'qrToken']);
     });
 
     Route::prefix('business-sessions')->group(function () {

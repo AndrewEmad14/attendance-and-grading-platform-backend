@@ -33,7 +33,7 @@ class SubmissionController extends Controller
 
         $query = Submission::query()
             ->where('deliverable_id', $deliverable->id)
-            ->with(['deliverable', 'gradedBy.user', 'overriddenBy.user', 'student.user']);
+            ->with(['deliverable', 'gradedBy.user', 'overriddenBy.user', 'student.user', 'student.labGroup']);
 
         // ACC-3: instructor sees only their own lab group's students
         if ($user->role === 'instructor') {

@@ -13,11 +13,14 @@ class AttendanceResource extends JsonResource
             'id' => $this->id,
             'engagement' => $this->whenLoaded('engagement', fn () => [
                 'id' => $this->engagement->id,
-                'type' => $this->engagement->type(),
+                'type' => $this->engagement->type,
                 'starts_at' => $this->engagement->starts_at?->toISOString(),
                 'ends_at' => $this->engagement->ends_at?->toISOString(),
                 'scheduled_hours' => $this->engagement->scheduled_hours,
-                'staff_id' => $this->engagement->staff_id,
+                'instructor' => [
+                    'id' => $this->engagement->staff_id,
+                    'name' => $this->engagement->staff?->user?->name ?? 'Unknown Instructor',
+                ],
                 'engageable_id' => $this->engagement->engageable_id,
                 'engageable_type' => $this->engagement->engageable_type,
             ]),

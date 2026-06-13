@@ -12,6 +12,7 @@ class AttendanceLedgerService
     public function buildLedger(StudentProfile $student): array
     {
         $engagementsForStudent = $student->expectedEngagementsQuery()
+            ->with(['staff.user', 'engageable'])
             ->orderBy('starts_at')
             ->get();
 
@@ -42,7 +43,8 @@ class AttendanceLedgerService
 
             $entries[] = [
                 'engagement_id' => $engagement->id,
-                'engagement_type' => $engagement->type(),
+                'engagement_type' => $engagement->type,
+                'engagement_instructor' => $engagement->staff?->user?->name,
                 'name' => $engagement->engageable?->name ?? "Engagement #{$engagement->id}",
                 'date' => $engagement->starts_at?->toISOString(),
                 'arrived_at' => $attendance?->arrived_at?->toISOString(),
