@@ -10,6 +10,7 @@ class UpdateTrackRequest extends FormRequest
     public function authorize(): bool
     {
         $track = $this->route('track');
+
         return $this->user()->can('update', $track);
     }
 

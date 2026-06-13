@@ -17,8 +17,8 @@ use App\Http\Controllers\Api\LabGroupController;
 use App\Http\Controllers\Api\NoteController;
 use App\Http\Controllers\Api\SubmissionController;
 use App\Http\Controllers\Api\TagController;
-use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\TrackController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {

@@ -14,7 +14,7 @@ class TrackResource extends JsonResource
             'name' => $this->name,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
-            
+
             // Conditional data metrics to avoid N+1 aggregation loads
             'cohorts_count' => $this->whenCounted('cohorts'),
             'cohorts' => CohortResource::collection($this->whenLoaded('cohorts')),
