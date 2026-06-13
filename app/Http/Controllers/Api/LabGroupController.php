@@ -47,10 +47,29 @@ class LabGroupController extends Controller
             abort(403, 'This action is unauthorized.');
         }
 
-        $query = StudentProfile::where('cohort_id', $cohort->id)->with(['user', 'labGroup']);
+        $query = StudentProfile::where('cohort_id', $cohort->id)
+            ->with(['user', 'labGroup'])
+            ->join('users', 'users.id', '=', 'student_profiles.user_id')
+            ->select('student_profiles.*');
 
         if ($request->boolean('unassigned_only')) {
             $query->whereNull('lab_group_id');
+        }
+
+        if ($search = $request->string('search')->trim()->value()) {
+            $query->where(function ($q) use ($search) {
+                $q->whereRaw('LOWER(users.name) LIKE ?', ['%'.strtolower($search).'%'])
+                    ->orWhereRaw('LOWER(users.email) LIKE ?', ['%'.strtolower($search).'%']);
+            });
+        }
+
+        if ($status = $request->input('status')) {
+            match ($status) {
+                'good' => $query->where('attendance_balance', '>=', 150),
+                'risk' => $query->whereBetween('attendance_balance', [40, 149]),
+                'critical' => $query->where('attendance_balance', '<', 40),
+                default => null,
+            };
         }
 
         $students = $query->paginate($request->get('per_page', 15));
