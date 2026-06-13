@@ -16,6 +16,10 @@ class CohortStudentResource extends JsonResource
             'email' => $this->user?->email,
             'lab_group_id' => $this->lab_group_id,
             'attendance_balance' => $this->attendance_balance,
+            'lab_group' => $this->whenLoaded('labGroup', fn () => [
+                'id' => $this->labGroup?->id,
+                'name' => $this->labGroup?->name,
+            ]),
         ];
     }
 }

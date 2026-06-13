@@ -24,7 +24,7 @@ class OverrideSubmissionRequest extends FormRequest
     {
         return [
             'new_score' => 'required|numeric|min:0',
-            'override_note' => 'required|string|min:10',
+            'override_note' => 'nullable|string|min:10',
         ];
     }
 }
