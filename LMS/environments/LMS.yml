@@ -1,8 +1,8 @@
 name: LMS
 variables:
-  - name: baseurl
-    value: http://localhost:8000/api
-  - name: productionurl
-    value: https://attendance-and-grading-backend-production.up.railway.app/api
+  - secret: true
+    name: baseurl
+  - secret: true
+    name: productionurl
   - secret: true
     name: access_token

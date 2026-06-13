@@ -5,11 +5,12 @@ info:
 
 http:
   method: GET
-  url: "{{baseurl}}/users/instructors?page=1"
+  url: "{{baseurl}}/users/instructors"
   params:
     - name: page
       value: "1"
       type: query
+      disabled: true
     - name: name
       value: Casimir
       type: query
