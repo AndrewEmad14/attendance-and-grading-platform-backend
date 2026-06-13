@@ -26,7 +26,7 @@ class ExcuseRequestResource extends JsonResource
             'reviewed_at' => $this->reviewed_at?->toISOString(),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
-            'attachment_url' => $this->attachment_path ? asset('storage/'.$this->attachment_path) : null,
+            'attachment_url' => $this->attachment_path ? asset('storage/' . $this->attachment_path) : null,
         ];
     }
 }
