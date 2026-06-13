@@ -282,10 +282,15 @@ class UserController extends Controller
             }
         }
 
+        $paginated = $query->paginate(self::PAGE_SIZE);
+
         return response()->json([
             'message' => 'fetched track admins successfully',
             'status' => 200,
-            'data' => TrackAdminResource::collection($query->paginate(self::PAGE_SIZE)),
+            'data' => [
+                ...$paginated->toArray(),
+                'data' => TrackAdminResource::collection($paginated->items()),
+            ],
         ]);
     }
 
