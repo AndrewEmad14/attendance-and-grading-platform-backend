@@ -20,7 +20,9 @@ class ExcuseRequestController extends Controller
         $this->authorize('viewAny', ExcuseRequest::class);
         $requests = $this->excuseService->index(
             $request->user(),
-            $request->integer('per_page', 20)
+            $request->integer('per_page', 20),
+            $request->integer('cohort_id') ?: null,
+            $request->string('status')->toString() ?: null,
         );
 
         return ExcuseRequestResource::collection($requests)->response();

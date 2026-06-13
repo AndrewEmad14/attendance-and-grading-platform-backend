@@ -15,6 +15,7 @@ class CheckInRequest extends FormRequest
     {
         return [
             'engagement_id' => ['required', 'integer', 'exists:engagements,id'],
+            'token' => ['required', 'string'],
         ];
     }
 }

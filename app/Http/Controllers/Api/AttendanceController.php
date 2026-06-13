@@ -19,7 +19,8 @@ class AttendanceController extends Controller
     {
         $records = $this->attendanceService->index(
             $request->user(),
-            $request->integer('per_page', 20)
+            $request->integer('per_page', 20),
+            $request->integer('engagement_id') ?: null,
         );
 
         return AttendanceResource::collection($records)->response();
@@ -38,6 +39,7 @@ class AttendanceController extends Controller
         $record = $this->attendanceService->handleScan(
             user: $request->user(),
             engagementId: $request->validated('engagement_id'),
+            token: $request->validated('token'),
         );
 
         return (new AttendanceResource($record))
