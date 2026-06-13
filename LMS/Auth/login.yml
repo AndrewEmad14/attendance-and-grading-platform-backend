@@ -18,7 +18,7 @@ http:
 runtime:
   scripts:
     - type: after-response
-      code: bru.setEnvVar("access_token", res.body["access_token"])
+      code: bru.setEnvVar("access_token", res.body.data.access_token)
 
 settings:
   encodeUrl: true
