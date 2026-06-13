@@ -121,7 +121,7 @@ class SubmissionController extends Controller
         $this->authorize('view', $submission);
 
         // url submissions have no file to stream — return the link
-        if ($submission->submission_type === 'url') {
+        if ($submission->submission_type === 'link') {
             return response()->json(['data' => ['url' => $submission->submission_path]]);
         }
 
