@@ -140,9 +140,21 @@ class UserController extends Controller
     public function listInstructors(ListInstructorsRequest $request)
     {
         // resolve cohort scope for track admin once, before the query
-        $cohortIds = auth()->user()->role === Role::TRACK_ADMIN
+        $managedCohortIds = auth()->user()->role === Role::TRACK_ADMIN
             ? auth()->user()->staffProfile->managedCohorts()->pluck('cohort_id')
             : null;
+
+        $cohortIds = null;
+
+        if ($request->filled('cohort_id')) {
+            $requestedCohortId = (int) $request->cohort_id;
+            if ($managedCohortIds && !$managedCohortIds->contains($requestedCohortId)) {
+                abort(403, 'Unauthorized cohort.');
+            }
+            $cohortIds = collect([$requestedCohortId]);
+        } elseif ($managedCohortIds) {
+            $cohortIds = $managedCohortIds;
+        }
 
         $query = User::where('role', Role::INSTRUCTOR)
             ->with([

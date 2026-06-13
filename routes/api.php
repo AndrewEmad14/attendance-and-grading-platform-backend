@@ -41,6 +41,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/courses/{course}', [CourseController::class, 'show']);
     Route::patch('/courses/{course}', [CourseController::class, 'update']);
     Route::delete('/courses/{course}', [CourseController::class, 'destroy']);
+    
+    Route::get('/courses/{course}/labs', [\App\Http\Controllers\Api\LabController::class, 'index']);
 
     Route::post('/deliverables/{deliverable}/submissions', [SubmissionController::class, 'store'])
         ->middleware('role:'.Role::STUDENT);
