@@ -14,7 +14,10 @@ class BusinessSessionResource extends JsonResource
             'name' => $this->name,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
+
+            // conditionally loaded
             'cohorts' => CohortResource::collection($this->whenLoaded('cohorts')),
+            'engagements' => EngagementResource::collection($this->whenLoaded('engagements')),
         ];
     }
 }

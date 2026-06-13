@@ -18,8 +18,15 @@ class BusinessSessionController extends Controller
             abort(403, 'This action is unauthorized.');
         }
 
-        $businessSessions = BusinessSession::with('cohorts')
-            ->paginate($request->get('per_page', 15));
+        // Build base query with standard cohort data
+        $query = BusinessSession::with('cohorts');
+
+        // Conditionally load engagements with deep staff profiles for schedule previewing
+        if ($request->boolean('include_engagements')) {
+            $query->with(['engagements.staff.user']);
+        }
+
+        $businessSessions = $query->paginate($request->get('per_page', 15));
 
         return BusinessSessionResource::collection($businessSessions)->response();
     }
@@ -39,7 +46,13 @@ class BusinessSessionController extends Controller
             abort(403, 'This action is unauthorized.');
         }
 
-        return (new BusinessSessionResource($businessSession->load('cohorts')))->response();
+        // Check for conditional preview parameter on single-lookup detail calls
+        $relations = ['cohorts'];
+        if ($request->boolean('include_engagements')) {
+            $relations[] = 'engagements.staff.user';
+        }
+
+        return (new BusinessSessionResource($businessSession->load($relations)))->response();
     }
 
     public function enrollCohort(EnrollCohortInBusinessSessionRequest $request, BusinessSession $businessSession): JsonResponse
@@ -53,7 +66,15 @@ class BusinessSessionController extends Controller
 
     public function removeCohort(Request $request, BusinessSession $businessSession, int $cohortId): JsonResponse
     {
-        if ($request->user()->role !== 'track_admin' && $request->user()->role !== 'branch_manager') {
+        $user = $request->user();
+
+        if ($user->role === 'track_admin') {
+            $hasCohort = $user->staffProfile->managedCohorts()->where('cohorts.id', $cohortId)->exists();
+
+            if (! $hasCohort) {
+                abort(403, 'This action is unauthorized.');
+            }
+        } elseif ($user->role !== 'branch_manager') {
             abort(403, 'This action is unauthorized.');
         }
 
