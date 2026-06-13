@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
@@ -76,7 +77,7 @@ class Engagement extends Model
 
                     self::TYPE_BUSINESS_SESSION => StudentProfile::whereHas(
                         'cohort.businessSessions',
-                        fn($q) => $q->where('business_sessions.id', $this->engageable_id)
+                        fn ($q) => $q->where('business_sessions.id', $this->engageable_id)
                     )->pluck('id')->toArray(),
 
                     default => [],
@@ -99,7 +100,7 @@ class Engagement extends Model
             $byCohort = StudentProfile::whereIn('cohort_id', $courses->pluck('engageable.cohort_id')->unique())
                 ->get(['id', 'cohort_id'])
                 ->groupBy('cohort_id')
-                ->map(fn($s) => $s->pluck('id')->toArray());
+                ->map(fn ($s) => $s->pluck('id')->toArray());
 
             foreach ($courses as $e) {
                 $expected[$e->id] = $byCohort->get($e->engageable->cohort_id, []);
@@ -111,7 +112,7 @@ class Engagement extends Model
             $byGroup = StudentProfile::whereIn('lab_group_id', $labs->pluck('engageable.lab_group_id')->unique())
                 ->get(['id', 'lab_group_id'])
                 ->groupBy('lab_group_id')
-                ->map(fn($s) => $s->pluck('id')->toArray());
+                ->map(fn ($s) => $s->pluck('id')->toArray());
 
             foreach ($labs as $e) {
                 $expected[$e->id] = $byGroup->get($e->engageable->lab_group_id, []);
@@ -125,16 +126,16 @@ class Engagement extends Model
                 ->get()
                 ->keyBy('id');
 
-            $allCohortIds = $sessionsWithCohorts->flatMap(fn($s) => $s->cohorts->pluck('id'))->unique();
+            $allCohortIds = $sessionsWithCohorts->flatMap(fn ($s) => $s->cohorts->pluck('id'))->unique();
 
             $byCohort = StudentProfile::whereIn('cohort_id', $allCohortIds)
                 ->get(['id', 'cohort_id'])
                 ->groupBy('cohort_id')
-                ->map(fn($s) => $s->pluck('id')->toArray());
+                ->map(fn ($s) => $s->pluck('id')->toArray());
 
             foreach ($sessions as $e) {
                 $cohortIds = $sessionsWithCohorts->get($e->engageable_id)?->cohorts->pluck('id') ?? collect();
-                $expected[$e->id] = $cohortIds->flatMap(fn($cid) => $byCohort->get($cid, []))->unique()->values()->toArray();
+                $expected[$e->id] = $cohortIds->flatMap(fn ($cid) => $byCohort->get($cid, []))->unique()->values()->toArray();
             }
         }
 
@@ -150,7 +151,7 @@ class Engagement extends Model
             ->whereNotNull('arrived_at')
             ->get(['engagement_id', 'student_id'])
             ->groupBy('engagement_id')
-            ->map(fn($records) => $records->pluck('student_id')->flip());
+            ->map(fn ($records) => $records->pluck('student_id')->flip());
     }
 
     public static function excuseRequestsForMany(Collection $engagements): Collection
@@ -158,7 +159,7 @@ class Engagement extends Model
         return ExcuseRequest::whereIn('engagement_id', $engagements->pluck('id'))
             ->get(['engagement_id', 'student_id', 'status'])
             ->groupBy('engagement_id')
-            ->map(fn($requests) => $requests->keyBy('student_id'));
+            ->map(fn ($requests) => $requests->keyBy('student_id'));
     }
 
     // Scope a query to only include engagements linked to a specific cohort
@@ -199,9 +200,9 @@ class Engagement extends Model
     public function getEngagementTypeLabelAttribute(): string
     {
         return match ($this->engageable_type) {
-            \App\Models\Course::class => 'lecture',
-            \App\Models\Lab::class => 'lab',
-            \App\Models\BusinessSession::class => 'business_session'
+            Course::class => 'lecture',
+            Lab::class => 'lab',
+            BusinessSession::class => 'business_session'
         };
     }
 }
