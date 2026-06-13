@@ -148,7 +148,6 @@ class SubmissionController extends Controller
             ->setStatusCode(201);
     }
 
-
     // grades a submission — normalizes score on the fly via GradingService
     public function grade(GradeSubmissionRequest $request, Submission $submission)
     {

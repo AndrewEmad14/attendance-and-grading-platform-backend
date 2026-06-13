@@ -9,16 +9,17 @@ use App\Http\Resources\CourseResource;
 use App\Models\Course;
 use App\Models\CourseDeliverable;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 
 class CourseController extends Controller
 {
     use AuthorizesRequests;
 
-    public function index(int $cohortId, \Illuminate\Http\Request $request) // courses+deliverables
+    public function index(int $cohortId, Request $request) // courses+deliverables
     {
         $this->authorize('viewAny', Course::class);
         $user = $request->user();
-        
+
         $query = Course::where('cohort_id', $cohortId)->with('deliverables');
 
         // Instructors should only see courses where they teach a lab
