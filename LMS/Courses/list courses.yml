@@ -1,15 +1,18 @@
 info:
-  name: list courses
+  name: List Courses
   type: http
-  seq: 5
+  seq: 2
 
 http:
   method: GET
   url: "{{baseurl}}/cohorts/1/courses"
-  auth: inherit
+  auth:
+    type: bearer
+    token: 2|jqywaJid6pvH1m1gEwoy3UsEmJiljtUGUp2OJ9bRe90fb001
 
 settings:
   encodeUrl: true
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+​

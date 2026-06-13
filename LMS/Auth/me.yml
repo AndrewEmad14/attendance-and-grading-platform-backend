@@ -6,6 +6,10 @@ info:
 http:
   method: POST
   url: "{{baseurl}}/auth/me"
+  headers:
+    - name: Authorization
+      value: "{{access_token}}"
+  auth: inherit
 
 settings:
   encodeUrl: true
