@@ -69,7 +69,10 @@ class BusinessSessionController extends Controller
         $user = $request->user();
 
         if ($user->role === 'track_admin') {
-            $hasCohort = $user->staffProfile->managedCohorts()->where('cohorts.id', $cohortId)->exists();
+            // Target the pivot table foreign key explicitly to prevent table entry compilation faults
+            $hasCohort = $user->staffProfile->managedCohorts()
+                ->where('cohorts_admins.cohort_id', $cohortId)
+                ->exists();
 
             if (! $hasCohort) {
                 abort(403, 'This action is unauthorized.');

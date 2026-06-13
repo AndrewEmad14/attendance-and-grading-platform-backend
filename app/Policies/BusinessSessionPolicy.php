@@ -8,6 +8,9 @@ use App\Models\User;
 
 class BusinessSessionPolicy
 {
+    /**
+     * Determine whether the user can enroll a cohort into a business session.
+     */
     public function enrollCohort(User $user, BusinessSession $businessSession, ?Cohort $targetCohort = null): bool
     {
         if ($user->role === 'branch_manager') {
@@ -15,8 +18,10 @@ class BusinessSessionPolicy
         }
 
         if ($user->role === 'track_admin' && $targetCohort) {
-            // Enforce that Track Admins can only link cohorts assigned inside their profile boundary
-            return $user->staffProfile && $user->staffProfile->managedCohorts->contains($targetCohort->id);
+            // Verify relationship boundaries explicitly against the pivot column data
+            return $user->staffProfile && $user->staffProfile->managedCohorts()
+                ->where('cohorts_admins.cohort_id', $targetCohort->id)
+                ->exists();
         }
 
         return false;
