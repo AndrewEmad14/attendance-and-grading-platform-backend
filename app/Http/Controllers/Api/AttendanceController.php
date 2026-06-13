@@ -58,7 +58,7 @@ class AttendanceController extends Controller
                 'outcome' => $outcome,
                 'message' => $message,
                 'record' => new AttendanceResource($record),
-            ]
+            ],
         ], $record->wasRecentlyCreated ? 201 : 200);
     }
 
