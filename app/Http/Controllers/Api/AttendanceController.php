@@ -42,9 +42,24 @@ class AttendanceController extends Controller
             token: $request->validated('token'),
         );
 
-        return (new AttendanceResource($record))
-            ->response()
-            ->setStatusCode($record->wasRecentlyCreated ? 201 : 200);
+        $outcome = 'idempotent';
+        $message = 'Attendance has already been recorded.';
+
+        if ($record->wasRecentlyCreated) {
+            $outcome = 'checked_in';
+            $message = 'Checked in successfully.';
+        } elseif ($record->wasChanged('left_at')) {
+            $outcome = 'checked_out';
+            $message = 'Checked out successfully.';
+        }
+
+        return response()->json([
+            'data' => [
+                'outcome' => $outcome,
+                'message' => $message,
+                'record' => new AttendanceResource($record),
+            ],
+        ], $record->wasRecentlyCreated ? 201 : 200);
     }
 
     public function update(PatchAttendanceRequest $request, AttendanceRecord $attendance): AttendanceResource
