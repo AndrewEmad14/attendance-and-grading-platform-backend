@@ -148,7 +148,7 @@ class UserController extends Controller
 
         if ($request->filled('cohort_id')) {
             $requestedCohortId = (int) $request->cohort_id;
-            if ($managedCohortIds && !$managedCohortIds->contains($requestedCohortId)) {
+            if ($managedCohortIds && ! $managedCohortIds->contains($requestedCohortId)) {
                 abort(403, 'Unauthorized cohort.');
             }
             $cohortIds = collect([$requestedCohortId]);

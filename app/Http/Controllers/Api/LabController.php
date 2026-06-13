@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LabResource;
 use App\Models\Course;
-use App\Models\Lab;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

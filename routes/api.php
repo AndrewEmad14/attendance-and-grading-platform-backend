@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\EngagementController;
 use App\Http\Controllers\Api\ExcuseRequestController;
 use App\Http\Controllers\Api\GradingAnalyticsController;
+use App\Http\Controllers\Api\LabController;
 use App\Http\Controllers\Api\LabGroupController;
 use App\Http\Controllers\Api\NoteController;
 use App\Http\Controllers\Api\SubmissionController;
@@ -42,8 +43,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/courses/{course}', [CourseController::class, 'show']);
     Route::patch('/courses/{course}', [CourseController::class, 'update']);
     Route::delete('/courses/{course}', [CourseController::class, 'destroy']);
-    
-    Route::get('/courses/{course}/labs', [\App\Http\Controllers\Api\LabController::class, 'index']);
+
+    Route::get('/courses/{course}/labs', [LabController::class, 'index']);
 
     Route::post('cohorts/{cohort}/assign-admin/{staffProfile}', [CohortAssignmentController::class, 'assign']);
     Route::delete('cohorts/{cohort}/unassign-admin/{staffProfile}', [CohortAssignmentController::class, 'unassign']);

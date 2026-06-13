@@ -1,13 +1,18 @@
 <?php
+
+use App\Models\Cohort;
+use App\Models\User;
+use Illuminate\Contracts\Console\Kernel;
+
 require 'vendor/autoload.php';
 $app = require_once 'bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
 
-$cohorts = App\Models\Cohort::pluck('id');
+$cohorts = Cohort::pluck('id');
 foreach ($cohorts as $cohortId) {
     $cohortIds = collect([$cohortId]);
-    $query = App\Models\User::where('role', 'instructor');
+    $query = User::where('role', 'instructor');
     $query->whereHas('staffProfile', function ($q) use ($cohortIds) {
         $q->whereHas('engagements', function ($q) use ($cohortIds) {
             $q->where(function ($inner) use ($cohortIds) {
@@ -17,5 +22,5 @@ foreach ($cohorts as $cohortId) {
             });
         });
     });
-    echo "Cohort $cohortId - Filtered Count: " . $query->count() . "\n";
+    echo "Cohort $cohortId - Filtered Count: ".$query->count()."\n";
 }
