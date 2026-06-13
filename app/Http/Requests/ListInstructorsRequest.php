@@ -27,6 +27,7 @@ class ListInstructorsRequest extends FormRequest
             'fixed_salary_max' => ['required_with:fixed_salary_min', 'integer', 'min:0', 'max:1000000', 'gte:fixed_salary_min'],
             'sort' => ['sometimes', 'string', 'in:name,-name,hourly_rate,-hourly_rate,fixed_salary,-fixed_salary'],
             'page' => ['sometimes', 'integer', 'min:1', 'max:1000'],
+            'cohort_id' => ['sometimes', 'integer', 'exists:cohorts,id'],
         ];
     }
 
