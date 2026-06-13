@@ -38,29 +38,29 @@ class Engagement extends Model
     ];
 
     // Polymorphic relation
-    public function engageable(): MorphTo // course,lab,meeting
+    public function engageable (): MorphTo // course,lab,meeting
     {
         return $this->morphTo();
     }
 
-    public function staff(): BelongsTo
+    public function staff (): BelongsTo
     {
         return $this->belongsTo(StaffProfile::class, 'staff_id');
     }
 
-    public function attendanceRecords(): HasMany
+    public function attendanceRecords (): HasMany
     {
         return $this->hasMany(AttendanceRecord::class);
     }
 
-    public function billingRecord(): HasMany
+    public function billingRecord (): HasMany
     {
         return $this->hasMany(BillingRecord::class, 'engagement_id');
     }
 
     // Get array of student IDs  expected to attend this engagement
     // Used in single engagement check, NOT in loops/array of engagements
-    protected function expectedStudentIds(): Attribute
+    protected function expectedStudentIds (): Attribute
     {
         return Attribute::make(
             get: function (): array {
@@ -85,7 +85,7 @@ class Engagement extends Model
     }
 
     // Get a list of <engagement_id, student_id[]> for a list of engagements you pass in
-    public static function expectedStudentIdsForMany(Collection $engagements): array
+    public static function expectedStudentIdsForMany (Collection $engagements): array
     {
         if ($engagements->isEmpty()) {
             return [];
@@ -143,7 +143,7 @@ class Engagement extends Model
     // Given engagements, get a collection of <engagement_id, [student_id => array_index]>
     // Flip is used to optimize for O(1) lookup speed in usage
     // ex: isset($attendedStudents[$studentId]) directly checks if $studentId attended
-    public static function attendedStudentIdsForMany(Collection $engagements): Collection
+    public static function attendedStudentIdsForMany (Collection $engagements): Collection
     {
         return AttendanceRecord::whereIn('engagement_id', $engagements->pluck('id'))
             ->whereNotNull('arrived_at')
@@ -152,7 +152,7 @@ class Engagement extends Model
             ->map(fn ($records) => $records->pluck('student_id')->flip());
     }
 
-    public static function excuseRequestsForMany(Collection $engagements): Collection
+    public static function excuseRequestsForMany (Collection $engagements): Collection
     {
         return ExcuseRequest::whereIn('engagement_id', $engagements->pluck('id'))
             ->get(['engagement_id', 'student_id', 'status'])
@@ -161,7 +161,7 @@ class Engagement extends Model
     }
 
     // Scope a query to only include engagements linked to a specific cohort
-    public function scopeForCohort(Builder $query, $cohortIds): Builder
+    public function scopeForCohort (Builder $query, $cohortIds): Builder
     {
         $ids = is_array($cohortIds) ? $cohortIds : [$cohortIds];
 
@@ -180,22 +180,22 @@ class Engagement extends Model
         });
     }
 
-    public function isLecture(): bool
+    public function isLecture (): bool
     {
         return $this->engageable_type === self::TYPE_COURSE;
     }
 
-    public function isLab(): bool
+    public function isLab (): bool
     {
         return $this->engageable_type === self::TYPE_LAB;
     }
 
-    public function isBusinessSession(): bool
+    public function isBusinessSession (): bool
     {
         return $this->engageable_type === self::TYPE_BUSINESS_SESSION;
     }
 
-    public function getEngagementTypeLabelAttribute(): string
+    public function getEngagementTypeLabelAttribute (): string
     {
         return match ($this->engageable_type) {
             self::TYPE_COURSE => 'lecture',
