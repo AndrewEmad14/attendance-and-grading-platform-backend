@@ -23,6 +23,7 @@ class ExcuseRequestController extends Controller
             $request->integer('per_page', 20),
             $request->integer('cohort_id') ?: null,
             $request->string('status')->toString() ?: null,
+            $request->string('search')->toString() ?: null,
         );
 
         return ExcuseRequestResource::collection($requests)->response();
@@ -54,7 +55,12 @@ class ExcuseRequestController extends Controller
     public function update(UpdateExcuseRequest $request, ExcuseRequest $excuseRequest): ExcuseRequestResource
     {
         $this->authorize('update', $excuseRequest);
-        $updated = $this->excuseService->update($excuseRequest, $request->validated(), $request->file('attachment'));
+        $updated = $this->excuseService->update(
+            $excuseRequest,
+            $request->validated(),
+            $request->file('attachment'),
+            $request->boolean('remove_attachment')
+        );
 
         return new ExcuseRequestResource($updated);
     }

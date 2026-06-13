@@ -5,7 +5,9 @@ namespace App\Services;
 use App\Http\Resources\ExcuseRequestResource;
 use App\Models\ExcuseRequest;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Storage;
 
 class ExcuseService
 {
@@ -15,16 +17,29 @@ class ExcuseService
         User $user,
         int $perPage = 20,
         ?int $cohortId = null,
-        ?string $status = null
+        ?string $status = null,
+        ?string $search = null,
     ): LengthAwarePaginator {
         $query = ExcuseRequest::query()->with([
+            'engagement.engageable',
             'student.user',
             'engagement.staff.user',
             'reviewer.user',
         ]);
+
         $this->accessService->scopedToUser($query, $user);
-        $query->when($cohortId, fn ($q) => $q->whereHas('student', fn ($s) => $s->where('cohort_id', $cohortId)));
+
+        $query->when($cohortId, fn ($q) => $q->whereHas(
+            'student',
+            fn ($s) => $s->where('cohort_id', $cohortId)
+        ));
+
         $query->when($status, fn ($q) => $q->where('status', $status));
+
+        $query->when($search, fn ($q) => $q->where(function ($sub) use ($search) {
+            $sub->whereHas('student.user', fn ($u) => $u->where('name', 'like', "%{$search}%"))
+                ->orWhere('reason', 'like', "%{$search}%");
+        }));
 
         return $query->latest()->paginate($perPage);
     }
@@ -57,12 +72,22 @@ class ExcuseService
         ]);
     }
 
-    public function update(ExcuseRequest $excuseRequest, array $data, ?string $attachmentPath): ExcuseRequest
+    public function update(ExcuseRequest $excuseRequest, array $data, ?UploadedFile $attachment = null, bool $removeAttachment = false): ExcuseRequest
     {
-        $excuseRequest->update(array_filter([
-            'reason' => $data['reason'] ?? null,
-            'attachment_path' => $attachmentPath,
-        ], fn ($v) => ! is_null($v)));
+        if ($attachment) {
+            if ($excuseRequest->attachment_path) {
+                Storage::disk('public')->delete($excuseRequest->attachment_path);
+            }
+            $excuseRequest->attachment_path = $attachment->store('excuses', 'public');
+        } elseif ($removeAttachment) {
+            if ($excuseRequest->attachment_path) {
+                Storage::disk('public')->delete($excuseRequest->attachment_path);
+            }
+            $excuseRequest->attachment_path = null;
+        }
+
+        $excuseRequest->reason = $data['reason'] ?? $excuseRequest->reason;
+        $excuseRequest->save();
 
         return $excuseRequest->refresh();
     }

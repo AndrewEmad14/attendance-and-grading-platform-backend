@@ -146,7 +146,14 @@ class BillingController extends Controller
 
         foreach ($engagements as $eng) {
             $title = $eng->engageable ? $eng->engageable->name : 'N/A';
-            $type = $eng->type();
+            $type = $eng->engageable_type;
+            if ($type === Engagement::TYPE_COURSE) {
+                $type = 'course';
+            } elseif ($type === Engagement::TYPE_LAB) {
+                $type = 'lab';
+            } elseif ($type === Engagement::TYPE_BUSINESS_SESSION) {
+                $type = 'business_session';
+            }
 
             // Determine status
             $status = 'in_progress';

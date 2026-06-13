@@ -2,17 +2,40 @@
 
 namespace Database\Factories;
 
-use App\Models\BusinessSession;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class BusinessSessionFactory extends Factory
 {
-    protected $model = BusinessSession::class;
+    private static array $sessionNames = [
+        'Career Fair',
+        'Alumni Panel',
+        'Industry Guest Lecture',
+        'Graduation Ceremony',
+        'CV Workshop',
+        'Mock Interviews',
+        'Networking Event',
+        'Hackathon Kickoff',
+        'Open Day',
+        'Job Fair',
+        'Tech Talk: AI Trends',
+        'Tech Talk: Cloud Native',
+        'Tech Talk: Cybersecurity',
+        'Soft Skills Workshop',
+        'Entrepreneurship Talk',
+        'Company Visit: Tech Corp',
+        'Company Visit: Startup Hub',
+        'Portfolio Review Session',
+        'Capstone Presentations',
+        'Awards Ceremony',
+    ];
 
-    public function definition()
+    private static int $index = 0;
+
+    public function definition(): array
     {
-        return [
-            'name' => $this->faker->company().' Session',
-        ];
+        $name = self::$sessionNames[self::$index % count(self::$sessionNames)];
+        self::$index++;
+
+        return ['name' => $name];
     }
 }

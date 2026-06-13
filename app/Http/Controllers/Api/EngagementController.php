@@ -7,6 +7,8 @@ use App\Http\Requests\StoreEngagementRequest;
 use App\Http\Requests\UpdateEngagementRequest;
 use App\Http\Resources\EngagementResource;
 use App\Models\AttendanceRecord;
+use App\Models\BusinessSession;
+use App\Models\Course;
 use App\Models\Engagement;
 use App\Models\ExcuseRequest;
 use App\Models\Lab;
@@ -44,7 +46,26 @@ class EngagementController extends Controller
         if ($user->role === 'instructor') {
             $query->where('staff_id', $user->staffProfile->id);
         } elseif ($user->role === 'student') {
-            $query->forCohort($user->studentProfile->cohort_id);
+            $student = $user->studentProfile;
+
+            $query->where(function ($q) use ($student) {
+                $q->whereHasMorph(
+                    'engageable',
+                    [Course::class],
+                    fn ($sub) => $sub->where('cohort_id', $student->cohort_id)
+                )->orWhereHasMorph(
+                    'engageable',
+                    [Lab::class],
+                    fn ($sub) => $sub->where('lab_group_id', $student->lab_group_id)
+                )->orWhereHasMorph(
+                    'engageable',
+                    [BusinessSession::class],
+                    fn ($sub) => $sub->whereHas(
+                        'cohorts',
+                        fn ($c) => $c->where('cohorts.id', $student->cohort_id)
+                    )
+                );
+            });
         } elseif ($user->role === 'track_admin') {
             $managedCohortIds = $user->staffProfile->managedCohorts()->pluck('cohorts_admins.cohort_id')->toArray();
 
@@ -117,7 +138,7 @@ class EngagementController extends Controller
         }
 
         if ($user->role === 'student') {
-            $isAuthorized = Engagement::with('staff.user')::where('id', $engagement->id)
+            $isAuthorized = Engagement::with('staff.user')->where('id', $engagement->id)
                 ->forCohort($user->studentProfile->cohort_id)
                 ->exists();
 

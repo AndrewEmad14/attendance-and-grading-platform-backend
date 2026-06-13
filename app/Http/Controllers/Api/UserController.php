@@ -266,7 +266,7 @@ class UserController extends Controller
 
         // combine cohort, track, and is_active filters into one EXISTS on cohorts
         if ($request->filled('cohort') || $request->filled('track_id') || $request->filled('is_active')) {
-            $query->whereHas('staffProfile.managedCohorts', function ($q) use ($request) {
+            $query->whereHas('staffProfile.managedCohorts.cohort', function ($q) use ($request) {
 
                 // filter by cohort number
                 if ($request->filled('cohort')) {
@@ -294,10 +294,15 @@ class UserController extends Controller
             }
         }
 
+        $paginated = $query->paginate(self::PAGE_SIZE);
+
         return response()->json([
             'message' => 'fetched track admins successfully',
             'status' => 200,
-            'data' => TrackAdminResource::collection($query->paginate(self::PAGE_SIZE)),
+            'data' => [
+                ...$paginated->toArray(),
+                'data' => TrackAdminResource::collection($paginated->items()),
+            ],
         ]);
     }
 
