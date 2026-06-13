@@ -15,7 +15,7 @@ class AttendanceLedgerResource extends JsonResource
                 'name' => $this->resource['student']['name'],
                 'current_balance' => $this->resource['current_balance'],
             ],
-            'entries' => collect($this->resource['entries'])->map(fn($entry) => [
+            'entries' => collect($this->resource['entries'])->map(fn ($entry) => [
                 'engagement_id' => $entry['engagement_id'],
                 'engagement_type' => $entry['engagement_type'],
                 'engagement_instructor' => $entry['engagement_instructor'],

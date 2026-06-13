@@ -11,21 +11,21 @@ class ExcuseRequestResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'student' => $this->whenLoaded('student', fn() => [
+            'student' => $this->whenLoaded('student', fn () => [
                 'id' => $this->student->id,
                 'name' => $this->student->user?->name,
             ]),
-            'engagement' => $this->whenLoaded('engagement', fn() => [
+            'engagement' => $this->whenLoaded('engagement', fn () => [
                 'id' => $this->engagement->id,
                 'type' => $this->engagement->type,
                 'starts_at' => $this->engagement->starts_at?->toISOString(),
                 'ends_at' => $this->engagement->ends_at?->toISOString(),
-                'instructor' => $this->engagement->staff?->user?->name ?? null
+                'instructor' => $this->engagement->staff?->user?->name ?? null,
             ]),
             'reason' => $this->reason,
             'status' => $this->status,
             'review' => $this->reviewed_by ? [
-                'by' => $this->whenLoaded('reviewer', fn() => [
+                'by' => $this->whenLoaded('reviewer', fn () => [
                     'id' => $this->reviewer->id,
                     'name' => $this->reviewer->user?->name,
                 ], [
@@ -37,7 +37,7 @@ class ExcuseRequestResource extends JsonResource
 
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
-            'attachment_url' => $this->attachment_path ? asset('storage/' . $this->attachment_path) : null,
+            'attachment_url' => $this->attachment_path ? asset('storage/'.$this->attachment_path) : null,
         ];
     }
 }
