@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BillingController;
 use App\Http\Controllers\Api\BranchAnalyticsController;
 use App\Http\Controllers\Api\BusinessSessionController;
+use App\Http\Controllers\Api\CohortAssignmentController;
 use App\Http\Controllers\Api\CohortController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\EngagementController;
@@ -41,6 +42,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/courses/{course}', [CourseController::class, 'show']);
     Route::patch('/courses/{course}', [CourseController::class, 'update']);
     Route::delete('/courses/{course}', [CourseController::class, 'destroy']);
+
+    Route::post('cohorts/{cohort}/assign-admin/{staffProfile}', [CohortAssignmentController::class, 'assign']);
+    Route::delete('cohorts/{cohort}/unassign-admin/{staffProfile}', [CohortAssignmentController::class, 'unassign']);
 
     Route::post('/deliverables/{deliverable}/submissions', [SubmissionController::class, 'store'])
         ->middleware('role:'.Role::STUDENT);

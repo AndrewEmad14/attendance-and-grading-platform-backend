@@ -254,7 +254,7 @@ class UserController extends Controller
 
         // combine cohort, track, and is_active filters into one EXISTS on cohorts
         if ($request->filled('cohort') || $request->filled('track_id') || $request->filled('is_active')) {
-            $query->whereHas('staffProfile.managedCohorts', function ($q) use ($request) {
+            $query->whereHas('staffProfile.managedCohorts.cohort', function ($q) use ($request) {
 
                 // filter by cohort number
                 if ($request->filled('cohort')) {
