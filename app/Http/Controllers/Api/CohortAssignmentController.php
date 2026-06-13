@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 
 class CohortAssignmentController extends Controller
 {
-
     /**
      * Link a track administrator profile to a specific cohort.
      */

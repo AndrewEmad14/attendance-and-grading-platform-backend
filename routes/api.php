@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BillingController;
 use App\Http\Controllers\Api\BranchAnalyticsController;
 use App\Http\Controllers\Api\BusinessSessionController;
+use App\Http\Controllers\Api\CohortAssignmentController;
 use App\Http\Controllers\Api\CohortController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\EngagementController;
@@ -19,7 +20,6 @@ use App\Http\Controllers\Api\SubmissionController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\TrackController;
 use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\Api\CohortAssignmentController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
