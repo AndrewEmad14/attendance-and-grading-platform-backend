@@ -145,12 +145,15 @@ class EngagementController extends Controller
         $user = $request->user();
         $engagement->load('engageable');
 
+        // 1. Core structural authorization
         if ($user->role === 'instructor' && $engagement->staff_id !== $user->staffProfile->id) {
             abort(403, 'This action is unauthorized.');
         }
 
+        // Base array list of expected students parsed from the polymorphic model
         $studentIds = $engagement->expected_student_ids;
 
+        // 2. Secured Cohort Filter Logic Block
         if ($request->filled('cohort_id')) {
             $requestedCohortId = (int) $request->get('cohort_id');
 
@@ -161,12 +164,24 @@ class EngagementController extends Controller
                     abort(403, 'This action is unauthorized.');
                 }
             }
+            // 💡 Added: Instructors can filter, but ONLY if the cohort belongs to this engagement
+            elseif ($user->role === 'instructor') {
+                $hasStudentsInCohort = StudentProfile::whereIn('id', $studentIds)
+                    ->where('cohort_id', $requestedCohortId)
+                    ->exists();
 
+                if (! $hasStudentsInCohort) {
+                    abort(403, 'You cannot filter by a cohort that is not part of this session.');
+                }
+            }
+
+            // Safe scoped extraction
             $studentIds = StudentProfile::whereIn('id', $studentIds)
                 ->where('cohort_id', $requestedCohortId)
                 ->pluck('id')->toArray();
         }
 
+        // Process roster output data payload array mapping...
         $students = StudentProfile::with('user')->whereIn('id', $studentIds)->get();
         $attendance = AttendanceRecord::where('engagement_id', $engagement->id)
             ->whereIn('student_id', $studentIds)->get()->keyBy('student_id');
