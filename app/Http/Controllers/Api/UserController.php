@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\TrackAdminResource;
 use App\Http\Requests\ListInstructorsRequest;
 use App\Http\Requests\ListStudentsRequest;
 use App\Http\Requests\ListTrackAdminsRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Http\Resources\TrackAdminResource;
 use App\Mail\AccountDeactivatedNotification;
 use App\Mail\EmailChangedNotification;
 use App\Models\StaffProfile;
@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+
 class UserController extends Controller
 {
     use AuthorizesRequests;
@@ -239,12 +240,12 @@ class UserController extends Controller
     public function listTrackAdmins(ListTrackAdminsRequest $request)
     {
         $query = User::where('role', Role::TRACK_ADMIN)
-        ->with([
-            'staffProfile:id,user_id',
-            'staffProfile.managedCohorts:id,staff_id,cohort_id', 
-            'staffProfile.managedCohorts.cohort:id,number,track_id,is_active',
-            'staffProfile.managedCohorts.cohort.track:id,name',
-        ]);
+            ->with([
+                'staffProfile:id,user_id',
+                'staffProfile.managedCohorts:id,staff_id,cohort_id',
+                'staffProfile.managedCohorts.cohort:id,number,track_id,is_active',
+                'staffProfile.managedCohorts.cohort.track:id,name',
+            ]);
 
         // search by name on users table — no join needed
         if ($request->filled('name')) {
@@ -281,10 +282,10 @@ class UserController extends Controller
             }
         }
 
-       return response()->json([
+        return response()->json([
             'message' => 'fetched track admins successfully',
-            'status'  => 200,
-            'data'    => TrackAdminResource::collection($query->paginate(self::PAGE_SIZE)),
+            'status' => 200,
+            'data' => TrackAdminResource::collection($query->paginate(self::PAGE_SIZE)),
         ]);
     }
 

@@ -19,7 +19,7 @@ class AuthController extends Controller
         if (! auth()->attempt($creds)) {
             return response()->json([
                 'message' => 'Invalid credentials',
-                'status'  => 401,
+                'status' => 401,
             ], 401);
         }
 
@@ -31,7 +31,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'message' => 'Account expired',
-                'status'  => 403,
+                'status' => 403,
             ], 403);
         }
 
@@ -39,15 +39,15 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'logged in successfully',
-            'status'  => 200,
-            'data'    => [
-                'id'   => $user->id,
+            'status' => 200,
+            'data' => [
+                'id' => $user->id,
                 'name' => $user->name,
-                'email'=> $user->email,
+                'email' => $user->email,
                 'access_token' => $token,
-                'role'         => $user->role,
-                'expires_at'   => $user->expires_at,
-                
+                'role' => $user->role,
+                'expires_at' => $user->expires_at,
+
             ],
         ], 200);
     }
@@ -67,8 +67,8 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'fetched user successfully',
-            'status'  => 200,
-            'data'    => $user,
+            'status' => 200,
+            'data' => $user,
         ], 200);
     }
 
@@ -78,7 +78,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'logged out successfully',
-            'status'  => 200,
+            'status' => 200,
         ], 200);
     }
 
@@ -88,7 +88,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'logged out from all devices successfully',
-            'status'  => 200,
+            'status' => 200,
         ], 200);
     }
 
@@ -99,11 +99,11 @@ class AuthController extends Controller
         return $status === Password::RESET_LINK_SENT
             ? response()->json([
                 'message' => 'if the email exists, a verification link will be sent',
-                'status'  => 200,
+                'status' => 200,
             ], 200)
             : response()->json([
                 'message' => 'unable to send reset link',
-                'status'  => 400,
+                'status' => 400,
             ], 400);
     }
 
@@ -120,11 +120,11 @@ class AuthController extends Controller
         return $status === Password::PASSWORD_RESET
             ? response()->json([
                 'message' => 'password reset successfully',
-                'status'  => 200,
+                'status' => 200,
             ], 200)
             : response()->json([
                 'message' => 'invalid or expired reset token',
-                'status'  => 400,
+                'status' => 400,
             ], 400);
     }
 }
