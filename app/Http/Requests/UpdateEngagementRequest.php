@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Engagement;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Carbon;
 
 class UpdateEngagementRequest extends FormRequest
 {
@@ -53,8 +54,8 @@ class UpdateEngagementRequest extends FormRequest
                     return;
                 }
 
-                $startsAt = $this->input('starts_at') ? carbon($this->input('starts_at')) : $engagement->starts_at;
-                $endsAt = $this->input('ends_at') ? carbon($this->input('ends_at')) : $engagement->ends_at;
+                $startsAt = $this->input('starts_at') ? Carbon::parse($this->input('starts_at')) : $engagement->starts_at;
+                $endsAt = $this->input('ends_at') ? Carbon::parse($this->input('ends_at')) : $engagement->ends_at;
 
                 if ($startsAt && $endsAt && $startsAt->greaterThanOrEqualTo($endsAt)) {
                     $this->validator->errors()->add(

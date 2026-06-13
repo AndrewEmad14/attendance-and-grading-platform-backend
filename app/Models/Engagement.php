@@ -199,10 +199,25 @@ class Engagement extends Model
 
     public function getEngagementTypeLabelAttribute(): string
     {
-        return match ($this->engageable_type) {
-            Course::class => 'lecture',
-            Lab::class => 'lab',
-            BusinessSession::class => 'business_session'
-        };
+        $flippedMap = array_flip(self::$frontendTypeMap);
+
+        return $flippedMap[$this->engageable_type] ?? 'unknown';
+    }
+
+    /**
+     * Frontend query parameter alias matrix map.
+     */
+    public static array $frontendTypeMap = [
+        'lecture' => Course::class,
+        'lab' => Lab::class,
+        'business_session' => BusinessSession::class,
+    ];
+
+    /**
+     * Resolve a frontend string type to its matching backend model class.
+     */
+    public static function resolveFrontendType(string $type): ?string
+    {
+        return self::$frontendTypeMap[strtolower($type)] ?? null;
     }
 }

@@ -73,10 +73,14 @@ class EngagementController extends Controller
         }
 
         if ($request->filled('type')) {
-            $query->where('type', $request->get('type'));
+            $resolvedClass = Engagement::resolveFrontendType($request->get('type'));
 
-            if ($request->filled('engageable_id')) {
-                $query->where('engageable_id', $request->get('engageable_id'));
+            if ($resolvedClass) {
+                $query->where('engageable_type', $resolvedClass);
+
+                if ($request->filled('engageable_id')) {
+                    $query->where('engageable_id', $request->get('engageable_id'));
+                }
             }
         }
 
@@ -96,9 +100,12 @@ class EngagementController extends Controller
     {
         $engagement = $this->engagementService->createEngagement($request->validated());
 
-        return (new EngagementResource($engagement->load(['engageable', 'engageable.labGroup'])))
-            ->response()
-            ->setStatusCode(201);
+        // Safe morph relational loading layout
+        $engagement->load(['engageable'])->loadMorph('engageable', [
+            Lab::class => ['labGroup'],
+        ]);
+
+        return (new EngagementResource($engagement))->response()->setStatusCode(201);
     }
 
     public function show(Request $request, Engagement $engagement): JsonResponse
@@ -126,7 +133,12 @@ class EngagementController extends Controller
     {
         $engagement->update($request->validated());
 
-        return (new EngagementResource($engagement->load(['engageable', 'engageable.labGroup'])))->response();
+        // Safe morph relational loading layout
+        $engagement->load(['engageable'])->loadMorph('engageable', [
+            Lab::class => ['labGroup'],
+        ]);
+
+        return (new EngagementResource($engagement))->response();
     }
 
     public function destroy(Request $request, Engagement $engagement): JsonResponse
