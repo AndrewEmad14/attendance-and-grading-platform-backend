@@ -286,8 +286,8 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'fetched track admins successfully',
-            'status'  => 200,
-            'data'    => [
+            'status' => 200,
+            'data' => [
                 ...$paginated->toArray(),
                 'data' => TrackAdminResource::collection($paginated->items()),
             ],
