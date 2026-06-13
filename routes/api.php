@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\SubmissionController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\TrackController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\CohortAssignmentController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -41,6 +42,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/courses/{course}', [CourseController::class, 'show']);
     Route::patch('/courses/{course}', [CourseController::class, 'update']);
     Route::delete('/courses/{course}', [CourseController::class, 'destroy']);
+
+    Route::post('cohorts/{cohort}/assign-admin/{staffProfile}', [CohortAssignmentController::class, 'assign']);
+    Route::delete('cohorts/{cohort}/unassign-admin/{staffProfile}', [CohortAssignmentController::class, 'unassign']);
 
     Route::post('/deliverables/{deliverable}/submissions', [SubmissionController::class, 'store'])
         ->middleware('role:'.Role::STUDENT);

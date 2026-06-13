@@ -65,4 +65,14 @@ class CohortPolicy
 
         return false;
     }
+
+    public function assignAdmin(User $user, Cohort $cohort): bool
+    {
+        return $user->role === 'branch_manager';
+    }
+
+    public function unassignAdmin(User $user, Cohort $cohort): bool
+    {
+        return $user->role === 'branch_manager';
+    }
 }
